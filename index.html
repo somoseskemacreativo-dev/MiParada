@@ -237,7 +237,7 @@
 
   <script>
     // =========================================================================
-    // 1. CREDENCIALES SUPABASE Y COORDENADAS EXACTAS DE URBANIZACIÓN UD-4
+    // 1. CREDENCIALES SUPABASE Y COORDENADA EXACTA DE UD-4 (10.429654, -66.976428)
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -251,10 +251,10 @@
       console.error('Error iniciando cliente Supabase:', err);
     }
 
-    // Centro exacto verificado sobre "Urbanización UD-4" y Colegio San Agustín en OpenStreetMap
-    const UD4_CENTER = [10.4258, -66.9688];
+    // Coordenada central exacta indicada para UD-4 Caricuao
+    const UD4_CENTER = [10.429654, -66.976428];
 
-    // Radio operativo para validar que las acciones sean en UD-4 aunque el mapa sea libre
+    // Radio operativo alrededor del centro de UD-4 (1400 metros)
     const UD4_OPERATIONAL_RADIUS_METERS = 1400;
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
@@ -303,7 +303,7 @@
     }
 
     // =========================================================================
-    // 3. MAPA LIBRE DE CARICUAO CENTRADO EXACTAMENTE EN URBANIZACIÓN UD-4
+    // 3. MAPA DE CARICUAO CENTRADO EN 10.429654, -66.976428
     // =========================================================================
     function initMap() {
       if (map) {
@@ -313,8 +313,8 @@
 
       map = L.map('map', {
         center: UD4_CENTER,
-        zoom: 17,     // Enfoca directamente la Urbanización UD-4 al abrir
-        minZoom: 13,  // Permite alejar para ver todo Caricuao completo sin bloqueos
+        zoom: 17,     // Zoom directo sobre la sección indicada de UD-4
+        minZoom: 13,  // Permite ver todo Caricuao libremente
         maxZoom: 19,
         zoomControl: false
       });
@@ -375,7 +375,6 @@
             </span>
           </div>`;
 
-        // iconAnchor: [21, 38] asegura que la punta inferior del pin 📍 toque la coordenada exacta
         const icon = L.divIcon({ className: '', html, iconSize: [42, 42], iconAnchor: [21, 38] });
         stopMarkers[stop.id] = L.marker([stop.lat, stop.lng], { icon })
           .bindPopup(`<b>📍 ${stop.name}</b><br/>Esperando en parada: <b>${stop.count} personas</b>`)
@@ -389,7 +388,6 @@
       driverMarkers = {};
 
       driversData.forEach(d => {
-        // Solo mostrar unidades operando dentro del sector UD-4
         if (!isInsideUD4Sector(d.lat, d.lng)) return;
 
         const isBus = d.vehicle_type === 'bus';
@@ -454,7 +452,7 @@
         dControls.classList.remove('hidden');
         btnOled.classList.remove('hidden');
         requestWakeLock();
-        startDriverInactivityWatch(isBus ? 360 : 180); // 6 min Bus | 3 min Carro
+        startDriverInactivityWatch(isBus ? 360 : 180);
       }
 
       startGpsTracking();
