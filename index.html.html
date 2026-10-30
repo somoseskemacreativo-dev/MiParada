@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#09090B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>UD-4 En Vivo · Transporte Colaborativo</title>
+  <link rel="manifest" href="manifest.json" />
+  
+  <!-- Tailwind CSS & Fuente Inter -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Leaflet.js (OpenStreetMap sin API Key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Cliente Oficial Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #09090B; color: #FAFAFA; overflow: hidden; user-select: none; }
+    #map { height: 100vh; width: 100vw; z-index: 1; background: #09090B; }
+    .leaflet-control-attribution { font-size: 9px !important; background: rgba(9,9,11,0.7) !important; color: #71717A !important; }
+    .leaflet-control-attribution a { color: #A1A1AA !important; }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .critical-stop { animation: pulse-ring 2s infinite; }
+    .vehicle-marker { transition: transform 1.5s linear; }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- PANTALLA 1: REGISTRO RÁPIDO MINIMALISTA -->
+  <div id="onboarding-screen" class="fixed inset-0 z-50 bg-[#09090B] flex flex-col justify-between p-6">
+    <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <h1 class="text-lg font-extrabold tracking-tight">UD-4 · EN VIVO</h1>
+        </div>
+        <p class="text-xs text-zinc-400">Caricuao · Red Colaborativa Anónima</p>
+      </div>
+    </div>
+
+    <div class="my-auto max-w-md w-full mx-auto space-y-4">
+      <p class="text-xs uppercase tracking-widest text-zinc-500 font-semibold text-center mb-2">Selecciona tu modo de acceso</p>
+
+      <!-- Opción 1: Usuario / Pasajero -->
+      <button onclick="enterApp('passenger')" class="w-full group bg-[#121216] hover:bg-zinc-900 border border-zinc-800 hover:border-emerald-500/60 rounded-2xl p-6 text-left transition-all flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-zinc-800/80 group-hover:bg-emerald-500/10 flex items-center justify-center border border-zinc-700 group-hover:border-emerald-500/40 transition">
+            <svg class="w-6 h-6 text-zinc-200 group-hover:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white">Soy Usuario</h2>
+            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas y reportar espera en UD-4</p>
+          </div>
+        </div>
+        <span class="text-zinc-500 group-hover:text-emerald-400 text-lg">→</span>
+      </button>
+
+      <!-- Opción 2: Transportista (Carro o Bus) -->
+      <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista (En Movimiento)</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="enterApp('car')" class="bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
+            <svg class="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M5 17h14v-5l-2-5H7L5 12v5Z"></path>
+              <circle cx="7.5" cy="17.5" r="1.5"></circle>
+              <circle cx="16.5" cy="17.5" r="1.5"></circle>
+            </svg>
+            <span class="text-sm font-bold text-white">Carro</span>
+            <span class="text-[10px] text-zinc-500">Pausa tras 3m detenido</span>
+          </button>
+
+          <button onclick="enterApp('bus')" class="bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
+            <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="14" rx="2"></rect>
+              <path d="M4 11h16M8 18v2M16 18v2"></path>
+              <circle cx="8" cy="15" r="1"></circle>
+              <circle cx="16" cy="15" r="1"></circle>
+            </svg>
+            <span class="text-sm font-bold text-white">Autobús</span>
+            <span class="text-[10px] text-zinc-500">Pausa tras 6m detenido</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center space-y-2 pt-4 border-t border-zinc-900">
+      <p class="text-[11px] text-zinc-500">
+        🔒 <strong class="text-zinc-400">Privacidad Total:</strong> Tu GPS se valida dentro de tu teléfono. Solo se muestran paradas con más de 2 personas.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: MAPA EN VIVO UD-4 -->
+  <div id="map"></div>
+
+  <!-- BARRA SUPERIOR FLOTANTE -->
+  <header class="fixed top-3 left-3 right-3 z-30 flex items-center justify-between bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-4 py-2.5 shadow-2xl">
+    <div class="flex items-center gap-2.5">
+      <button onclick="returnToOnboarding()" class="text-zinc-400 hover:text-white p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs">
+        ← Rol
+      </button>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span id="role-badge" class="text-xs font-bold text-emerald-400">Pasajero</span>
+          <span class="text-[10px] text-zinc-500">· UD-4</span>
+        </div>
+        <p id="gps-status-text" class="text-[10px] text-zinc-400">Conectado a Supabase en vivo...</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btn-oled-mode" onclick="toggleOledMode(true)" class="hidden text-[11px] bg-zinc-900 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 px-2.5 py-1.5 rounded-xl font-medium">
+        Atenuar OLED
+      </button>
+      <button onclick="openAdminModal()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1.5 rounded-xl font-medium">
+        Creador
+      </button>
+    </div>
+  </header>
+
+  <!-- PANEL INFERIOR CONTEXTUAL -->
+  <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
+    <div class="bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-zinc-400">
+      <span>Visibilidad: <strong class="text-zinc-200">&gt; 2 personas</strong></span>
+      <div class="flex items-center gap-2">
+        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></i> 3-9</span>
+        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></i> 10-24</span>
+        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></i> 30+</span>
+      </div>
+    </div>
+
+    <!-- Controles de Pasajero -->
+    <div id="passenger-controls" class="bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+      <div class="flex-1">
+        <p id="passenger-checkin-title" class="text-xs font-bold text-white">Detección de Parada</p>
+        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400">1 registro anónimo por dispositivo</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openSuggestStopModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-700">
+          + Parada
+        </button>
+        <button id="btn-checkin" onclick="manualCheckInClosestStop()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+          Estoy en Parada
+        </button>
+      </div>
+    </div>
+
+    <!-- Controles de Transportista -->
+    <div id="driver-controls" class="hidden bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between">
+      <div>
+        <p class="text-xs font-bold text-white flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          Transmitiendo en UD-4
+        </p>
+        <p class="text-[11px] text-zinc-400">Pausa por inactividad en: <strong id="inactivity-countdown" class="text-white font-mono">03:00</strong></p>
+      </div>
+      <button onclick="disconnectDriverAndReturn()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-xs font-semibold px-3 py-2 rounded-xl">
+        Salir
+      </button>
+    </div>
+  </div>
+
+  <!-- MODO PROTECTOR OLED PARA CHOFERES -->
+  <div id="oled-overlay" ondblclick="toggleOledMode(false)" class="hidden fixed inset-0 z-50 bg-black flex flex-col items-center justify-center text-center p-6">
+    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse mb-3"></div>
+    <p class="text-xs text-zinc-500 font-mono">RADAR ACTIVO EN UD-4 · PANTALLA ATENUADA</p>
+    <p class="text-[11px] text-zinc-700 mt-2">Toca dos veces la pantalla para volver al mapa</p>
+  </div>
+
+  <!-- MODAL: SUGERIR PARADA -->
+  <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
+      <h3 class="text-sm font-bold text-white">Sugerir Parada en mi Ubicación</h3>
+      <p class="text-xs text-zinc-400">Se guardará la coordenada actual dentro de la UD-4. Solo será visible cuando la apruebes en el panel de Creador.</p>
+      <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque 14 / Liceo" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
+      <div class="flex justify-end gap-2">
+        <button onclick="closeSuggestStopModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
+        <button onclick="submitStopSuggestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Enviar Solicitud</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PANEL DEL CREADOR -->
+  <div id="modal-admin" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <h3 class="text-sm font-bold text-white">Panel del Creador · UD-4</h3>
+        <button onclick="closeAdminModal()" class="text-xs text-zinc-400 hover:text-white">✕ Cerrar</button>
+      </div>
+
+      <div id="admin-login-box" class="space-y-3">
+        <p class="text-xs text-zinc-400">Ingresa tu clave de Creador registrada en Supabase Auth.</p>
+        <input id="admin-email" type="email" value="admin@ud4vivo.local" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300" />
+        <input id="admin-password" type="password" placeholder="Contraseña de Creador" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <button onclick="loginCreator()" class="w-full bg-white text-black font-bold text-xs py-2.5 rounded-xl hover:bg-zinc-200">Desbloquear Panel</button>
+      </div>
+
+      <div id="admin-panel-content" class="hidden space-y-3">
+        <p class="text-xs font-semibold text-emerald-400">Paradas Pendientes de Aprobación:</p>
+        <div id="pending-stops-list" class="space-y-2 text-xs"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. CREDENCIALES SUPABASE INTEGRADAS DEL PROYECTO
+    // =========================================================================
+    const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Polígono estricto del sector UD-4 de Caricuao, Caracas
+    const UD4_CENTER = [10.4288, -66.9860];
+    const UD4_BOUNDS = L.latLngBounds(
+      [10.4220, -66.9935], // Suroeste UD-4
+      [10.4355, -66.9785]  // Noreste UD-4
+    );
+
+    let map, userRole = 'passenger', watchId = null, wakeLock = null;
+    let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
+    let currentPos = { lat: 10.4282, lng: -66.9862 };
+    let stopMarkers = {}, driverMarkers = {};
+    let stopsData = [], driversData = [];
+
+    // =========================================================================
+    // 2. HASH ANÓNIMO DIARIO POR DISPOSITIVO (1 CELULAR = 1 REGISTRO)
+    // =========================================================================
+    async function getDailyDeviceHash() {
+      let rawSeed = localStorage.getItem('ud4_device_seed');
+      if (!rawSeed) {
+        rawSeed = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+        localStorage.setItem('ud4_device_seed', rawSeed);
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const msgBuffer = new TextEncoder().encode(rawSeed + '_' + today);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 24);
+    }
+
+    function getDistanceMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const p1 = lat1 * Math.PI / 180, p2 = lat2 * Math.PI / 180;
+      const dp = (lat2 - lat1) * Math.PI / 180;
+      const dl = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // Gradiente de Verde (3 personas) a Rojo Crítico (30+ personas)
+    function getStopColor(count) {
+      const clamped = Math.min(Math.max(count, 3), 30);
+      const ratio = (clamped - 3) / (30 - 3);
+      const hue = Math.round(145 * (1 - ratio));
+      return `hsl(${hue}, 85%, 48%)`;
+    }
+
+    // =========================================================================
+    // 3. MAPA OPENSTREETMAP ENFOCADO EN UD-4 CARICUAO
+    // =========================================================================
+    function initMap() {
+      if (map) return;
+      map = L.map('map', {
+        center: UD4_CENTER,
+        zoom: 16,
+        minZoom: 15,
+        maxZoom: 18,
+        maxBounds: UD4_BOUNDS,
+        maxBoundsViscosity: 1.0,
+        zoomControl: false
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(map);
+
+      L.rectangle(UD4_BOUNDS, { color: '#27272A', weight: 1, fill: false, dashArray: '4,6' }).addTo(map);
+      subscribeRealtime();
+    }
+
+    function renderStops() {
+      Object.values(stopMarkers).forEach(m => map.removeLayer(m));
+      stopMarkers = {};
+
+      stopsData.forEach(stop => {
+        // Regla de privacidad: solo muestra paradas con más de 2 personas (3 en adelante)
+        if (stop.status !== 'approved' || stop.count <= 2) return;
+
+        const bg = getStopColor(stop.count);
+        const isCritical = stop.count >= 30 ? 'critical-stop' : '';
+        const html = `
+          <div class="${isCritical}" style="
+            background:${bg}; width:38px; height:38px; border-radius:9999px;
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; font-weight:800; font-size:13px;
+            border:2px solid #09090B; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
+            ${stop.count}
+          </div>`;
+
+        const icon = L.divIcon({ className: '', html, iconSize: [38, 38], iconAnchor: [19, 19] });
+        stopMarkers[stop.id] = L.marker([stop.lat, stop.lng], { icon })
+          .bindPopup(`<b>${stop.name}</b><br/>Esperando: <b>${stop.count} personas</b>`)
+          .addTo(map);
+      });
+    }
+
+    function renderDrivers() {
+      Object.values(driverMarkers).forEach(m => map.removeLayer(m));
+      driverMarkers = {};
+
+      driversData.forEach(d => {
+        const isBus = d.vehicle_type === 'bus';
+        const badgeColor = isBus ? '#F59E0B' : '#22D3EE';
+        const svgIcon = isBus
+          ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><rect x="4" y="4" width="16" height="14" rx="2"/><path d="M4 11h16"/></svg>`
+          : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><path d="M5 17h14v-5l-2-5H7L5 12v5Z"/></svg>`;
+
+        const html = `
+          <div class="vehicle-marker" style="
+            background:${badgeColor}; width:30px; height:30px; border-radius:10px;
+            display:flex; align-items:center; justify-content:center;
+            border:2px solid #09090B; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
+            ${svgIcon}
+          </div>`;
+
+        const icon = L.divIcon({ className: '', html, iconSize: [30, 30], iconAnchor: [15, 15] });
+        driverMarkers[d.hash] = L.marker([d.lat, d.lng], { icon }).addTo(map);
+      });
+    }
+
+    // =========================================================================
+    // 4. ROLES Y CONTROL DE INACTIVIDAD (3 MIN CARRO / 6 MIN BUS)
+    // =========================================================================
+    async function enterApp(role) {
+      userRole = role;
+      document.getElementById('onboarding-screen').classList.add('hidden');
+      initMap();
+
+      const badge = document.getElementById('role-badge');
+      const pControls = document.getElementById('passenger-controls');
+      const dControls = document.getElementById('driver-controls');
+      const btnOled = document.getElementById('btn-oled-mode');
+
+      if (role === 'passenger') {
+        badge.textContent = 'Usuario · Anónimo';
+        badge.className = 'text-xs font-bold text-emerald-400';
+        pControls.classList.remove('hidden');
+        dControls.classList.add('hidden');
+        btnOled.classList.add('hidden');
+      } else {
+        badge.textContent = role === 'bus' ? 'Transportista · Bus' : 'Transportista · Carro';
+        badge.className = 'text-xs font-bold text-cyan-400';
+        pControls.classList.add('hidden');
+        dControls.classList.remove('hidden');
+        btnOled.classList.remove('hidden');
+        requestWakeLock();
+        startDriverInactivityWatch(role === 'bus' ? 360 : 180);
+      }
+
+      startGpsTracking();
+    }
+
+    function startGpsTracking() {
+      if (!navigator.geolocation) return;
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+
+      watchId = navigator.geolocation.watchPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          currentPos = { lat: latitude, lng: longitude };
+          const insideUD4 = UD4_BOUNDS.contains([latitude, longitude]);
+
+          document.getElementById('gps-status-text').textContent = insideUD4
+            ? 'Dentro de UD-4 · GPS activo'
+            : 'Fuera de UD-4 (Lectura activa)';
+
+          if (userRole !== 'passenger' && insideUD4) {
+            await handleDriverMovementUpdate(latitude, longitude);
+          }
+        },
+        () => {
+          document.getElementById('gps-status-text').textContent = 'Activa el permiso de ubicación GPS';
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      );
+    }
+
+    async function handleDriverMovementUpdate(lat, lng) {
+      if (!lastDriverMovePos) {
+        lastDriverMovePos = { lat, lng };
+        lastDriverMoveTime = Date.now();
+      } else {
+        const movedMeters = getDistanceMeters(lastDriverMovePos.lat, lastDriverMovePos.lng, lat, lng);
+        if (movedMeters >= 25) {
+          lastDriverMovePos = { lat, lng };
+          lastDriverMoveTime = Date.now();
+        }
+      }
+
+      const hash = await getDailyDeviceHash();
+      await supabaseClient.from('active_drivers').upsert({
+        driver_session_hash: hash,
+        vehicle_type: userRole,
+        lat, lng,
+        last_moved_at: new Date(lastDriverMoveTime).toISOString()
+      });
+    }
+
+    function startDriverInactivityWatch(maxSeconds) {
+      lastDriverMoveTime = Date.now();
+      clearInterval(driverTimerInterval);
+      const countEl = document.getElementById('inactivity-countdown');
+
+      driverTimerInterval = setInterval(async () => {
+        const elapsed = Math.floor((Date.now() - lastDriverMoveTime) / 1000);
+        const remaining = Math.max(0, maxSeconds - elapsed);
+        const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+        const secs = String(remaining % 60).padStart(2, '0');
+        countEl.textContent = `${mins}:${secs}`;
+
+        if (remaining === 0) {
+          clearInterval(driverTimerInterval);
+          await disconnectDriverAndReturn(true);
+        }
+      }, 1000);
+    }
+
+    async function disconnectDriverAndReturn(autoDisconnected = false) {
+      const hash = await getDailyDeviceHash();
+      await supabaseClient.from('active_drivers').delete().eq('driver_session_hash', hash);
+      if (autoDisconnected) {
+        alert('Sesión de transportista finalizada por inactividad prolongada.');
+      }
+      returnToOnboarding();
+    }
+
+    async function manualCheckInClosestStop() {
+      if (stopsData.length === 0) {
+        alert('Aún no hay paradas cargadas. Asegúrate de haber ejecutado el Script SQL en Supabase.');
+        return;
+      }
+
+      let closest = null, minDist = Infinity;
+      stopsData.filter(s => s.status === 'approved').forEach(s => {
+        const d = getDistanceMeters(currentPos.lat, currentPos.lng, s.lat, s.lng);
+        if (d < minDist) { minDist = d; closest = s; }
+      });
+
+      if (!closest || minDist > 1500) {
+        alert('Acércate a una parada aprobada de la UD-4 para registrarte.');
+        return;
+      }
+
+      const hash = await getDailyDeviceHash();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+      const { error } = await supabaseClient.from('stop_checkins').upsert({
+        device_daily_hash: hash,
+        stop_id: closest.id,
+        expires_at: expiresAt
+      });
+
+      if (error) {
+        alert('Error al registrar en parada: verifica haber corrido el SQL en Supabase.');
+        return;
+      }
+
+      document.getElementById('passenger-checkin-title').textContent = `Registrado en: ${closest.name}`;
+      document.getElementById('passenger-checkin-sub').textContent = 'Tu registro anónimo está activo';
+      document.getElementById('btn-checkin').textContent = '✓ En Parada';
+      refreshLiveStateFromSupabase();
+    }
+
+    // =========================================================================
+    // 5. SUGERENCIA Y APROBACIÓN DE PARADAS (CREADOR)
+    // =========================================================================
+    function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
+    function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
+
+    async function submitStopSuggestion() {
+      const name = document.getElementById('input-stop-name').value.trim();
+      if (!name) return alert('Escribe un nombre de referencia.');
+
+      const { error } = await supabaseClient.from('stops').insert({
+        name, lat: currentPos.lat, lng: currentPos.lng, status: 'pending'
+      });
+
+      if (error) return alert('Error al enviar sugerencia: ' + error.message);
+      document.getElementById('input-stop-name').value = '';
+      closeSuggestStopModal();
+      alert('Solicitud enviada. El Creador debe aprobarla para que sea visible.');
+    }
+
+    function openAdminModal() { document.getElementById('modal-admin').classList.remove('hidden'); }
+    function closeAdminModal() { document.getElementById('modal-admin').classList.add('hidden'); }
+
+    async function loginCreator() {
+      const email = document.getElementById('admin-email').value.trim();
+      const password = document.getElementById('admin-password').value;
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert('Acceso denegado: Asegúrate de haber creado el usuario admin@ud4vivo.local en Supabase -> Authentication.');
+        return;
+      }
+
+      document.getElementById('admin-login-box').classList.add('hidden');
+      document.getElementById('admin-panel-content').classList.remove('hidden');
+      loadPendingStopsForCreator();
+    }
+
+    async function loadPendingStopsForCreator() {
+      const container = document.getElementById('pending-stops-list');
+      const { data: pending } = await supabaseClient.from('stops').select('*').eq('status', 'pending');
+
+      if (!pending || pending.length === 0) {
+        container.innerHTML = '<p class="text-zinc-500">No hay paradas pendientes de aprobación.</p>';
+        return;
+      }
+
+      container.innerHTML = pending.map(s => `
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-white">${s.name}</p>
+            <p class="text-[10px] text-zinc-500">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="moderateStop('${s.id}', true)" class="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold">Aprobar</button>
+            <button onclick="moderateStop('${s.id}', false)" class="bg-red-600/30 text-red-300 px-2.5 py-1 rounded-lg">Desechar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function moderateStop(stopId, approve) {
+      if (approve) {
+        await supabaseClient.from('stops').update({ status: 'approved' }).eq('id', stopId);
+      } else {
+        await supabaseClient.from('stops').delete().eq('id', stopId);
+      }
+      loadPendingStopsForCreator();
+      refreshLiveStateFromSupabase();
+    }
+
+    // =========================================================================
+    // 6. SINCRONIZACIÓN EN TIEMPO REAL
+    // =========================================================================
+    async function refreshLiveStateFromSupabase() {
+      const [{ data: stops }, { data: counts }, { data: drivers }] = await Promise.all([
+        supabaseClient.from('stops').select('*').eq('status', 'approved'),
+        supabaseClient.from('stop_counts').select('*'),
+        supabaseClient.from('active_drivers').select('*')
+      ]);
+
+      if (stops && counts) {
+        const countMap = Object.fromEntries(counts.map(c => [c.stop_id, c.people_count]));
+        stopsData = stops.map(s => ({ ...s, count: countMap[s.id] || 0 }));
+        renderStops();
+      }
+      if (drivers) {
+        driversData = drivers.map(d => ({
+          hash: d.driver_session_hash,
+          vehicle_type: d.vehicle_type,
+          lat: d.lat,
+          lng: d.lng
+        }));
+        renderDrivers();
+      }
+    }
+
+    function subscribeRealtime() {
+      refreshLiveStateFromSupabase();
+      supabaseClient.channel('ud4-live-channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stops' }, refreshLiveStateFromSupabase)
+        .subscribe();
+    }
+
+    async function requestWakeLock() {
+      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    }
+
+    function toggleOledMode(show) {
+      document.getElementById('oled-overlay').classList.toggle('hidden', !show);
+    }
+
+    function returnToOnboarding() {
+      clearInterval(driverTimerInterval);
+      if (wakeLock) wakeLock.release();
+      document.getElementById('oled-overlay').classList.add('hidden');
+      document.getElementById('onboarding-screen').classList.remove('hidden');
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
