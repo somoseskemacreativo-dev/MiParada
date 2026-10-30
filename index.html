@@ -22,7 +22,15 @@
 
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #09090B; color: #FAFAFA; overflow: hidden; user-select: none; }
-    #map { background: #121216 !important; }
+    #map { 
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100vh; 
+      width: 100vw; 
+      z-index: 1; 
+      background: #121216 !important; 
+    }
     .leaflet-tile {
       filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
     }
@@ -353,6 +361,9 @@
       userRole = role;
       document.getElementById('onboarding-screen').classList.add('hidden');
       initMap();
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 200);
 
       const badge = document.getElementById('role-badge');
       const pControls = document.getElementById('passenger-controls');
