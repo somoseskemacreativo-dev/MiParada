@@ -228,23 +228,19 @@
 
   <script>
     // =========================================================================
-    // 1. CREDENCIALES SUPABASE INTEGRADAS DEL PROYECTO
+    // 1. CREDENCIALES Y CONFIGURACIÓN DE CARICUAO / UD-4
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Polígono estricto del sector UD-4 de Caricuao, Caracas
-    const UD4_CENTER = [10.429867, -66.976325];
-    const UD4_BOUNDS = L.latLngBounds(
-      [10.423690, -66.970652], // Suroeste UD-4
-      [10.434176, -66.981109]  // Noreste UD-4
-    );
+    // Centro inicial de la PWA sobre la Urbanización UD-4 (pero sin bloquear movimiento)
+    const UD4_CENTER = [10.4268, -66.9842]; 
 
     let map, userRole = 'passenger', watchId = null, wakeLock = null;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
-    let currentPos = { lat: 10.4282, lng: -66.9862 };
+    let currentPos = { lat: 10.4268, lng: -66.9842 };
     let stopMarkers = {}, driverMarkers = {};
     let stopsData = [], driversData = [];
 
@@ -281,78 +277,29 @@
     }
 
     // =========================================================================
-    // 3. MAPA OPENSTREETMAP ENFOCADO EN UD-4 CARICUAO
+    // 3. MAPA DE CARICUAO LIBRE (CENTRADO EN UD-4 SIN LÍMITE ESTRICTO)
     // =========================================================================
     function initMap() {
       if (map) return;
       map = L.map('map', {
         center: UD4_CENTER,
-        zoom: 17,
-        minZoom: 15,
-        maxZoom: 18,
-        maxBounds: UD4_BOUNDS,
-        maxBoundsViscosity: 1.0,
+        zoom: 17, // Permite ver la UD-4 de cerca pero con libertad de hacer zoom out a Caricuao
+        minZoom: 14, // Permite ver todo Caricuao
+        maxZoom: 19,
         zoomControl: false
       });
+
+      // Forzar centrado exacto inicial
+      map.setView(UD4_CENTER, 17);
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(map);
 
-      L.rectangle(UD4_BOUNDS, { color: '#27272A', weight: 1, fill: false, dashArray: '4,6' }).addTo(map);
       subscribeRealtime();
     }
-
-    function renderStops() {
-      Object.values(stopMarkers).forEach(m => map.removeLayer(m));
-      stopMarkers = {};
-
-      stopsData.forEach(stop => {
-        // Regla de privacidad: solo muestra paradas con más de 2 personas (3 en adelante)
-        if (stop.status !== 'approved' || stop.count <= 2) return;
-
-        const bg = getStopColor(stop.count);
-        const isCritical = stop.count >= 30 ? 'critical-stop' : '';
-        const html = `
-          <div class="${isCritical}" style="
-            background:${bg}; width:38px; height:38px; border-radius:9999px;
-            display:flex; align-items:center; justify-content:center;
-            color:#fff; font-weight:800; font-size:13px;
-            border:2px solid #09090B; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
-            ${stop.count}
-          </div>`;
-
-        const icon = L.divIcon({ className: '', html, iconSize: [38, 38], iconAnchor: [19, 19] });
-        stopMarkers[stop.id] = L.marker([stop.lat, stop.lng], { icon })
-          .bindPopup(`<b>${stop.name}</b><br/>Esperando: <b>${stop.count} personas</b>`)
-          .addTo(map);
-      });
-    }
-
-    function renderDrivers() {
-      Object.values(driverMarkers).forEach(m => map.removeLayer(m));
-      driverMarkers = {};
-
-      driversData.forEach(d => {
-        const isBus = d.vehicle_type === 'bus';
-        const badgeColor = isBus ? '#F59E0B' : '#22D3EE';
-        const svgIcon = isBus
-          ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><rect x="4" y="4" width="16" height="14" rx="2"/><path d="M4 11h16"/></svg>`
-          : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><path d="M5 17h14v-5l-2-5H7L5 12v5Z"/></svg>`;
-
-        const html = `
-          <div class="vehicle-marker" style="
-            background:${badgeColor}; width:30px; height:30px; border-radius:10px;
-            display:flex; align-items:center; justify-content:center;
-            border:2px solid #09090B; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
-            ${svgIcon}
-          </div>`;
-
-        const icon = L.divIcon({ className: '', html, iconSize: [30, 30], iconAnchor: [15, 15] });
-        driverMarkers[d.hash] = L.marker([d.lat, d.lng], { icon }).addTo(map);
-      });
-    }
+  </script>
 
     // =========================================================================
     // 4. ROLES Y CONTROL DE INACTIVIDAD (3 MIN CARRO / 6 MIN BUS)
