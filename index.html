@@ -39,7 +39,7 @@
       z-index: 1; 
       background: #121216 !important; 
     }
-    /* Filtro oscuro elegante para OpenStreetMap estándar (sin API Key) */
+    /* Filtro oscuro para OpenStreetMap estándar (sin API Key) */
     .leaflet-tile {
       filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
     }
@@ -86,35 +86,26 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Soy Usuario</h2>
-            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas y reportar espera en UD-4</p>
+            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas 📍 y reportar espera en UD-4</p>
           </div>
         </div>
         <span class="text-zinc-500 group-hover:text-emerald-400 text-lg">→</span>
       </button>
 
-      <!-- Opción 2: Transportista (Carro o Bus) -->
+      <!-- Opción 2: Transportista (Carro 🚗 o Bus 🚌) -->
       <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center gap-3">
           <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista (En Movimiento)</span>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <button type="button" onclick="enterApp('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
-            <svg class="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <path d="M5 17h14v-5l-2-5H7L5 12v5Z"></path>
-              <circle cx="7.5" cy="17.5" r="1.5"></circle>
-              <circle cx="16.5" cy="17.5" r="1.5"></circle>
-            </svg>
+            <span class="text-3xl leading-none">🚗</span>
             <span class="text-sm font-bold text-white">Carro</span>
             <span class="text-[10px] text-zinc-500">Pausa tras 3m detenido</span>
           </button>
 
           <button type="button" onclick="enterApp('bus')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
-            <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <rect x="4" y="4" width="16" height="14" rx="2"></rect>
-              <path d="M4 11h16M8 18v2M16 18v2"></path>
-              <circle cx="8" cy="15" r="1"></circle>
-              <circle cx="16" cy="15" r="1"></circle>
-            </svg>
+            <span class="text-3xl leading-none">🚌</span>
             <span class="text-sm font-bold text-white">Autobús</span>
             <span class="text-[10px] text-zinc-500">Pausa tras 6m detenido</span>
           </button>
@@ -163,7 +154,7 @@
   <!-- PANEL INFERIOR CONTEXTUAL -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
     <div class="bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-zinc-400">
-      <span>Visibilidad: <strong class="text-zinc-200">&gt; 2 personas</strong></span>
+      <span>📍 Visibilidad: <strong class="text-zinc-200">&gt; 2 personas</strong></span>
       <div class="flex items-center gap-2">
         <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></i> 3-9</span>
         <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></i> 10-24</span>
@@ -179,7 +170,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button type="button" onclick="openSuggestStopModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-700">
-          + Parada
+          + 📍 Parada
         </button>
         <button id="btn-checkin" type="button" onclick="manualCheckInClosestStop()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
           Estoy en Parada
@@ -192,7 +183,7 @@
       <div>
         <p class="text-xs font-bold text-white flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          Transmitiendo en UD-4
+          <span id="driver-active-label">Transmitiendo en UD-4</span>
         </p>
         <p class="text-[11px] text-zinc-400">Pausa por inactividad en: <strong id="inactivity-countdown" class="text-white font-mono">03:00</strong></p>
       </div>
@@ -212,7 +203,7 @@
   <!-- MODAL: SUGERIR PARADA -->
   <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
-      <h3 class="text-sm font-bold text-white">Sugerir Parada en UD-4</h3>
+      <h3 class="text-sm font-bold text-white">📍 Sugerir Parada en UD-4</h3>
       <p class="text-xs text-zinc-400">Se guardará tu ubicación actual dentro de la UD-4. Solo será visible cuando el Creador la apruebe.</p>
       <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque / Terraza..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
       <div class="flex justify-end gap-2">
@@ -260,10 +251,10 @@
       console.error('Error iniciando cliente Supabase:', err);
     }
 
-    // Centro exacto verificado sobre el texto "Urbanización UD-4" y Colegio San Agustín en OpenStreetMap
+    // Centro exacto verificado sobre "Urbanización UD-4" y Colegio San Agustín en OpenStreetMap
     const UD4_CENTER = [10.4258, -66.9688];
 
-    // Polígono operativo de la UD-4 (para validar que las acciones sean en UD-4 aunque el mapa sea libre)
+    // Radio operativo para validar que las acciones sean en UD-4 aunque el mapa sea libre
     const UD4_OPERATIONAL_RADIUS_METERS = 1400;
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
@@ -342,7 +333,7 @@
     }
 
     // =========================================================================
-    // 4. RENDERIZAR PARADAS (> 2 PERSONAS) Y TRANSPORTISTAS EN UD-4
+    // 4. RENDERIZAR PARADAS CON 📍 Y TRANSPORTISTAS CON 🚗 / 🚌
     // =========================================================================
     function renderStops() {
       if (!map) return;
@@ -353,20 +344,41 @@
         // Regla estricta: solo mostrar paradas aprobadas en UD-4 y con MÁS de 2 personas (3+)
         if (stop.status !== 'approved' || stop.count <= 2) return;
 
-        const bg = getStopColor(stop.count);
+        const badgeBg = getStopColor(stop.count);
         const isCritical = stop.count >= 30 ? 'critical-stop' : '';
+
         const html = `
-          <div class="${isCritical}" style="
-            background:${bg}; width:38px; height:38px; border-radius:9999px;
-            display:flex; align-items:center; justify-content:center;
-            color:#fff; font-weight:800; font-size:13px;
-            border:2px solid #09090B; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
-            ${stop.count}
+          <div style="position:relative; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
+            <!-- Emoji de Parada 📍 -->
+            <span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.7));">📍</span>
+            
+            <!-- Contador de personas en la esquina superior derecha del emoji 📍 -->
+            <span class="${isCritical}" style="
+              position:absolute;
+              top:-4px;
+              right:-6px;
+              background:${badgeBg};
+              color:#FFFFFF;
+              font-weight:800;
+              font-size:11px;
+              min-width:22px;
+              height:22px;
+              padding:0 5px;
+              border-radius:9999px;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              border:2px solid #09090B;
+              box-shadow:0 2px 8px rgba(0,0,0,0.6);
+            ">
+              ${stop.count}
+            </span>
           </div>`;
 
-        const icon = L.divIcon({ className: '', html, iconSize: [38, 38], iconAnchor: [19, 19] });
+        // iconAnchor: [21, 38] asegura que la punta inferior del pin 📍 toque la coordenada exacta
+        const icon = L.divIcon({ className: '', html, iconSize: [42, 42], iconAnchor: [21, 38] });
         stopMarkers[stop.id] = L.marker([stop.lat, stop.lng], { icon })
-          .bindPopup(`<b>${stop.name}</b><br/>Esperando en parada: <b>${stop.count} personas</b>`)
+          .bindPopup(`<b>📍 ${stop.name}</b><br/>Esperando en parada: <b>${stop.count} personas</b>`)
           .addTo(map);
       });
     }
@@ -377,24 +389,31 @@
       driverMarkers = {};
 
       driversData.forEach(d => {
-        // Solo mostrar unidades que estén operando dentro del sector UD-4
+        // Solo mostrar unidades operando dentro del sector UD-4
         if (!isInsideUD4Sector(d.lat, d.lng)) return;
 
         const isBus = d.vehicle_type === 'bus';
-        const badgeColor = isBus ? '#F59E0B' : '#22D3EE';
-        const svgIcon = isBus
-          ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><rect x="4" y="4" width="16" height="14" rx="2"/><path d="M4 11h16"/></svg>`
-          : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2"><path d="M5 17h14v-5l-2-5H7L5 12v5Z"/></svg>`;
+        const emoji = isBus ? '🚌' : '🚗';
+        const borderColor = isBus ? '#F59E0B' : '#22D3EE';
 
         const html = `
           <div class="vehicle-marker" style="
-            background:${badgeColor}; width:30px; height:30px; border-radius:10px;
-            display:flex; align-items:center; justify-content:center;
-            border:2px solid #09090B; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
-            ${svgIcon}
+            background:#121216;
+            width:34px;
+            height:34px;
+            border-radius:9999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:20px;
+            line-height:1;
+            border:2px solid ${borderColor};
+            box-shadow:0 3px 12px rgba(0,0,0,0.75);
+          ">
+            ${emoji}
           </div>`;
 
-        const icon = L.divIcon({ className: '', html, iconSize: [30, 30], iconAnchor: [15, 15] });
+        const icon = L.divIcon({ className: '', html, iconSize: [34, 34], iconAnchor: [17, 17] });
         driverMarkers[d.hash] = L.marker([d.lat, d.lng], { icon }).addTo(map);
       });
     }
@@ -418,6 +437,7 @@
       const pControls = document.getElementById('passenger-controls');
       const dControls = document.getElementById('driver-controls');
       const btnOled = document.getElementById('btn-oled-mode');
+      const driverLabel = document.getElementById('driver-active-label');
 
       if (role === 'passenger') {
         badge.textContent = 'Usuario · Anónimo';
@@ -426,13 +446,15 @@
         dControls.classList.add('hidden');
         btnOled.classList.add('hidden');
       } else {
-        badge.textContent = role === 'bus' ? 'Transportista · Bus' : 'Transportista · Carro';
-        badge.className = 'text-xs font-bold text-cyan-400';
+        const isBus = role === 'bus';
+        badge.textContent = isBus ? '🚌 Autobús Activo' : '🚗 Carro Activo';
+        badge.className = isBus ? 'text-xs font-bold text-amber-400' : 'text-xs font-bold text-cyan-400';
+        driverLabel.textContent = isBus ? '🚌 Transmitiendo Bus en UD-4' : '🚗 Transmitiendo Carro en UD-4';
         pControls.classList.add('hidden');
         dControls.classList.remove('hidden');
         btnOled.classList.remove('hidden');
         requestWakeLock();
-        startDriverInactivityWatch(role === 'bus' ? 360 : 180); // 6 min Bus | 3 min Carro
+        startDriverInactivityWatch(isBus ? 360 : 180); // 6 min Bus | 3 min Carro
       }
 
       startGpsTracking();
@@ -549,8 +571,8 @@
         return;
       }
 
-      document.getElementById('passenger-checkin-title').textContent = `Registrado en: ${closest.name}`;
-      document.getElementById('passenger-checkin-sub').textContent = 'Registro anónimo activo (se muestra al haber >2 pers.)';
+      document.getElementById('passenger-checkin-title').textContent = `📍 Registrado: ${closest.name}`;
+      document.getElementById('passenger-checkin-sub').textContent = 'Registro anónimo activo (visible con >2 pers.)';
       document.getElementById('btn-checkin').textContent = '✓ En Parada';
       refreshLiveStateFromSupabase();
     }
@@ -609,7 +631,7 @@
       container.innerHTML = pending.map(s => `
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-center justify-between">
           <div>
-            <p class="font-bold text-white">${s.name}</p>
+            <p class="font-bold text-white">📍 ${s.name}</p>
             <p class="text-[10px] text-zinc-500">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</p>
           </div>
           <div class="flex gap-1.5">
@@ -662,13 +684,9 @@
       refreshLiveStateFromSupabase();
       supabaseClient.channel('ud4-live-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateStateFromSupabase)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stops' }, refreshLiveStateFromSupabase)
         .subscribe();
-    }
-
-    function refreshLiveStateStateFromSupabase() {
-      refreshLiveStateFromSupabase();
     }
 
     async function requestWakeLock() {
