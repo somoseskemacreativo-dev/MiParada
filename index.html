@@ -236,10 +236,10 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Polígono estricto del sector UD-4 de Caricuao, Caracas
-    const UD4_CENTER = [10.4284, -66.9842];
+    const UD4_CENTER = [10.4278, -66.9845];
     const UD4_BOUNDS = L.latLngBounds(
-      [10.4230, -66.9900], // Suroeste UD-4
-      [10.4340, -66.9780]  // Noreste UD-4
+      [10.4235, -66.9890], // Suroeste UD-4
+      [10.4325, -66.9795]  // Noreste UD-4
     );
 
     let map, userRole = 'passenger', watchId = null, wakeLock = null;
