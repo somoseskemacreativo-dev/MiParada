@@ -22,9 +22,10 @@
 
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #09090B; color: #FAFAFA; overflow: hidden; user-select: none; }
-    #map { height: 100vh; width: 100vw; z-index: 1; background: #09090B; }
-    .leaflet-control-attribution { font-size: 9px !important; background: rgba(9,9,11,0.7) !important; color: #71717A !important; }
-    .leaflet-control-attribution a { color: #A1A1AA !important; }
+    #map { background: #18181B !important; }
+    .leaflet-layer, .leaflet-control-zoom, .leaflet-control-attribution {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}
     @keyframes pulse-ring {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
       70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
@@ -286,9 +287,8 @@
         zoomControl: false
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(map);
 
