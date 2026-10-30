@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="referrer" content="origin-when-cross-origin" />
   <meta name="theme-color" content="#09090B" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -21,27 +22,31 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { 
+    html, body { 
       font-family: 'Inter', sans-serif; 
       background-color: #09090B; 
       color: #FAFAFA; 
+      height: 100%;
+      width: 100%;
       overflow: hidden; 
       user-select: none; 
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
     #map { 
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100vh; 
-      width: 100vw; 
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       z-index: 1; 
       background: #121216 !important; 
     }
-    /* Filtro oscuro para OpenStreetMap estándar (sin API Key) */
-    .leaflet-tile {
-      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+    /* Filtro oscuro compatible con dispositivos móviles y PC */
+    .leaflet-tile-pane {
+      -webkit-filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
+      filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
     }
     .leaflet-control-attribution { 
       font-size: 9px !important; 
@@ -115,17 +120,17 @@
 
     <div class="text-center space-y-2 pt-4 border-t border-zinc-900">
       <p class="text-[11px] text-zinc-500">
-        🔒 <strong class="text-zinc-400">Privacidad Total:</strong> Tu GPS se valida dentro de tu teléfono. Solo se muestran paradas con más de 2 personas.
+        🔒 <strong class="text-zinc-400">Privacidad Total:</strong> Las paradas 📍 son visibles permanentemente. El número de personas se muestra al superar 2 usuarios.
       </p>
     </div>
   </div>
 
-  <!-- PANTALLA 2: MAPA EN VIVO CARICUAO / UD-4 -->
+  <!-- PANTALLA 2: MAPA EN VIVO UD-4 -->
   <div id="map"></div>
 
   <!-- BARRA SUPERIOR FLOTANTE -->
-  <header class="fixed top-3 left-3 right-3 z-30 flex items-center justify-between bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-4 py-2.5 shadow-2xl">
-    <div class="flex items-center gap-2.5">
+  <header class="fixed top-3 left-3 right-3 z-30 flex items-center justify-between bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-3.5 py-2.5 shadow-2xl">
+    <div class="flex items-center gap-2">
       <button type="button" onclick="returnToOnboarding()" class="text-zinc-400 hover:text-white p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs">
         ← Rol
       </button>
@@ -134,16 +139,16 @@
           <span id="role-badge" class="text-xs font-bold text-emerald-400">Pasajero</span>
           <span class="text-[10px] text-zinc-500">· UD-4</span>
         </div>
-        <p id="gps-status-text" class="text-[10px] text-zinc-400">Conectando radar UD-4...</p>
+        <p id="gps-status-text" class="text-[10px] text-zinc-400">Radar UD-4 activo</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5">
       <button type="button" onclick="centerOnUD4()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl font-medium">
         Ir a UD-4
       </button>
       <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden text-[11px] bg-zinc-900 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 px-2.5 py-1.5 rounded-xl font-medium">
-        Atenuar OLED
+        OLED
       </button>
       <button type="button" onclick="openAdminModal()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1.5 rounded-xl font-medium">
         Creador
@@ -154,7 +159,7 @@
   <!-- PANEL INFERIOR CONTEXTUAL -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
     <div class="bg-[#09090B]/90 backdrop-blur-md border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-zinc-400">
-      <span>📍 Visibilidad: <strong class="text-zinc-200">&gt; 2 personas</strong></span>
+      <span>📍 Paradas visibles · <strong class="text-zinc-200">Conteo desde 3+</strong></span>
       <div class="flex items-center gap-2">
         <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></i> 3-9</span>
         <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></i> 10-24</span>
@@ -166,7 +171,7 @@
     <div id="passenger-controls" class="bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="flex-1">
         <p id="passenger-checkin-title" class="text-xs font-bold text-white">Detección de Parada UD-4</p>
-        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400">1 registro anónimo por dispositivo</p>
+        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400">Toca un 📍 en el mapa o regístrate aquí</p>
       </div>
       <div class="flex items-center gap-2">
         <button type="button" onclick="openSuggestStopModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-700">
@@ -236,9 +241,20 @@
   </div>
 
   <script>
-    // =========================================================================
-    // 1. CREDENCIALES SUPABASE Y COORDENADA EXACTA DE UD-4 (10.429654, -66.976428)
-    // =========================================================================
+    // Limpieza automática de caché antigua en celulares
+    (async function cleanOldMobileCache() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (let reg of regs) { await reg.unregister(); }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (let key of keys) { await caches.delete(key); }
+        }
+      } catch (e) {}
+    })();
+
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
 
@@ -247,25 +263,34 @@
       if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-    } catch (err) {
-      console.error('Error iniciando cliente Supabase:', err);
-    }
+    } catch (err) {}
 
-    // Coordenada central exacta indicada para UD-4 Caricuao
     const UD4_CENTER = [10.429654, -66.976428];
+    const UD4_OPERATIONAL_RADIUS_METERS = 1500;
 
-    // Radio operativo alrededor del centro de UD-4 (1400 metros)
-    const UD4_OPERATIONAL_RADIUS_METERS = 1400;
+    const DEFAULT_UD4_STOPS = [
+      { id: 'ud4-1', name: 'Liceo San Agustín / Parada Central UD-4', lat: 10.429654, lng: -66.976428, status: 'approved', count: 0 },
+      { id: 'ud4-2', name: 'Vía Canagua UD-4 (Entrada Boulevard)', lat: 10.431050, lng: -66.977250, status: 'approved', count: 0 },
+      { id: 'ud4-3', name: 'Terraza / Sector Canagua (Curva Oeste)', lat: 10.429820, lng: -66.978850, status: 'approved', count: 0 },
+      { id: 'ud4-4', name: 'Queseras del Medio (Av. Principal UD-4)', lat: 10.429950, lng: -66.974850, status: 'approved', count: 0 },
+      { id: 'ud4-5', name: 'Guasdualito (Vía Principal Este)', lat: 10.429200, lng: -66.973200, status: 'approved', count: 0 },
+      { id: 'ud4-6', name: 'Centro Comercial Los Ángeles (UD-4)', lat: 10.428550, lng: -66.977100, status: 'approved', count: 0 },
+      { id: 'ud4-7', name: 'Módulo de la UD-4', lat: 10.427900, lng: -66.975800, status: 'approved', count: 0 },
+      { id: 'ud4-8', name: 'Conjunto Residencial Bravos de Apure', lat: 10.426450, lng: -66.976750, status: 'approved', count: 0 },
+      { id: 'ud4-9', name: 'Polideportivo Bravos de Apure', lat: 10.426380, lng: -66.977950, status: 'approved', count: 0 },
+      { id: 'ud4-10', name: 'Hatos del Yagual (UD-4)', lat: 10.428250, lng: -66.978900, status: 'approved', count: 0 },
+      { id: 'ud4-11', name: 'Sector Mucuritas (UD-4)', lat: 10.427400, lng: -66.979400, status: 'approved', count: 0 },
+      { id: 'ud4-12', name: 'Sector Payara (UD-4)', lat: 10.425400, lng: -66.978500, status: 'approved', count: 0 },
+      { id: 'ud4-13', name: 'Sector Arauca / Curpa (UD-4)', lat: 10.427850, lng: -66.974200, status: 'approved', count: 0 },
+      { id: 'ud4-14', name: 'Sector Carabobo / Vuelvan Caras (UD-4)', lat: 10.430750, lng: -66.975200, status: 'approved', count: 0 }
+    ];
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
     let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
     let stopMarkers = {}, driverMarkers = {};
-    let stopsData = [], driversData = [];
+    let stopsData = [...DEFAULT_UD4_STOPS], driversData = [];
 
-    // =========================================================================
-    // 2. HASH ANÓNIMO DIARIO POR DISPOSITIVO (1 CELULAR = 1 REGISTRO SIN IP)
-    // =========================================================================
     async function getDailyDeviceHash() {
       let rawSeed = localStorage.getItem('ud4_device_seed');
       if (!rawSeed) {
@@ -294,7 +319,6 @@
       return getDistanceMeters(UD4_CENTER[0], UD4_CENTER[1], lat, lng) <= UD4_OPERATIONAL_RADIUS_METERS;
     }
 
-    // Gradiente de Verde (3 personas) a Rojo Crítico (30+ personas)
     function getStopColor(count) {
       const clamped = Math.min(Math.max(count, 3), 30);
       const ratio = (clamped - 3) / (30 - 3);
@@ -302,82 +326,93 @@
       return `hsl(${hue}, 85%, 48%)`;
     }
 
-    // =========================================================================
-    // 3. MAPA DE CARICUAO CENTRADO EN 10.429654, -66.976428
-    // =========================================================================
     function initMap() {
       if (map) {
-        map.setView(UD4_CENTER, 17);
+        map.invalidateSize();
+        map.setView(UD4_CENTER, 16);
         return;
       }
 
       map = L.map('map', {
         center: UD4_CENTER,
-        zoom: 17,     // Zoom directo sobre la sección indicada de UD-4
-        minZoom: 13,  // Permite ver todo Caricuao libremente
+        zoom: 16,
+        minZoom: 13,
         maxZoom: 19,
-        zoomControl: false
+        zoomControl: false,
+        tap: false
       });
 
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: ['a', 'b', 'c'],
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 19,
+        crossOrigin: true
       }).addTo(map);
 
-      map.setView(UD4_CENTER, 17);
+      map.setView(UD4_CENTER, 16);
+      renderStops();
       subscribeRealtime();
+
+      window.addEventListener('resize', () => {
+        if (map) map.invalidateSize();
+      });
     }
 
     function centerOnUD4() {
-      if (map) map.flyTo(UD4_CENTER, 17, { duration: 0.8 });
+      if (map) {
+        map.invalidateSize();
+        map.flyTo(UD4_CENTER, 16, { duration: 0.7 });
+      }
     }
 
-    // =========================================================================
-    // 4. RENDERIZAR PARADAS CON 📍 Y TRANSPORTISTAS CON 🚗 / 🚌
-    // =========================================================================
+    // RENDERIZAR PARADAS: 📍 SIEMPRE VISIBLE, NÚMERO SOLO SI HAY > 2 PERSONAS
     function renderStops() {
       if (!map) return;
       Object.values(stopMarkers).forEach(m => map.removeLayer(m));
       stopMarkers = {};
 
       stopsData.forEach(stop => {
-        // Regla estricta: solo mostrar paradas aprobadas en UD-4 y con MÁS de 2 personas (3+)
-        if (stop.status !== 'approved' || stop.count <= 2) return;
+        if (stop.status !== 'approved') return;
 
-        const badgeBg = getStopColor(stop.count);
+        const hasVisibleCount = stop.count > 2; // Solo muestra número si son más de 2 personas
+        const badgeBg = hasVisibleCount ? getStopColor(stop.count) : '';
         const isCritical = stop.count >= 30 ? 'critical-stop' : '';
+
+        const countBadgeHtml = hasVisibleCount ? `
+          <span class="${isCritical}" style="
+            position:absolute;
+            top:-4px;
+            right:-6px;
+            background:${badgeBg};
+            color:#FFFFFF;
+            font-weight:800;
+            font-size:11px;
+            min-width:22px;
+            height:22px;
+            padding:0 5px;
+            border-radius:9999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:2px solid #09090B;
+            box-shadow:0 2px 8px rgba(0,0,0,0.75);
+          ">
+            ${stop.count}
+          </span>` : '';
 
         const html = `
           <div style="position:relative; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
-            <!-- Emoji de Parada 📍 -->
-            <span style="font-size:32px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.7));">📍</span>
-            
-            <!-- Contador de personas en la esquina superior derecha del emoji 📍 -->
-            <span class="${isCritical}" style="
-              position:absolute;
-              top:-4px;
-              right:-6px;
-              background:${badgeBg};
-              color:#FFFFFF;
-              font-weight:800;
-              font-size:11px;
-              min-width:22px;
-              height:22px;
-              padding:0 5px;
-              border-radius:9999px;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              border:2px solid #09090B;
-              box-shadow:0 2px 8px rgba(0,0,0,0.6);
-            ">
-              ${stop.count}
-            </span>
+            <span style="font-size:30px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.85));">📍</span>
+            ${countBadgeHtml}
           </div>`;
 
-        const icon = L.divIcon({ className: '', html, iconSize: [42, 42], iconAnchor: [21, 38] });
+        const popupStatus = hasVisibleCount
+          ? `Esperando en parada: <b>${stop.count} personas</b>`
+          : `Parada activa (0 a 2 personas)`;
+
+        const icon = L.divIcon({ className: '', html, iconSize: [42, 42], iconAnchor: [21, 36] });
         stopMarkers[stop.id] = L.marker([stop.lat, stop.lng], { icon })
-          .bindPopup(`<b>📍 ${stop.name}</b><br/>Esperando en parada: <b>${stop.count} personas</b>`)
+          .bindPopup(`<b>📍 ${stop.name}</b><br/>${popupStatus}`)
           .addTo(map);
       });
     }
@@ -416,20 +451,13 @@
       });
     }
 
-    // =========================================================================
-    // 5. ACCESO DESDE LA PANTALLA INICIAL Y LÓGICA GPS EN UD-4
-    // =========================================================================
     async function enterApp(role) {
       userRole = role;
       document.getElementById('onboarding-screen').classList.add('hidden');
       initMap();
 
-      setTimeout(() => {
-        if (map) {
-          map.invalidateSize();
-          map.setView(UD4_CENTER, 17);
-        }
-      }, 200);
+      setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 16); } }, 150);
+      setTimeout(() => { if (map) { map.invalidateSize(); renderStops(); } }, 500);
 
       const badge = document.getElementById('role-badge');
       const pControls = document.getElementById('passenger-controls');
@@ -460,7 +488,7 @@
 
     function startGpsTracking() {
       if (!navigator.geolocation) {
-        document.getElementById('gps-status-text').textContent = 'GPS no disponible en este dispositivo';
+        document.getElementById('gps-status-text').textContent = 'GPS no disponible';
         return;
       }
       if (watchId) navigator.geolocation.clearWatch(watchId);
@@ -480,7 +508,7 @@
           }
         },
         () => {
-          document.getElementById('gps-status-text').textContent = 'Mapa UD-4 activo (Permite el GPS para reportar)';
+          document.getElementById('gps-status-text').textContent = 'Mapa UD-4 activo';
         },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
       );
@@ -565,28 +593,25 @@
       });
 
       if (error) {
-        alert('Error al registrar: verifica haber ejecutado el SQL en Supabase.');
+        alert('Error al registrar.');
         return;
       }
 
       document.getElementById('passenger-checkin-title').textContent = `📍 Registrado: ${closest.name}`;
-      document.getElementById('passenger-checkin-sub').textContent = 'Registro anónimo activo (visible con >2 pers.)';
+      document.getElementById('passenger-checkin-sub').textContent = 'Registro anónimo activo';
       document.getElementById('btn-checkin').textContent = '✓ En Parada';
       refreshLiveStateFromSupabase();
     }
 
-    // =========================================================================
-    // 6. SUGERIR PARADAS EN UD-4 Y PANEL DEL CREADOR
-    // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
 
     async function submitStopSuggestion() {
       const name = document.getElementById('input-stop-name').value.trim();
-      if (!name) return alert('Escribe un nombre de referencia para la parada en UD-4.');
+      if (!name) return alert('Escribe un nombre de referencia.');
 
       if (!isInsideUD4Sector(currentPos.lat, currentPos.lng)) {
-        return alert('Solo se permiten sugerir paradas dentro del sector UD-4 de Caricuao.');
+        return alert('Solo se permiten sugerir paradas dentro de la UD-4.');
       }
 
       const { error } = await supabaseClient.from('stops').insert({
@@ -608,7 +633,7 @@
 
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        alert('Acceso denegado: Verifica haber creado el usuario admin@ud4vivo.local en Supabase -> Authentication.');
+        alert('Acceso denegado. Verifica tu usuario en Supabase.');
         return;
       }
 
@@ -622,7 +647,7 @@
       const { data: pending } = await supabaseClient.from('stops').select('*').eq('status', 'pending');
 
       if (!pending || pending.length === 0) {
-        container.innerHTML = '<p class="text-zinc-500">No hay paradas pendientes de aprobación.</p>';
+        container.innerHTML = '<p class="text-zinc-500">No hay paradas pendientes.</p>';
         return;
       }
 
@@ -650,30 +675,32 @@
       refreshLiveStateFromSupabase();
     }
 
-    // =========================================================================
-    // 7. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
-    // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
-      const [{ data: stops }, { data: counts }, { data: drivers }] = await Promise.all([
-        supabaseClient.from('stops').select('*').eq('status', 'approved'),
-        supabaseClient.from('stop_counts').select('*'),
-        supabaseClient.from('active_drivers').select('*')
-      ]);
+      try {
+        const [{ data: stops }, { data: counts }, { data: drivers }] = await Promise.all([
+          supabaseClient.from('stops').select('*').eq('status', 'approved'),
+          supabaseClient.from('stop_counts').select('*'),
+          supabaseClient.from('active_drivers').select('*')
+        ]);
 
-      if (stops && counts) {
-        const countMap = Object.fromEntries(counts.map(c => [c.stop_id, c.people_count]));
-        stopsData = stops.map(s => ({ ...s, count: countMap[s.id] || 0 }));
+        if (stops && stops.length > 0) {
+          const countMap = counts ? Object.fromEntries(counts.map(c => [c.stop_id, c.people_count])) : {};
+          stopsData = stops.map(s => ({ ...s, count: countMap[s.id] || 0 }));
+        }
         renderStops();
-      }
-      if (drivers) {
-        driversData = drivers.map(d => ({
-          hash: d.driver_session_hash,
-          vehicle_type: d.vehicle_type,
-          lat: d.lat,
-          lng: d.lng
-        }));
-        renderDrivers();
+
+        if (drivers) {
+          driversData = drivers.map(d => ({
+            hash: d.driver_session_hash,
+            vehicle_type: d.vehicle_type,
+            lat: d.lat,
+            lng: d.lng
+          }));
+          renderDrivers();
+        }
+      } catch (e) {
+        renderStops();
       }
     }
 
@@ -700,10 +727,6 @@
       if (wakeLock) wakeLock.release();
       document.getElementById('oled-overlay').classList.add('hidden');
       document.getElementById('onboarding-screen').classList.remove('hidden');
-    }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
     }
   </script>
 </body>
