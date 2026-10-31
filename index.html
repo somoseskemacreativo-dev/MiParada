@@ -11,10 +11,10 @@
   <meta name="apple-mobile-web-app-title" content="Mi Parada" />
   <title>Mi Parada · Caricuao UD-4</title>
 
-  <!-- Manifiesto PWA para Chrome / Android -->
+  <!-- Manifiesto PWA para Instalación Nativa -->
   <link rel="manifest" href="./manifest.json" />
 
-  <!-- Íconos para Safari (iOS) y Chrome (soporta icon.png e icon.jpg) -->
+  <!-- Íconos para Safari (iOS) y Chrome -->
   <link rel="icon" type="image/png" sizes="512x512" href="./icon.png" />
   <link rel="icon" type="image/jpeg" sizes="512x512" href="./icon.jpg" />
   <link rel="apple-touch-icon" href="./icon.png" />
@@ -86,11 +86,11 @@
 </head>
 <body class="relative">
 
-  <!-- PANTALLA 1: SELECCIÓN DE ROL -->
-  <div id="onboarding-screen" class="fixed inset-0 z-50 bg-[#09090B] flex flex-col justify-between p-6">
-    <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+  <!-- PANTALLA 1: SELECCIÓN DE ROL E INSTALACIÓN DE APP -->
+  <div id="onboarding-screen" class="fixed inset-0 z-50 bg-[#09090B] flex flex-col justify-between p-6 overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4 gap-2">
       <div class="flex items-center gap-3">
-        <img src="./icon.png" onerror="this.onerror=null;this.src='./icon.jpg';" alt="Mi Parada" class="w-10 h-10 rounded-xl border border-zinc-700/80 object-cover" />
+        <img src="./icon.png" onerror="this.onerror=null;this.src='./icon.jpg';" alt="Mi Parada" class="w-11 h-11 rounded-xl border border-zinc-700/80 object-cover shrink-0" />
         <div>
           <div class="flex items-center gap-2">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -99,9 +99,26 @@
           <p class="text-xs text-zinc-400">UD-4 · Movilidad Comunitaria en Tiempo Real</p>
         </div>
       </div>
+
+      <!-- Botón de Instalar como App en el Celular -->
+      <button id="btn-install-pwa" type="button" onclick="triggerPwaInstall()" class="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition">
+        <span>📲</span> Instalar App
+      </button>
     </div>
 
-    <div class="my-auto max-w-md w-full mx-auto space-y-4">
+    <div class="my-auto max-w-md w-full mx-auto space-y-4 py-4">
+      
+      <!-- Aviso si el transportista está en Lista de Espera por Verificación -->
+      <div id="driver-pending-banner" class="hidden bg-amber-500/10 border border-amber-500/40 rounded-2xl p-4 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold text-amber-400">⏳ Solicitud de Transportista en Lista de Espera</span>
+          <span id="pending-driver-phone-label" class="text-[11px] font-mono text-zinc-300"></span>
+        </div>
+        <p class="text-[11px] text-zinc-300 leading-relaxed">
+          Tu número está pendiente por verificación del Creador. Mientras es verificado, puedes ingresar a la plataforma como <b>Usuario</b>. En cuanto el Creador presione <b>Verificado</b>, entrarás automáticamente como transportista.
+        </p>
+      </div>
+
       <p class="text-xs uppercase tracking-widest text-zinc-500 font-semibold text-center mb-2">Selecciona tu modo de acceso</p>
 
       <!-- Opción 1: Usuario / Pasajero -->
@@ -122,10 +139,10 @@
       <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista</span>
-          <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">Rol Fijo</span>
+          <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">Requiere Verificación</span>
         </div>
         <p class="text-[11px] text-zinc-500 leading-relaxed">
-          Al acreditar tu número como transportista, tu cuenta quedará vinculada a tu unidad (Carro o Bus).
+          Registra tu número y unidad. Quedarás en lista de espera hasta que el Creador te marque como <b>Verificado</b>.
         </p>
         <div class="grid grid-cols-2 gap-3">
           <button type="button" onclick="openDriverVerificationModal('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
@@ -150,23 +167,49 @@
     </div>
   </div>
 
-  <!-- MODAL DE VERIFICACIÓN TELEFÓNICA DE TRANSPORTISTA -->
+  <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN COMO APP (PARA IPHONE / ANDROID MANUAL) -->
+  <div id="modal-install-help" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <img src="./icon.png" onerror="this.onerror=null;this.src='./icon.jpg';" class="w-8 h-8 rounded-lg" />
+          <h3 class="text-sm font-bold text-white">Instalar Mi Parada como App</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-install-help').classList.add('hidden')" class="text-xs text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <div class="space-y-3 text-xs text-zinc-300 leading-relaxed">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-1">
+          <p class="font-bold text-emerald-400">🤖 En Android (Chrome / Edge):</p>
+          <p>Toca los <b>3 puntos (⋮)</b> arriba a la derecha en tu navegador y selecciona <b>"Instalar aplicación"</b> o <b>"Agregar a la pantalla principal"</b>.</p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 space-y-1">
+          <p class="font-bold text-cyan-400">🍎 En iPhone / iPad (Safari):</p>
+          <p>Toca el botón <b>Compartir (⬆️)</b> en la barra inferior de Safari y selecciona <b>"Agregar a Inicio"</b>.</p>
+        </div>
+      </div>
+      <button type="button" onclick="document.getElementById('modal-install-help').classList.add('hidden')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-xl">
+        Entendido
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE REGISTRO TELEFÓNICO DE TRANSPORTISTA -->
   <div id="modal-driver-auth" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-        <h3 id="driver-auth-title" class="text-sm font-bold text-white">Acreditar Transportista</h3>
+        <h3 id="driver-auth-title" class="text-sm font-bold text-white">Registro de Transportista</h3>
         <button type="button" onclick="closeDriverVerificationModal()" class="text-xs text-zinc-400 hover:text-white">✕</button>
       </div>
 
       <!-- Paso 1: Introducir Teléfono -->
       <div id="driver-step-phone" class="space-y-3">
-        <p class="text-xs text-zinc-400">Introduce tu número de teléfono móvil para recibir el código de acreditación:</p>
+        <p class="text-xs text-zinc-400">Introduce tu número de teléfono móvil para validar tu solicitud:</p>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Número de Teléfono</label>
           <input id="input-driver-phone" type="tel" placeholder="+58 414-555-5555" class="mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
         </div>
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-[11px] text-amber-300">
-          ⚠️ Importante: Una vez acreditado este número, no podrás cambiar de vehículo ni entrar como pasajero.
+          ⏳ Nota: Tras validar el código, tu número entrará en la <b>Lista de Espera</b> del Creador. Al ser marcado como <b>Verificado</b>, quedarás activo como transportista.
         </div>
         <button type="button" onclick="sendDriverVerificationCode()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs py-3 rounded-xl transition">
           Enviar Código de Verificación
@@ -179,7 +222,7 @@
         <div id="otp-demo-notice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-[11px] text-emerald-300"></div>
         <input id="input-driver-otp" type="text" maxlength="6" placeholder="000000" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-center text-lg tracking-widest text-white font-mono focus:outline-none focus:border-emerald-500" />
         <button type="button" onclick="verifyDriverOtpAndRegister()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs py-3 rounded-xl transition">
-          Verificar y Activar Unidad
+          Enviar a Lista de Espera
         </button>
       </div>
     </div>
@@ -220,7 +263,7 @@
 
     <!-- Banner de Modo Edición en Mapa para el Creador -->
     <div id="creator-map-edit-banner" class="hidden bg-amber-500/95 text-black rounded-xl px-3.5 py-2 shadow-xl flex items-center justify-between text-xs font-bold gap-2">
-      <span>🛠️ MODO CREADOR: Arrastra cualquier 📍 para moverlo o toca el mapa para crear una parada</span>
+      <span>🛠️ MODO CREADOR: Arrastra cualquier 📍 (mín. 80m entre paradas) o toca el mapa para crear</span>
       <button type="button" onclick="toggleCreatorMapEditMode(false)" class="bg-black text-white px-2.5 py-1 rounded-lg text-[11px] shrink-0">
         Listo
       </button>
@@ -230,7 +273,7 @@
   <!-- PANEL INFERIOR UNIFICADO (SIN SOLAPAMIENTOS EN MÓVIL) -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
     
-    <!-- Fila de Botones de Mapa (Mi Ubicación / Centro UD-4 / OLED) -->
+    <!-- Fila de Botones de Mapa -->
     <div class="flex items-center justify-end gap-2">
       <button type="button" onclick="locateUserOnMap()" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
         <span>🎯</span> Mi Ubicación
@@ -259,7 +302,7 @@
       </div>
     </div>
 
-    <!-- Controles de Transportista -->
+    <!-- Controles de Transportista Verificado -->
     <div id="driver-controls" class="hidden bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="min-w-0">
         <p class="text-xs font-bold text-white flex items-center gap-1.5">
@@ -287,7 +330,7 @@
   <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
       <h3 class="text-sm font-bold text-white">📍 Solicitar Nueva Parada</h3>
-      <p class="text-xs text-zinc-400">Se enviará tu ubicación actual al Creador. Al ser aprobada aparecerá como parada oficial en el mapa.</p>
+      <p class="text-xs text-zinc-400">Se enviará tu ubicación actual al Creador. Al ser aprobada aparecerá como parada oficial en el mapa (distancia mínima entre paradas: 80m).</p>
       <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque / Terraza..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeSuggestStopModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
@@ -298,7 +341,7 @@
 
   <!-- MODAL COMPLETO: PANEL DEL CREADOR -->
   <div id="modal-admin" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-lg w-full p-5 space-y-4 max-h-[88vh] overflow-y-auto">
+    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
         <h3 class="text-sm font-bold text-white">⚙️ Panel del Creador · Control Total UD-4</h3>
         <button type="button" onclick="closeAdminModal()" class="text-xs text-zinc-400 hover:text-white">✕ Cerrar</button>
@@ -328,13 +371,33 @@
           </div>
         </div>
 
-        <!-- 2. Crear Parada Manualmente -->
+        <!-- 2. Exportar e Importar Archivo .txt de Paradas (Con Filtro de 80m) -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
-          <p class="text-xs font-bold text-white">➕ Agregar Nueva Parada Directa</p>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-bold text-emerald-400">📄Respaldo y Carga Masiva (.txt)</p>
+            <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded">Filtro Auto ≥ 80m</span>
+          </div>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Exporta las paradas activas a un archivo <code>.txt</code> o carga ese mismo archivo para agregar varias paradas en simultáneo. Si en el archivo hay paradas con distancia menor a <b>80 metros</b> entre sí, se elimina una al azar automáticamente.
+          </p>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button type="button" onclick="exportActiveStopsToTxt()" class="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl border border-zinc-700 flex items-center justify-center gap-1.5">
+              <span>⬇️</span> Exportar .txt
+            </button>
+            <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 text-center">
+              <span>⬆️</span> Cargar .txt
+              <input id="input-import-txt" type="file" accept=".txt,text/plain" class="hidden" onchange="importStopsFromTxtFile(event)" />
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Crear Parada Manualmente -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+          <p class="text-xs font-bold text-white">➕ Agregar Nueva Parada Directa (Mín. 80m de distancia)</p>
           <input id="creator-new-stop-name" type="text" placeholder="Nombre de la nueva parada" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white" />
           <div class="grid grid-cols-2 gap-2">
-            <input id="creator-new-stop-lat" type="number" step="any" placeholder="Lat (Ej: 10.4296)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
-            <input id="creator-new-stop-lng" type="number" step="any" placeholder="Lng (Ej: -66.9764)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+            <input id="creator-new-stop-lat" type="number" step="any" placeholder="Lat (Ej: 10.42955)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+            <input id="creator-new-stop-lng" type="number" step="any" placeholder="Lng (Ej: -66.97637)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
           </div>
           <div class="flex gap-2">
             <button type="button" onclick="fillCreatorCoordsWithCurrentCenter()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[11px] px-3 py-2 rounded-lg">
@@ -346,22 +409,30 @@
           </div>
         </div>
 
-        <!-- 3. Solicitudes de Paradas Pendientes (Aparecen en VERDE en el mapa) -->
+        <!-- 4. Solicitudes de Paradas Pendientes (Verdes en el mapa) -->
         <div class="space-y-2">
           <p class="text-xs font-bold text-emerald-400">🟢 Solicitudes de Paradas Pendientes (Verdes en el mapa):</p>
           <div id="pending-stops-list" class="space-y-2 text-xs"></div>
         </div>
 
-        <!-- 4. Lista de Paradas Aprobadas -->
+        <!-- 5. Lista de Paradas Activas en el Mapa -->
         <div class="space-y-2">
           <p class="text-xs font-bold text-zinc-300">📍 Paradas Activas en el Mapa:</p>
-          <div id="approved-stops-admin-list" class="space-y-2 text-xs max-h-48 overflow-y-auto pr-1"></div>
+          <div id="approved-stops-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 5. Control, Bloqueo y Eliminación de Transportistas -->
+        <!-- 6. NUEVO: LISTA DE ESPERA DE TRANSPORTISTAS POR VERIFICACIÓN -->
         <div class="space-y-2 border-t border-zinc-800 pt-4">
-          <p class="text-xs font-bold text-cyan-400">🚕 Transportistas Registrados (Bloquear o Eliminar Registro):</p>
-          <p class="text-[11px] text-zinc-400">Si eliminas un registro, ese número de teléfono queda libre para registrarse nuevamente desde cero como usuario o transportista.</p>
+          <p class="text-xs font-bold text-amber-400">⏳ Lista de Espera de Transportistas (Por Verificar):</p>
+          <p class="text-[11px] text-zinc-400">
+            Presiona <b>Verificado</b> para acreditarlo en la lista de transportistas de la app, o <b>No verificado</b> para eliminarlo del registro (solo podrá ingresar como usuario).
+          </p>
+          <div id="waitlist-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- 7. LISTA DE TRANSPORTISTAS VERIFICADOS EN LA APP -->
+        <div class="space-y-2 border-t border-zinc-800 pt-4">
+          <p class="text-xs font-bold text-cyan-400">🚕 Lista de Transportistas de la App (Verificados):</p>
           <div id="registered-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
@@ -370,6 +441,9 @@
   </div>
 
   <script>
+    // =========================================================================
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES (IMÁGENES A, B, C y D)
+    // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
 
@@ -380,10 +454,27 @@
       }
     } catch (err) {}
 
-    const UD4_CENTER = [10.429654, -66.976428];
-    const STOP_CHECKIN_RADIUS_METERS = 50;
-    const SWEEP_INTERVAL_MS = 30000;
-    const CHECKIN_TTL_MS = 180000;
+    const UD4_CENTER = [10.42955, -66.97637]; // San Agustín / Centro UD-4
+    const STOP_CHECKIN_RADIUS_METERS = 50;    // Radio obligatorio de 50m para pasajeros
+    const MIN_STOP_DISTANCE_METERS = 80;      // Distancia mínima obligatoria de 80m entre 2 paradas
+    const SWEEP_INTERVAL_MS = 30000;          // Barrido silencioso cada 30s
+    const CHECKIN_TTL_MS = 180000;            // Persistencia en segundo plano
+
+    // Paradas por defecto según imágenes A, B, C y D
+    const DEFAULT_UD4_STOPS = [
+      { id: 'ud4-1', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
+      { id: 'ud4-2', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
+      { id: 'ud4-3', name: 'CC Los Angeles', lat: 10.43148, lng: -66.97493, status: 'approved', count: 0 },
+      { id: 'ud4-4', name: 'Canagua', lat: 10.43279, lng: -66.97650, status: 'approved', count: 0 },
+      { id: 'ud4-5', name: 'Mucuritas', lat: 10.43126, lng: -66.97776, status: 'approved', count: 0 },
+      { id: 'ud4-6', name: 'Vuelvancaras', lat: 10.42812, lng: -66.97433, status: 'approved', count: 0 },
+      { id: 'ud4-7', name: 'Carabobo', lat: 10.42939, lng: -66.97390, status: 'approved', count: 0 },
+      { id: 'ud4-8', name: 'San Agustin', lat: 10.42955, lng: -66.97637, status: 'approved', count: 0 },
+      { id: 'ud4-9', name: 'Curpa / Gimnasio Vertical', lat: 10.42850, lng: -66.97599, status: 'approved', count: 0 },
+      { id: 'ud4-10', name: 'Bravos de Apure', lat: 10.42731, lng: -66.97739, status: 'approved', count: 0 },
+      { id: 'ud4-11', name: 'Arauca', lat: 10.42736, lng: -66.97870, status: 'approved', count: 0 },
+      { id: 'ud4-12', name: 'Payara', lat: 10.42843, lng: -66.97884, status: 'approved', count: 0 }
+    ];
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
     let hasValidGpsFix = false;
@@ -395,7 +486,7 @@
 
     let pendingVehicleTypeToVerify = null;
     let generatedLocalOtpCode = null;
-    let driverAccount = null;
+    let driverAccount = null; // { phone, vehicle_type, device_token, verification_status, is_blocked }
     let isDriverTransmitting = true;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
 
@@ -403,8 +494,39 @@
     let creatorMapEditMode = false;
 
     let stopMarkers = {}, pendingStopMarkers = {}, driverMarkers = {};
-    let stopsData = [], pendingStopsData = [], driversData = [];
+    let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
 
+    // =========================================================================
+    // 2. INSTALACIÓN NATIVA DE LA PWA COMO APLICACIÓN EN EL CELULAR
+    // =========================================================================
+    let deferredInstallPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btn = document.getElementById('btn-install-pwa');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      const btn = document.getElementById('btn-install-pwa');
+      if (btn) btn.classList.add('hidden');
+    });
+
+    async function triggerPwaInstall() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+      } else {
+        document.getElementById('modal-install-help').classList.remove('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 3. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
+    // =========================================================================
     function startBackgroundHeartbeatWorker() {
       if (backgroundWorker) return;
       try {
@@ -451,6 +573,9 @@
     window.addEventListener('pagehide', removeUserOnPageClose);
     window.addEventListener('beforeunload', removeUserOnPageClose);
 
+    // =========================================================================
+    // 4. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
+    // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
       if (!token) {
@@ -482,6 +607,19 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
+    // Verifica si una coordenada choca (< 80m) con alguna parada aprobada existente
+    function findConflictingStopWithin80m(lat, lng, excludeStopId = null) {
+      for (const s of stopsData) {
+        if (s.status !== 'approved') continue;
+        if (excludeStopId && s.id === excludeStopId) continue;
+        const d = getDistanceMeters(lat, lng, s.lat, s.lng);
+        if (d < MIN_STOP_DISTANCE_METERS) {
+          return { stop: s, distance: Math.round(d) };
+        }
+      }
+      return null;
+    }
+
     function getStopColor(count) {
       const clamped = Math.min(Math.max(count, 3), 30);
       const ratio = (clamped - 3) / (30 - 3);
@@ -501,6 +639,9 @@
       return cleaned;
     }
 
+    // =========================================================================
+    // 5. VERIFICACIÓN AL INICIAR: LISTA DE ESPERA VS VERIFICADO
+    // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
       const hash = await getDailyDeviceHash();
       if (supabaseClient) {
@@ -524,9 +665,11 @@
         .eq('phone', savedDriver.phone)
         .maybeSingle();
 
+      // Si el Creador presionó "No verificado" o "Eliminar", se borra de la lista y solo puede entrar como Usuario
       if (error || !data) {
         localStorage.removeItem('ud4_accredited_driver');
         driverAccount = null;
+        document.getElementById('driver-pending-banner').classList.add('hidden');
         return;
       }
 
@@ -542,13 +685,31 @@
       }
 
       driverAccount = data;
+      localStorage.setItem('ud4_accredited_driver', JSON.stringify(data));
+
+      // Si aún está en Lista de Espera ('pending'), mostrar aviso y permitirle entrar SOLO como Usuario
+      if (data.verification_status === 'pending') {
+        document.getElementById('driver-pending-banner').classList.remove('hidden');
+        document.getElementById('pending-driver-phone-label').textContent = data.phone;
+        return;
+      }
+
+      // Si ya fue marcado como "Verificado" por el Creador, entra como Transportista fijo
+      document.getElementById('driver-pending-banner').classList.add('hidden');
       enterAppAsAccreditedDriver(data.vehicle_type, data.phone);
     }
 
+    // =========================================================================
+    // 6. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA
+    // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
+        if (driverAccount.verification_status === 'pending') {
+          alert(`⏳ Tu número ${driverAccount.phone} ya está en la Lista de Espera por verificación del Creador. Mientras tanto puedes ingresar como Usuario.`);
+          return;
+        }
         if (driverAccount.vehicle_type !== vehicleType) {
-          alert(`Tu número ${driverAccount.phone} está acreditado como ${driverAccount.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}. No puedes cambiar de vehículo.`);
+          alert(`Tu número ${driverAccount.phone} está verificado como ${driverAccount.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}. No puedes cambiar de vehículo.`);
           return;
         }
         enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
@@ -556,7 +717,7 @@
       }
 
       pendingVehicleTypeToVerify = vehicleType;
-      const label = vehicleType === 'bus' ? '🚌 Acreditar Transportista · Autobús' : '🚗 Acreditar Transportista · Carro';
+      const label = vehicleType === 'bus' ? '🚌 Solicitar Registro · Autobús' : '🚗 Solicitar Registro · Carro';
       document.getElementById('driver-auth-title').textContent = label;
       document.getElementById('driver-step-phone').classList.remove('hidden');
       document.getElementById('driver-step-otp').classList.add('hidden');
@@ -589,11 +750,11 @@
             return;
           }
           if (existing.device_token !== getDeviceToken()) {
-            alert('⚠️ Este número de teléfono ya está registrado como transportista. No se permite doble registro hasta que el Creador elimine el registro anterior.');
+            alert('⚠️ Este número de teléfono ya está registrado. No se permite doble registro.');
             return;
           }
           if (existing.vehicle_type !== pendingVehicleTypeToVerify) {
-            alert(`⚠️ Este número ya está registrado como ${existing.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'} y no puede cambiar de vehículo.`);
+            alert(`⚠️ Este número ya tiene solicitud para ${existing.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}.`);
             return;
           }
         }
@@ -668,19 +829,21 @@
           }
           driverAccount = existing;
         } else {
+          // Todo nuevo transportista entra en estado 'pending' (Lista de espera por verificación)
           const { data: inserted, error: insertErr } = await supabaseClient
             .from('registered_drivers')
             .insert({
               phone: normalizedPhone,
               vehicle_type: pendingVehicleTypeToVerify,
               device_token: myDeviceToken,
+              verification_status: 'pending',
               is_blocked: false
             })
             .select()
             .single();
 
           if (insertErr) {
-            alert('No se pudo completar el registro: ' + insertErr.message);
+            alert('No se pudo completar la solicitud: ' + insertErr.message);
             return;
           }
           driverAccount = inserted;
@@ -689,9 +852,20 @@
 
       localStorage.setItem('ud4_accredited_driver', JSON.stringify(driverAccount));
       closeDriverVerificationModal();
-      enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
+
+      if (driverAccount.verification_status === 'verified') {
+        enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
+      } else {
+        document.getElementById('driver-pending-banner').classList.remove('hidden');
+        document.getElementById('pending-driver-phone-label').textContent = driverAccount.phone;
+        alert('⏳ Tu solicitud ha sido enviada a la Lista de Espera del Creador.\n\nMientras el Creador te marca como "Verificado", ingresarás en modo Usuario.');
+        enterAppAsPassenger();
+      }
     }
 
+    // =========================================================================
+    // 7. MAPA Y VALIDACIÓN DE 80M AL CREAR O ARRASTRAR PARADAS
+    // =========================================================================
     function initMap() {
       if (map) {
         map.invalidateSize();
@@ -716,7 +890,15 @@
 
       map.on('click', async (e) => {
         if (!isCreatorAuthenticated || !creatorMapEditMode) return;
-        const stopName = prompt('🛠️ Crear nueva parada aprobada en este punto.\\nEscribe el nombre de la parada:');
+
+        // Validar que no esté a menos de 80 metros de otra parada activa
+        const conflict = findConflictingStopWithin80m(e.latlng.lat, e.latlng.lng);
+        if (conflict) {
+          alert(`⚠️ No pueden existir 2 paradas a menos de 80 metros.\nEste punto está a ${conflict.distance}m de "${conflict.stop.name}".`);
+          return;
+        }
+
+        const stopName = prompt('🛠️ Crear nueva parada aprobada en este punto.\nEscribe el nombre de la parada:');
         if (!stopName || !stopName.trim()) return;
 
         const { error } = await supabaseClient.from('stops').insert({
@@ -862,6 +1044,13 @@
 
         marker.on('dragend', async (event) => {
           const newLatLng = event.target.getLatLng();
+          const conflict = findConflictingStopWithin80m(newLatLng.lat, newLatLng.lng, stop.id);
+          if (conflict) {
+            alert(`⚠️ No puede haber 2 paradas a menos de 80 metros.\nEstá a ${conflict.distance}m de "${conflict.stop.name}".`);
+            renderStops();
+            return;
+          }
+
           await supabaseClient
             .from('stops')
             .update({ lat: newLatLng.lat, lng: newLatLng.lng })
@@ -948,9 +1137,14 @@
       });
     }
 
+    // =========================================================================
+    // 8. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
+    // =========================================================================
     function enterAppAsPassenger() {
-      if (driverAccount) {
-        alert('Estás acreditado como Transportista (' + driverAccount.phone + '). No puedes ingresar como Usuario.');
+      // Solo un transportista ya VERIFICADO tiene prohibido entrar como Usuario.
+      // Si está en Lista de Espera ('pending') o fue rechazado ('No verificado'), sí puede entrar como Usuario.
+      if (driverAccount && driverAccount.verification_status === 'verified') {
+        alert('Estás verificado como Transportista (' + driverAccount.phone + '). No puedes ingresar como Usuario.');
         return;
       }
 
@@ -960,8 +1154,9 @@
 
       setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 16); } }, 150);
 
-      document.getElementById('role-badge').textContent = 'Usuario · Pasajero';
-      document.getElementById('role-badge').className = 'text-xs font-bold text-emerald-400';
+      const isWaitlisted = driverAccount && driverAccount.verification_status === 'pending';
+      document.getElementById('role-badge').textContent = isWaitlisted ? 'Usuario (Chofer en Espera)' : 'Usuario · Pasajero';
+      document.getElementById('role-badge').className = 'text-xs font-bold text-emerald-400 truncate';
       document.getElementById('passenger-controls').classList.remove('hidden');
       document.getElementById('driver-controls').classList.add('hidden');
       document.getElementById('btn-oled-mode').classList.add('hidden');
@@ -982,7 +1177,7 @@
       const isBus = vehicleType === 'bus';
       const badge = document.getElementById('role-badge');
       badge.textContent = isBus ? '🚌 Transportista · Bus' : '🚗 Transportista · Carro';
-      badge.className = isBus ? 'text-xs font-bold text-amber-400' : 'text-xs font-bold text-cyan-400';
+      badge.className = isBus ? 'text-xs font-bold text-amber-400 truncate' : 'text-xs font-bold text-cyan-400 truncate';
 
       document.getElementById('driver-active-label').textContent = isBus ? '🚌 Transmitiendo Bus' : '🚗 Transmitiendo Carro';
       document.getElementById('driver-phone-badge').textContent = phone;
@@ -998,6 +1193,9 @@
       startDriverInactivityWatch(isBus ? 360 : 180);
     }
 
+    // =========================================================================
+    // 9. RASTREO GPS Y BARRIDO SILENCIOSO CADA 30 SEGUNDOS (RADIO 50M)
+    // =========================================================================
     function startGpsTracking() {
       if (!navigator.geolocation) {
         document.getElementById('gps-status-text').textContent = 'Sin GPS';
@@ -1014,7 +1212,7 @@
           updateUserLocationMarkerOnMap(latitude, longitude, accuracy);
           document.getElementById('gps-status-text').textContent = 'Conectado en tiempo real';
 
-          if (userRole !== 'passenger' && driverAccount && isDriverTransmitting) {
+          if (userRole !== 'passenger' && driverAccount && driverAccount.verification_status === 'verified' && isDriverTransmitting) {
             await handleDriverMovementUpdate(latitude, longitude);
           }
         },
@@ -1101,7 +1299,7 @@
     async function executeSilent30sBackgroundSweep() {
       if (!supabaseClient) return;
 
-      if (userRole !== 'passenger' && driverAccount && isDriverTransmitting) {
+      if (userRole !== 'passenger' && driverAccount && driverAccount.verification_status === 'verified' && isDriverTransmitting) {
         if (hasValidGpsFix) {
           await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
         }
@@ -1151,13 +1349,13 @@
           expires_at: expiresAt,
           updated_at: new Date().toISOString()
         });
-      } else if (userRole !== 'passenger' && driverAccount && isDriverTransmitting && hasValidGpsFix) {
+      } else if (userRole !== 'passenger' && driverAccount && driverAccount.verification_status === 'verified' && isDriverTransmitting && hasValidGpsFix) {
         await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
       }
     }
 
     async function handleDriverMovementUpdate(lat, lng) {
-      if (!supabaseClient || !driverAccount || !isDriverTransmitting) return;
+      if (!supabaseClient || !driverAccount || driverAccount.verification_status !== 'verified' || !isDriverTransmitting) return;
 
       if (!lastDriverMovePos) {
         lastDriverMovePos = { lat, lng };
@@ -1220,6 +1418,142 @@
       refreshLiveStateFromSupabase();
     }
 
+    // =========================================================================
+    // 10. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
+    // =========================================================================
+    function exportActiveStopsToTxt() {
+      const approved = stopsData.filter(s => s.status === 'approved');
+      if (approved.length === 0) {
+        alert('No hay paradas activas para exportar.');
+        return;
+      }
+
+      // Formato limpio de cada línea: Nombre | Latitud, Longitud
+      const lines = approved.map(s => `${s.name} | ${Number(s.lat).toFixed(5)}, ${Number(s.lng).toFixed(5)}`);
+      const txtContent = lines.join('\n');
+
+      const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'paradas_activas_ud4.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function importStopsFromTxtFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const text = await file.text();
+      event.target.value = ''; // Limpiar selector de archivo
+
+      const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#'));
+      let candidates = [];
+
+      // Soportar tanto formato "Nombre | Lat, Lng" como formato en 2 líneas ("📍 Nombre" seguido de "Lat, Lng")
+      for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        const coordMatch = line.match(/(-?\d+\.\d+)\s*[,;|\t]\s*(-?\d+\.\d+)/);
+
+        if (coordMatch) {
+          const lat = parseFloat(coordMatch[1]);
+          const lng = parseFloat(coordMatch[2]);
+          let namePart = line.replace(coordMatch[0], '').replace(/^[📍|,\-:\s]+|[|,\-:\s]+$/g, '').trim();
+
+          if (!namePart && i > 0) {
+            namePart = rawLines[i - 1].replace(/^📍\s*/, '').trim();
+          }
+          if (namePart && !isNaN(lat) && !isNaN(lng)) {
+            candidates.push({ name: namePart, lat, lng });
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        alert('No se encontraron paradas válidas en el archivo .txt.\nFormato esperado por línea:\nNombre | 10.42955, -66.97637');
+        return;
+      }
+
+      // PASO 1: Si dentro del archivo .txt hay paradas con distancia < 80 metros entre sí, eliminar una de forma aleatoria
+      let removedInsideFileCount = 0;
+      let hasConflict = true;
+
+      while (hasConflict) {
+        hasConflict = false;
+        for (let i = 0; i < candidates.length; i++) {
+          for (let j = i + 1; j < candidates.length; j++) {
+            const dist = getDistanceMeters(candidates[i].lat, candidates[i].lng, candidates[j].lat, candidates[j].lng);
+            if (dist < MIN_STOP_DISTANCE_METERS) {
+              // Eliminar aleatoriamente una de las dos paradas en conflicto (< 80m)
+              const randomRemoveIndex = Math.random() < 0.5 ? i : j;
+              candidates.splice(randomRemoveIndex, 1);
+              removedInsideFileCount++;
+              hasConflict = true;
+              break;
+            }
+          }
+          if (hasConflict) break;
+        }
+      }
+
+      // PASO 2: Comparar contra las paradas que ya están activas en el mapa.
+      // Si alguna parada existente y una nueva están a < 80m, se elige al azar cuál de las dos conservar para que nunca haya 2 paradas a < 80m.
+      const { data: existingApproved } = await supabaseClient
+        .from('stops')
+        .select('*')
+        .eq('status', 'approved');
+
+      let currentMapStops = [...(existingApproved || [])];
+      let finalStopsToInsert = [];
+      letexistingStopsToDelete = [];
+
+      for (const candidate of candidates) {
+        let tooCloseToExisting = null;
+        for (const ex of currentMapStops) {
+          const d = getDistanceMeters(candidate.lat, candidate.lng, ex.lat, ex.lng);
+          if (d < MIN_STOP_DISTANCE_METERS) {
+            tooCloseToExisting = ex;
+            break;
+          }
+        }
+
+        if (!tooCloseToExisting) {
+          finalStopsToInsert.push({ name: candidate.name, lat: candidate.lat, lng: candidate.lng, status: 'approved' });
+        } else {
+          // Si son exactamente la misma parada o están a < 80m, eliminar una al azar
+          if (Math.random() < 0.5) {
+            // Conservar la del archivo .txt y reemplazar la del mapa
+            letexistingStopsToDelete.push(tooCloseToExisting.id);
+            currentMapStops = currentMapStops.filter(s => s.id !== tooCloseToExisting.id);
+            finalStopsToInsert.push({ name: candidate.name, lat: candidate.lat, lng: candidate.lng, status: 'approved' });
+          }
+          removedInsideFileCount++;
+        }
+      }
+
+      if (letexistingStopsToDelete.length > 0) {
+        await supabaseClient.from('stops').delete().in('id', letexistingStopsToDelete);
+      }
+
+      if (finalStopsToInsert.length > 0) {
+        const { error } = await supabaseClient.from('stops').insert(finalStopsToInsert);
+        if (error) {
+          alert('Error al cargar paradas: ' + error.message);
+          return;
+        }
+      }
+
+      await loadCreatorDashboardData();
+      await refreshLiveStateFromSupabase();
+      alert(`✅ Carga de archivo .txt completada:\n• Paradas agregadas/actualizadas: ${finalStopsToInsert.length}\n• Paradas descartadas aleatoriamente por estar a menos de 80m: ${removedInsideFileCount}`);
+    }
+
+    // =========================================================================
+    // 11. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
+    // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
 
@@ -1277,8 +1611,8 @@
 
     function fillCreatorCoordsWithCurrentCenter() {
       const center = map ? map.getCenter() : { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
-      document.getElementById('creator-new-stop-lat').value = center.lat.toFixed(6);
-      document.getElementById('creator-new-stop-lng').value = center.lng.toFixed(6);
+      document.getElementById('creator-new-stop-lat').value = center.lat.toFixed(5);
+      document.getElementById('creator-new-stop-lng').value = center.lng.toFixed(5);
     }
 
     async function creatorCreateApprovedStop() {
@@ -1288,6 +1622,13 @@
 
       if (!name || isNaN(lat) || isNaN(lng)) {
         alert('Completa el nombre y las coordenadas.');
+        return;
+      }
+
+      // Validar regla estricta de 80 metros
+      const conflict = findConflictingStopWithin80m(lat, lng);
+      if (conflict) {
+        alert(`⚠️ No debe haber 2 paradas con una distancia entre sí menor a 80 metros.\nEsta coordenada está a ${conflict.distance}m de "${conflict.stop.name}".`);
         return;
       }
 
@@ -1312,16 +1653,17 @@
       if (!supabaseClient || !isCreatorAuthenticated) return;
 
       const [{ data: allStops }, { data: allDrivers }] = await Promise.all([
-        supabaseClient.from('stops').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('stops').select('*').order('created_at', { ascending: true }),
         supabaseClient.from('registered_drivers').select('*').order('created_at', { ascending: false })
       ]);
 
+      // 1. Solicitudes de Paradas Pendientes
       const pendingContainer = document.getElementById('pending-stops-list');
       const pending = (allStops || []).filter(s => s.status === 'pending');
       pendingStopsData = pending;
 
       if (pending.length === 0) {
-        pendingContainer.innerHTML = '<p class="text-zinc-500">No hay solicitudes pendientes.</p>';
+        pendingContainer.innerHTML = '<p class="text-zinc-500">No hay solicitudes de paradas pendientes.</p>';
       } else {
         pendingContainer.innerHTML = pending.map(s => `
           <div class="bg-zinc-900 border border-emerald-500/40 rounded-xl p-3 flex items-center justify-between gap-2">
@@ -1330,7 +1672,7 @@
               <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>
             </div>
             <div class="flex gap-1.5 shrink-0">
-              <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ver en Mapa</button>
+              <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ver</button>
               <button type="button" onclick="moderateStop('${s.id}', true)" class="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold">Aprobar</button>
               <button type="button" onclick="moderateStop('${s.id}', false)" class="bg-red-600/30 text-red-300 px-2.5 py-1 rounded-lg">Rechazar</button>
             </div>
@@ -1338,6 +1680,7 @@
         `).join('');
       }
 
+      // 2. Paradas Activas en el Mapa
       const approvedContainer = document.getElementById('approved-stops-admin-list');
       const approved = (allStops || []).filter(s => s.status === 'approved');
       approvedContainer.innerHTML = approved.map(s => `
@@ -1347,21 +1690,54 @@
             <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>
           </div>
           <div class="flex gap-1.5 shrink-0">
-            <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ubicar</button>
+            <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-lg">Ubicar</button>
             <button type="button" onclick="moderateStop('${s.id}', false)" class="bg-red-600/20 hover:bg-red-600/40 text-red-300 px-2.5 py-1 rounded-lg font-semibold">Eliminar</button>
           </div>
         </div>
       `).join('');
 
-      const driversContainer = document.getElementById('registered-drivers-admin-list');
-      if (!allDrivers || allDrivers.length === 0) {
-        driversContainer.innerHTML = '<p class="text-zinc-500">Aún no hay transportistas registrados.</p>';
+      // 3. LISTA DE ESPERA DE TRANSPORTISTAS (Botones a la derecha: "Verificado" y "No verificado")
+      const waitlistContainer = document.getElementById('waitlist-drivers-admin-list');
+      const waitlistDrivers = (allDrivers || []).filter(d => d.verification_status === 'pending');
+
+      if (waitlistDrivers.length === 0) {
+        waitlistContainer.innerHTML = '<p class="text-zinc-500">No hay transportistas en lista de espera.</p>';
       } else {
-        driversContainer.innerHTML = allDrivers.map(d => {
+        waitlistContainer.innerHTML = waitlistDrivers.map(d => {
+          const icon = d.vehicle_type === 'bus' ? '🚌 Autobús' : '🚗 Carro';
+          return `
+            <div class="bg-zinc-900 border border-amber-500/40 rounded-xl p-3 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-mono font-bold text-white">${d.phone}</span>
+                  <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">En espera</span>
+                </div>
+                <p class="text-[10px] text-zinc-400 mt-0.5">Solicita unidad: <b>${icon}</b></p>
+              </div>
+              <div class="flex gap-1.5 shrink-0">
+                <button type="button" onclick="verifyWaitlistDriver('${d.phone}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg font-bold">
+                  Verificado
+                </button>
+                <button type="button" onclick="verifyWaitlistDriver('${d.phone}', false)" class="bg-red-600 hover:bg-red-500 text-white px-2.5 py-1.5 rounded-lg font-bold">
+                  No verificado
+                </button>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      // 4. LISTA DE TRANSPORTISTAS VERIFICADOS DE LA APP
+      const driversContainer = document.getElementById('registered-drivers-admin-list');
+      const verifiedDrivers = (allDrivers || []).filter(d => d.verification_status === 'verified');
+
+      if (verifiedDrivers.length === 0) {
+        driversContainer.innerHTML = '<p class="text-zinc-500">Aún no hay transportistas verificados.</p>';
+      } else {
+        driversContainer.innerHTML = verifiedDrivers.map(d => {
           const icon = d.vehicle_type === 'bus' ? '🚌 Bus' : '🚗 Carro';
           const statusBadge = d.is_blocked
             ? '<span class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded">Bloqueado</span>'
-            : '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">Activo</span>';
+            : '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">Verificado</span>';
           const btnBlockAction = d.is_blocked
             ? `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', false)" class="bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold">Desbloquear</button>`
             : `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', true)" class="bg-amber-600 text-white px-2 py-1 rounded-lg font-bold">Bloquear</button>`;
@@ -1386,6 +1762,37 @@
       }
     }
 
+    // Acción del Creador en la Lista de Espera: "Verificado" o "No verificado"
+    async function verifyWaitlistDriver(phone, isVerified) {
+      if (isVerified) {
+        // Pasa a la lista de transportistas activos de la app
+        const { error } = await supabaseClient
+          .from('registered_drivers')
+          .update({ verification_status: 'verified' })
+          .eq('phone', phone);
+
+        if (error) {
+          alert('Error al verificar transportista: ' + error.message);
+          return;
+        }
+      } else {
+        // "No verificado": Se elimina del registro y solo puede ingresar como usuario
+        await supabaseClient.from('active_drivers').delete().eq('phone', phone);
+        const { error } = await supabaseClient
+          .from('registered_drivers')
+          .delete()
+          .eq('phone', phone);
+
+        if (error) {
+          alert('Error al descartar solicitud: ' + error.message);
+          return;
+        }
+      }
+
+      await loadCreatorDashboardData();
+      await refreshLiveStateFromSupabase();
+    }
+
     function focusStopOnMap(lat, lng) {
       closeAdminModal();
       if (map) map.flyTo([lat, lng], 18, { duration: 0.7 });
@@ -1393,6 +1800,14 @@
 
     async function moderateStop(stopId, approve) {
       if (approve) {
+        const target = pendingStopsData.find(s => s.id === stopId);
+        if (target) {
+          const conflict = findConflictingStopWithin80m(target.lat, target.lng);
+          if (conflict) {
+            alert(`⚠️ No se puede aprobar porque está a ${conflict.distance}m de "${conflict.stop.name}" (mínimo obligatorio: 80m).`);
+            return;
+          }
+        }
         await supabaseClient.from('stops').update({ status: 'approved' }).eq('id', stopId);
       } else {
         await supabaseClient.from('stops').delete().eq('id', stopId);
@@ -1421,7 +1836,7 @@
     }
 
     async function deleteDriverRegistration(phone) {
-      if (!confirm(`¿Eliminar el registro del transportista ${phone}?\\nEl número quedará libre para registrarse nuevamente como Usuario o Transportista.`)) {
+      if (!confirm(`¿Eliminar el registro del transportista ${phone}?\nEl número quedará libre para ingresar como Usuario o solicitar nuevo registro.`)) {
         return;
       }
 
@@ -1442,16 +1857,20 @@
       await refreshLiveStateFromSupabase();
     }
 
+    // =========================================================================
+    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
+    // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
       try {
         if (driverAccount) {
           const { data: myDriverStatus } = await supabaseClient
             .from('registered_drivers')
-            .select('is_blocked')
+            .select('*')
             .eq('phone', driverAccount.phone)
             .maybeSingle();
 
+          // Si el Creador presionó "No verificado" o "Eliminar", liberar inmediatamente y pasar a modo Usuario
           if (!myDriverStatus) {
             localStorage.removeItem('ud4_accredited_driver');
             driverAccount = null;
@@ -1462,6 +1881,15 @@
           if (myDriverStatus.is_blocked) {
             await supabaseClient.from('active_drivers').delete().eq('phone', driverAccount.phone);
             location.reload();
+            return;
+          }
+
+          // Si estaba en Lista de Espera ('pending') y el Creador acaba de pulsar "Verificado", activarlo en tiempo real
+          if (driverAccount.verification_status === 'pending' && myDriverStatus.verification_status === 'verified') {
+            driverAccount = myDriverStatus;
+            localStorage.setItem('ud4_accredited_driver', JSON.stringify(myDriverStatus));
+            document.getElementById('driver-pending-banner').classList.add('hidden');
+            enterAppAsAccreditedDriver(myDriverStatus.vehicle_type, myDriverStatus.phone);
             return;
           }
         }
@@ -1485,11 +1913,11 @@
           pendingStopsData = results[3].data || [];
         }
 
-        if (stops) {
+        if (stops && stops.length > 0) {
           const countMap = counts ? Object.fromEntries(counts.map(c => [c.stop_id, c.people_count])) : {};
           stopsData = stops.map(s => ({ ...s, count: countMap[s.id] || 0 }));
-          renderStops();
         }
+        renderStops();
 
         if (drivers) {
           driversData = drivers;
@@ -1503,11 +1931,17 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v7')
+      supabaseClient.channel('ud4-live-channel-v8')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_drivers' }, refreshLiveStateFromSupabase)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'stops' }, refreshLiveStateFromSupabase)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_drivers' }, () => {
+          refreshLiveStateFromSupabase();
+          if (isCreatorAuthenticated) loadCreatorDashboardData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stops' }, () => {
+          refreshLiveStateFromSupabase();
+          if (isCreatorAuthenticated) loadCreatorDashboardData();
+        })
         .subscribe();
     }
 
@@ -1524,7 +1958,7 @@
     }
 
     function returnToOnboarding() {
-      if (driverAccount) {
+      if (driverAccount && driverAccount.verification_status === 'verified') {
         return;
       }
       if (wakeLock) wakeLock.release();
