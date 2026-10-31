@@ -9,16 +9,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Mi Parada" />
   <title>Mi Parada · UD-4 En Vivo</title>
-  
-  <!-- Manifiesto PWA para Chrome / Android -->
   <link rel="manifest" href="manifest.json" />
-
-  <!-- Íconos para Safari (iPhone / iPad) y Pestaña del Navegador -->
+  
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="icon.png" />
   <link rel="apple-touch-icon" href="icon.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icon.png" />
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
@@ -59,7 +56,6 @@
     }
     .leaflet-control-attribution a { color: #A1A1AA !important; }
     
-    /* Pin de parada pendiente en VERDE para el Creador */
     .pending-green-pin {
       display: inline-block;
       font-size: 32px;
@@ -91,9 +87,9 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <h1 class="text-lg font-extrabold tracking-tight">UD-4 · EN VIVO</h1>
+          <h1 class="text-lg font-extrabold tracking-tight">MI PARADA · CARICUAO</h1>
         </div>
-        <p class="text-xs text-zinc-400">Caricuao · Movilidad Comunitaria en Tiempo Real</p>
+        <p class="text-xs text-zinc-400">UD-4 · Movilidad Comunitaria en Tiempo Real</p>
       </div>
     </div>
 
@@ -200,7 +196,7 @@
         </div>
       </div>
 
-      <!-- Sumatoria Global en Tiempo Real de Todas las Paradas (Suma desde 1+) -->
+      <!-- Sumatoria Global en Tiempo Real de Todas las Paradas -->
       <div class="flex items-center gap-1.5 shrink-0">
         <div class="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
@@ -366,9 +362,6 @@
   </div>
 
   <script>
-    // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y CONSTANTES OPERATIVAS INTERNAS
-    // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
 
@@ -380,40 +373,33 @@
     } catch (err) {}
 
     const UD4_CENTER = [10.429654, -66.976428];
-    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio interno estricto de 50 metros
-    const SWEEP_INTERVAL_MS = 30000;       // Barrido silencioso automático cada 30 segundos
-    const CHECKIN_TTL_MS = 180000;         // Margen de 3 min en BD para soportar pantalla bloqueada en segundo plano
+    const STOP_CHECKIN_RADIUS_METERS = 50;
+    const SWEEP_INTERVAL_MS = 30000;
+    const CHECKIN_TTL_MS = 180000;
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
     let hasValidGpsFix = false;
     let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
     let userLocationMarker = null, userAccuracyCircle = null;
 
-    // Estado de Pasajero
     let activeCheckinStopId = null;
     let backgroundWorker = null;
 
-    // Estado de Transportista Acreditado
     let pendingVehicleTypeToVerify = null;
     let generatedLocalOtpCode = null;
     let driverAccount = null;
     let isDriverTransmitting = true;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
 
-    // Estado del Creador
     let isCreatorAuthenticated = false;
     let creatorMapEditMode = false;
 
     let stopMarkers = {}, pendingStopMarkers = {}, driverMarkers = {};
     let stopsData = [], pendingStopsData = [], driversData = [];
 
-    // =========================================================================
-    // 2. MOTOR EN SEGUNDO PLANO (WEB WORKER) Y DESCONEXIÓN AL CERRAR PÁGINA
-    // =========================================================================
     function startBackgroundHeartbeatWorker() {
       if (backgroundWorker) return;
       try {
-        // Un Web Worker en un hilo separado evita que el navegador congele el temporizador de 30s al bloquear la pantalla
         const workerBlob = new Blob([`
           setInterval(() => {
             self.postMessage('tick');
@@ -428,19 +414,16 @@
       }
     }
 
-    // Al volver de pantalla bloqueada o segundo plano, sincronizar de inmediato y renovar WakeLock
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState === 'visible') {
         requestWakeLock();
         await executeSilent30sBackgroundSweep();
         refreshLiveStateFromSupabase();
       } else {
-        // Si el teléfono se acaba de bloquear pero la página sigue abierta, enviar un latido de respaldo
         await keepAliveWhileScreenLocked();
       }
     });
 
-    // Si el usuario CIERRA la página web del navegador o apaga el teléfono, restarlo inmediatamente de la parada
     function removeUserOnPageClose() {
       if (userRole === 'passenger' && activeCheckinStopId) {
         const hash = localStorage.getItem('ud4_cached_daily_hash');
@@ -460,9 +443,6 @@
     window.addEventListener('pagehide', removeUserOnPageClose);
     window.addEventListener('beforeunload', removeUserOnPageClose);
 
-    // =========================================================================
-    // 3. IDENTIFICADOR DE DISPOSITIVO Y FÓRMULA HAVERSINE
-    // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
       if (!token) {
@@ -494,7 +474,6 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    // Gradiente de color del contador (Solo se muestra desde 3+ personas)
     function getStopColor(count) {
       const clamped = Math.min(Math.max(count, 3), 30);
       const ratio = (clamped - 3) / (30 - 3);
@@ -514,11 +493,7 @@
       return cleaned;
     }
 
-    // =========================================================================
-    // 4. VERIFICACIÓN AL INICIAR: LIMPIEZA DE PARADA PREVIA Y CHECK DE CHOFER
-    // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
-      // Al abrir o recargar la página, aseguramos que el pasajero empiece sin parada marcada (debe pulsar "En la parada" nuevamente)
       const hash = await getDailyDeviceHash();
       if (supabaseClient) {
         await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
@@ -541,7 +516,6 @@
         .eq('phone', savedDriver.phone)
         .maybeSingle();
 
-      // Si el Creador ELIMINÓ el registro del transportista, se libera el teléfono y el dispositivo para nuevo registro
       if (error || !data) {
         localStorage.removeItem('ud4_accredited_driver');
         driverAccount = null;
@@ -563,9 +537,6 @@
       enterAppAsAccreditedDriver(data.vehicle_type, data.phone);
     }
 
-    // =========================================================================
-    // 5. ACREDITACIÓN TELEFÓNICA DE TRANSPORTISTA (CARRO / BUS)
-    // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
         if (driverAccount.vehicle_type !== vehicleType) {
@@ -713,9 +684,6 @@
       enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
     }
 
-    // =========================================================================
-    // 6. INICIALIZACIÓN DEL MAPA Y MARCADOR DE UBICACIÓN DEL USUARIO
-    // =========================================================================
     function initMap() {
       if (map) {
         map.invalidateSize();
@@ -740,7 +708,8 @@
 
       map.on('click', async (e) => {
         if (!isCreatorAuthenticated || !creatorMapEditMode) return;
-        const stopName = prompt('🛠️ Crear nueva parada aprobada en este punto.\nEscribe el nombre de la parada:');
+        const stopName = prompt('🛠️ Crear nueva parada aprobada en este punto.
+Escribe el nombre de la parada:');
         if (!stopName || !stopName.trim()) return;
 
         const { error } = await supabaseClient.from('stops').insert({
@@ -816,12 +785,6 @@
       }
     }
 
-    // =========================================================================
-    // 7. RENDERIZADO DE PARADAS:
-    //    - APROBADAS: 📍 SIEMPRE VISIBLE, NÚMERO SOLO SI HAY >= 3 USUARIOS
-    //    - TOTAL EN PARADAS: SUMA TODOS LOS USUARIOS (INCLUSO SI SON 1 O 2)
-    //    - PENDIENTES (SOLO CREADOR): MISMO ICONO 📍 EN VERDE
-    // =========================================================================
     function renderStops() {
       if (!map) return;
       Object.values(stopMarkers).forEach(m => map.removeLayer(m));
@@ -832,15 +795,12 @@
 
       let globalTotalPassengers = 0;
 
-      // 1. Renderizar Paradas Oficiales Aprobadas
       stopsData.forEach(stop => {
         if (stop.status !== 'approved') return;
 
         const count = stop.count || 0;
-        // Aunque en la parada haya 1 o 2 usuarios, sí se suman al Total en paradas
         globalTotalPassengers += count;
 
-        // REGLA ESTRICTA: En la parada solo se muestra el número a partir de 3 usuarios
         const hasVisibleCount = count >= 3;
         const badgeBg = hasVisibleCount ? getStopColor(count) : '';
         const isCritical = count >= 30 ? 'critical-stop' : '';
@@ -906,7 +866,6 @@
         stopMarkers[stop.id] = marker;
       });
 
-      // 2. Renderizar Solicitudes de Paradas en VERDE en el mapa (Solo visibles para el Creador)
       if (isCreatorAuthenticated && pendingStopsData.length > 0) {
         pendingStopsData.forEach(pStop => {
           const greenPinHtml = `
@@ -944,7 +903,6 @@
         });
       }
 
-      // Actualizar sumatoria total en tiempo real de todas las paradas
       const totalEl = document.getElementById('global-total-passengers');
       if (totalEl) totalEl.textContent = globalTotalPassengers;
     }
@@ -983,9 +941,6 @@
       });
     }
 
-    // =========================================================================
-    // 8. MODOS DE ENTRADA Y BLOQUEO DEL BOTÓN "EN LA PARADA"
-    // =========================================================================
     function enterAppAsPassenger() {
       if (driverAccount) {
         alert('Estás acreditado como Transportista (' + driverAccount.phone + '). No puedes ingresar como Usuario.');
@@ -1036,9 +991,6 @@
       startDriverInactivityWatch(isBus ? 360 : 180);
     }
 
-    // =========================================================================
-    // 9. RASTREO GPS Y BARRIDO SILENCIOSO CADA 30 SEGUNDOS (RADIO 50M)
-    // =========================================================================
     function startGpsTracking() {
       if (!navigator.geolocation) {
         document.getElementById('gps-status-text').textContent = 'Sin GPS';
@@ -1098,7 +1050,6 @@
       }
     }
 
-    // Al pulsar "En la parada", si está dentro del radio de 50m se suma y SE BLOQUEA EL BOTÓN
     async function manualCheckInClosestStop() {
       if (!supabaseClient || activeCheckinStopId) return;
 
@@ -1140,11 +1091,9 @@
       refreshLiveStateFromSupabase();
     }
 
-    // Barrido silencioso cada 30 segundos (y soporte en segundo plano con pantalla bloqueada)
     async function executeSilent30sBackgroundSweep() {
       if (!supabaseClient) return;
 
-      // Caso 1: Transportista activo en segundo plano
       if (userRole !== 'passenger' && driverAccount && isDriverTransmitting) {
         if (hasValidGpsFix) {
           await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
@@ -1153,7 +1102,6 @@
         return;
       }
 
-      // Caso 2: Pasajero con botón bloqueado "En la parada"
       if (userRole === 'passenger' && activeCheckinStopId) {
         const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
         const hash = await getDailyDeviceHash();
@@ -1165,11 +1113,9 @@
           return;
         }
 
-        // Si el navegador está visible o envió nueva coordenada GPS, verificamos el radio de 50 metros
         const distToCheckedStop = getDistanceMeters(currentPos.lat, currentPos.lng, currentStop.lat, currentStop.lng);
 
         if (distToCheckedStop <= STOP_CHECKIN_RADIUS_METERS) {
-          // Sigue dentro de los 50 metros: permanece sumado y con el botón bloqueado
           const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
           await supabaseClient.from('stop_checkins').upsert({
             device_daily_hash: hash,
@@ -1178,7 +1124,6 @@
             updated_at: new Date().toISOString()
           });
         } else {
-          // Salió de los 50 metros: se resta automáticamente de la parada y se reactiva el botón
           await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
           activeCheckinStopId = null;
           setCheckinButtonLockedState(false);
@@ -1204,9 +1149,6 @@
       }
     }
 
-    // =========================================================================
-    // 10. TRANSMISIÓN DE TRANSPORTISTA
-    // =========================================================================
     async function handleDriverMovementUpdate(lat, lng) {
       if (!supabaseClient || !driverAccount || !isDriverTransmitting) return;
 
@@ -1271,9 +1213,6 @@
       refreshLiveStateFromSupabase();
     }
 
-    // =========================================================================
-    // 11. PANEL DEL CREADOR: PARADAS VERDES, MOVER/CREAR Y ELIMINAR CHOFERES
-    // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
 
@@ -1370,7 +1309,6 @@
         supabaseClient.from('registered_drivers').select('*').order('created_at', { ascending: false })
       ]);
 
-      // 1. Paradas Pendientes (Aparecen en VERDE en el mapa)
       const pendingContainer = document.getElementById('pending-stops-list');
       const pending = (allStops || []).filter(s => s.status === 'pending');
       pendingStopsData = pending;
@@ -1393,7 +1331,6 @@
         `).join('');
       }
 
-      // 2. Paradas Aprobadas
       const approvedContainer = document.getElementById('approved-stops-admin-list');
       const approved = (allStops || []).filter(s => s.status === 'approved');
       approvedContainer.innerHTML = approved.map(s => `
@@ -1409,7 +1346,6 @@
         </div>
       `).join('');
 
-      // 3. Transportistas Registrados (Bloquear / Desbloquear / ELIMINAR Registro)
       const driversContainer = document.getElementById('registered-drivers-admin-list');
       if (!allDrivers || allDrivers.length === 0) {
         driversContainer.innerHTML = '<p class="text-zinc-500">Aún no hay transportistas registrados.</p>';
@@ -1477,7 +1413,6 @@
       await refreshLiveStateFromSupabase();
     }
 
-    // ELIMINAR REGISTRO DE TRANSPORTISTA: Libera el teléfono para un nuevo registro como usuario o transportista
     async function deleteDriverRegistration(phone) {
       if (!confirm(`¿Eliminar el registro del transportista ${phone}?\nEl número quedará libre para registrarse nuevamente como Usuario o Transportista.`)) {
         return;
@@ -1491,7 +1426,6 @@
         return;
       }
 
-      // Si se eliminó desde el mismo dispositivo, limpiar sesión local
       if (driverAccount && driverAccount.phone === phone) {
         localStorage.removeItem('ud4_accredited_driver');
         driverAccount = null;
@@ -1501,13 +1435,9 @@
       await refreshLiveStateFromSupabase();
     }
 
-    // =========================================================================
-    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
-    // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
       try {
-        // Si el usuario actual es un transportista, verificar si fue bloqueado o eliminado por el Creador
         if (driverAccount) {
           const { data: myDriverStatus } = await supabaseClient
             .from('registered_drivers')
@@ -1515,7 +1445,6 @@
             .eq('phone', driverAccount.phone)
             .maybeSingle();
 
-          // Si fue eliminado por el Creador (!myDriverStatus), liberar el teléfono inmediatamente y volver al inicio
           if (!myDriverStatus) {
             localStorage.removeItem('ud4_accredited_driver');
             driverAccount = null;
@@ -1567,7 +1496,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v5')
+      supabaseClient.channel('ud4-live-channel-v6')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_drivers' }, refreshLiveStateFromSupabase)
