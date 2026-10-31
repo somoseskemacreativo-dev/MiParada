@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ud4-pwa-v4';
+const CACHE_NAME = 'ud4-pwa-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -30,12 +30,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // Nunca almacenar en caché respuestas en tiempo real de Supabase
   if (url.includes('supabase.co')) {
     return;
   }
 
-  // Estrategia Network-First para cargar siempre la versión más reciente del mapa y código
   event.respondWith(
     fetch(event.request)
       .then((response) => {
