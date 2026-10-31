@@ -1,8 +1,9 @@
-const CACHE_NAME = 'ud4-pwa-v5';
+const CACHE_NAME = 'ud4-pwa-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon.png'
 ];
 
 self.addEventListener('install', (event) => {
