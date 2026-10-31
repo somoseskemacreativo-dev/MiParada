@@ -49,6 +49,16 @@
       color: #71717A !important; 
     }
     .leaflet-control-attribution a { color: #A1A1AA !important; }
+    
+    /* Pin de parada pendiente en VERDE para el Creador */
+    .pending-green-pin {
+      display: inline-block;
+      font-size: 32px;
+      line-height: 1;
+      -webkit-filter: hue-rotate(135deg) saturate(2.5) brightness(1.15) drop-shadow(0 3px 8px rgba(16,185,129,0.8));
+      filter: hue-rotate(135deg) saturate(2.5) brightness(1.15) drop-shadow(0 3px 8px rgba(16,185,129,0.8));
+    }
+
     @keyframes pulse-ring {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
       70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
@@ -89,20 +99,20 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Soy Usuario</h2>
-            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas, unidades y marcar espera (Radio 50m)</p>
+            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas, unidades y marcar espera en UD-4</p>
           </div>
         </div>
         <span class="text-zinc-500 group-hover:text-emerald-400 text-lg">→</span>
       </button>
 
-      <!-- Opción 2: Transportista (Requiere verificación telefónica única e inmutable) -->
+      <!-- Opción 2: Transportista -->
       <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista (Verificación SMS)</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista</span>
           <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">Rol Fijo</span>
         </div>
         <p class="text-[11px] text-zinc-500 leading-relaxed">
-          Al acreditar tu número como transportista, tu cuenta quedará vinculada de forma exclusiva a tu unidad (Carro o Bus) y no podrás cambiar de vehículo ni entrar como pasajero.
+          Al acreditar tu número como transportista, tu cuenta quedará vinculada a tu unidad (Carro o Bus).
         </p>
         <div class="grid grid-cols-2 gap-3">
           <button type="button" onclick="openDriverVerificationModal('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
@@ -122,7 +132,7 @@
 
     <div class="text-center space-y-2 pt-4 border-t border-zinc-900">
       <p class="text-[11px] text-zinc-500">
-        📡 <strong class="text-zinc-400">Barrido Automático 30s:</strong> El sistema confirma tu GPS dentro de los 50m de la parada cada 30 segundos.
+        🔒 <strong class="text-zinc-400">Privacidad Total:</strong> El conteo en cada parada 📍 se muestra a partir de 3 usuarios esperando.
       </p>
     </div>
   </div>
@@ -137,13 +147,13 @@
 
       <!-- Paso 1: Introducir Teléfono -->
       <div id="driver-step-phone" class="space-y-3">
-        <p class="text-xs text-zinc-400">Introduce tu número de teléfono móvil para recibir el código de acreditación única:</p>
+        <p class="text-xs text-zinc-400">Introduce tu número de teléfono móvil para recibir el código de acreditación:</p>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Número de Teléfono</label>
           <input id="input-driver-phone" type="tel" placeholder="+58 414-555-5555" class="mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
         </div>
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-[11px] text-amber-300">
-          ⚠️ Importante: Una vez acreditado este número, no podrás cambiar de tipo de vehículo ni usar la app como pasajero.
+          ⚠️ Importante: Una vez acreditado este número, no podrás cambiar de vehículo ni entrar como pasajero.
         </div>
         <button type="button" onclick="sendDriverVerificationCode()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs py-3 rounded-xl transition">
           Enviar Código de Verificación
@@ -152,7 +162,7 @@
 
       <!-- Paso 2: Introducir Código OTP -->
       <div id="driver-step-otp" class="hidden space-y-3">
-        <p class="text-xs text-zinc-400">Introduce el código de 6 dígitos enviado al número <strong id="display-driver-phone" class="text-white font-mono"></strong>:</p>
+        <p class="text-xs text-zinc-400">Introduce el código de 6 dígitos para <strong id="display-driver-phone" class="text-white font-mono"></strong>:</p>
         <div id="otp-demo-notice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-[11px] text-emerald-300"></div>
         <input id="input-driver-otp" type="text" maxlength="6" placeholder="000000" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-center text-lg tracking-widest text-white font-mono focus:outline-none focus:border-emerald-500" />
         <button type="button" onclick="verifyDriverOtpAndRegister()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs py-3 rounded-xl transition">
@@ -167,95 +177,87 @@
 
   <!-- BARRA SUPERIOR FLOTANTE CON SUMATORIA GLOBAL EN TIEMPO REAL -->
   <header class="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2 max-w-2xl mx-auto">
-    <div class="flex items-center justify-between bg-[#09090B]/95 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-3.5 py-2.5 shadow-2xl">
-      <div class="flex items-center gap-2">
-        <button id="btn-change-role" type="button" onclick="returnToOnboarding()" class="text-zinc-400 hover:text-white p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs">
+    <div class="flex items-center justify-between bg-[#09090B]/95 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-3 py-2.5 shadow-2xl gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <button id="btn-change-role" type="button" onclick="returnToOnboarding()" class="text-zinc-400 hover:text-white px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] shrink-0">
           ← Rol
         </button>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span id="role-badge" class="text-xs font-bold text-emerald-400">Usuario</span>
-            <span class="text-[10px] text-zinc-500">· UD-4</span>
+        <div class="truncate">
+          <div class="flex items-center gap-1">
+            <span id="role-badge" class="text-xs font-bold text-emerald-400 truncate">Usuario</span>
+            <span class="text-[10px] text-zinc-500 shrink-0">· UD-4</span>
           </div>
-          <p id="gps-status-text" class="text-[10px] text-zinc-400">Buscando tu señal GPS...</p>
+          <p id="gps-status-text" class="text-[10px] text-zinc-400 truncate">GPS Activo</p>
         </div>
       </div>
 
-      <!-- Sumatoria Global en Tiempo Real de Todas las Paradas -->
-      <div class="flex items-center gap-2">
-        <div class="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-2.5 py-1 flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-[11px] text-zinc-300 font-medium">Total en paradas:</span>
-          <strong id="global-total-passengers" class="text-xs font-extrabold text-emerald-400">0</strong>
+      <!-- Sumatoria Global en Tiempo Real de Todas las Paradas (Suma desde 1+) -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <div class="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span class="text-[11px] text-zinc-300 font-medium leading-tight">Total en<br class="sm:hidden"/> paradas:</span>
+          <strong id="global-total-passengers" class="text-sm font-extrabold text-emerald-400">0</strong>
         </div>
 
-        <button type="button" onclick="openAdminModal()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-1.5 rounded-xl font-medium">
+        <button type="button" onclick="openAdminModal()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-2 rounded-xl font-medium shrink-0">
           Creador
         </button>
       </div>
     </div>
 
     <!-- Banner de Modo Edición en Mapa para el Creador -->
-    <div id="creator-map-edit-banner" class="hidden bg-amber-500/95 text-black rounded-xl px-3.5 py-2 shadow-xl flex items-center justify-between text-xs font-bold">
+    <div id="creator-map-edit-banner" class="hidden bg-amber-500/95 text-black rounded-xl px-3.5 py-2 shadow-xl flex items-center justify-between text-xs font-bold gap-2">
       <span>🛠️ MODO CREADOR: Arrastra cualquier 📍 para moverlo o toca el mapa para crear una parada</span>
-      <button type="button" onclick="toggleCreatorMapEditMode(false)" class="bg-black text-white px-2.5 py-1 rounded-lg text-[11px]">
-        Terminar Edición
+      <button type="button" onclick="toggleCreatorMapEditMode(false)" class="bg-black text-white px-2.5 py-1 rounded-lg text-[11px] shrink-0">
+        Listo
       </button>
     </div>
   </header>
 
-  <!-- BOTONES FLOTANTES DE UBICACIÓN EN EL MAPA -->
-  <div class="fixed right-3 bottom-36 z-30 flex flex-col gap-2">
-    <button type="button" onclick="locateUserOnMap()" title="Ir a mi ubicación GPS" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-xl px-3 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5">
-      <span>🎯</span> Mi Ubicación
-    </button>
-    <button type="button" onclick="centerOnUD4()" title="Centrar en UD-4" class="bg-[#121216]/95 hover:bg-zinc-800 text-emerald-400 border border-zinc-700/80 shadow-xl px-3 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-1.5">
-      <span>🗺️</span> Centro UD-4
-    </button>
-    <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden bg-[#121216]/95 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 shadow-xl px-3 py-2.5 rounded-2xl text-xs font-bold">
-      🌙 OLED
-    </button>
-  </div>
-
-  <!-- PANEL INFERIOR CONTEXTUAL -->
+  <!-- PANEL INFERIOR UNIFICADO (SIN SOLAPAMIENTOS EN MÓVIL) -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
-    <div class="bg-[#09090B]/95 backdrop-blur-md border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-zinc-400">
-      <span>📍 Radio obligatorio: <strong class="text-zinc-200">≤ 50m</strong> · Barrido: <strong id="sweep-timer-badge" class="text-emerald-400 font-mono">30s</strong></span>
-      <div class="flex items-center gap-2">
-        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></i> 1-9</span>
-        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></i> 10-24</span>
-        <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></i> 30+</span>
-      </div>
+    
+    <!-- Fila de Botones de Mapa (Mi Ubicación / Centro UD-4 / OLED) -->
+    <div class="flex items-center justify-end gap-2">
+      <button type="button" onclick="locateUserOnMap()" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+        <span>🎯</span> Mi Ubicación
+      </button>
+      <button type="button" onclick="centerOnUD4()" class="bg-[#121216]/95 hover:bg-zinc-800 text-emerald-400 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+        <span>🗺️</span> Centro UD-4
+      </button>
+      <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden bg-[#121216]/95 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 shadow-lg px-3 py-2 rounded-xl text-xs font-bold">
+        🌙 OLED
+      </button>
     </div>
 
     <!-- Controles de Pasajero -->
     <div id="passenger-controls" class="bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
-      <div class="flex-1">
-        <p id="passenger-checkin-title" class="text-xs font-bold text-white">Detección de Parada (Radio 50m)</p>
-        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400">Acércate a menos de 50m de un 📍 y marca espera</p>
+      <div class="flex-1 min-w-0">
+        <p id="passenger-checkin-title" class="text-xs font-bold text-white truncate">Reporte de Parada</p>
+        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400 truncate">Marca cuando estés esperando transporte</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <button type="button" onclick="openSuggestStopModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-700">
           + 📍 Sugerir
         </button>
-        <button id="btn-checkin" type="button" onclick="manualCheckInClosestStop()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+        <button id="btn-checkin" type="button" onclick="manualCheckInClosestStop()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed">
           En la parada
         </button>
       </div>
     </div>
 
-    <!-- Controles de Transportista (Rol Bloqueado y Permanente) -->
-    <div id="driver-controls" class="hidden bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between">
-      <div>
+    <!-- Controles de Transportista -->
+    <div id="driver-controls" class="hidden bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+      <div class="min-w-0">
         <p class="text-xs font-bold text-white flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          <span id="driver-active-label">Transmitiendo Unidad</span>
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
+          <span id="driver-active-label" class="truncate">Transmitiendo Unidad</span>
         </p>
-        <p class="text-[11px] text-zinc-400">
-          Tel: <strong id="driver-phone-badge" class="text-zinc-200 font-mono"></strong> · Inactividad: <strong id="inactivity-countdown" class="text-white font-mono">03:00</strong>
+        <p class="text-[11px] text-zinc-400 truncate">
+          Tel: <strong id="driver-phone-badge" class="text-zinc-200 font-mono"></strong> · Pausa en: <strong id="inactivity-countdown" class="text-white font-mono">03:00</strong>
         </p>
       </div>
-      <button id="btn-driver-pause" type="button" onclick="toggleDriverTransmission()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl">
+      <button id="btn-driver-pause" type="button" onclick="toggleDriverTransmission()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0">
         Pausar Ruta
       </button>
     </div>
@@ -272,7 +274,7 @@
   <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
       <h3 class="text-sm font-bold text-white">📍 Solicitar Nueva Parada</h3>
-      <p class="text-xs text-zinc-400">Se enviará tu coordenada GPS actual. Para ser visible en la PWA deberá ser aprobada por el Creador.</p>
+      <p class="text-xs text-zinc-400">Se enviará tu ubicación actual al Creador. Al ser aprobada aparecerá como parada oficial en el mapa.</p>
       <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque / Terraza..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeSuggestStopModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
@@ -291,7 +293,7 @@
 
       <!-- Login del Creador -->
       <div id="admin-login-box" class="space-y-3">
-        <p class="text-xs text-zinc-400">Ingresa tus credenciales de Creador registradas en Supabase Auth.</p>
+        <p class="text-xs text-zinc-400">Ingresa tus credenciales de Creador.</p>
         <input id="admin-email" type="email" value="admin@ud4vivo.local" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300" />
         <input id="admin-password" type="password" placeholder="Contraseña de Creador" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white" />
         <button type="button" onclick="loginCreator()" class="w-full bg-white text-black font-bold text-xs py-2.5 rounded-xl hover:bg-zinc-200">Desbloquear Panel del Creador</button>
@@ -302,10 +304,10 @@
         
         <!-- 1. Herramienta para Mover Paradas Arrastrándolas o Crear Tocando el Mapa -->
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <div>
-              <p class="text-xs font-bold text-amber-300">🛠️ Edición Visual de Paradas en el Mapa</p>
-              <p class="text-[11px] text-zinc-400">Arrastra cualquier icono 📍 para reubicarlo o toca el mapa para crear una parada donde quieras.</p>
+              <p class="text-xs font-bold text-amber-300">🛠️ Edición Visual en el Mapa</p>
+              <p class="text-[11px] text-zinc-400">Arrastra cualquier 📍 para moverlo, toca el mapa para crear paradas, o toca las solicitudes en <b>verde</b> para aprobarlas.</p>
             </div>
             <button type="button" onclick="toggleCreatorMapEditMode(true)" class="bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs px-3 py-2 rounded-xl shrink-0">
               Editar en Mapa
@@ -331,22 +333,23 @@
           </div>
         </div>
 
-        <!-- 3. Solicitudes de Paradas Pendientes -->
+        <!-- 3. Solicitudes de Paradas Pendientes (Aparecen en VERDE en el mapa) -->
         <div class="space-y-2">
-          <p class="text-xs font-bold text-emerald-400">📥 Solicitudes de Paradas Pendientes de Aprobación:</p>
+          <p class="text-xs font-bold text-emerald-400">🟢 Solicitudes de Paradas Pendientes (Verdes en el mapa):</p>
           <div id="pending-stops-list" class="space-y-2 text-xs"></div>
         </div>
 
-        <!-- 4. Lista de Paradas Aprobadas (Para Eliminar o Ubicar) -->
+        <!-- 4. Lista de Paradas Aprobadas -->
         <div class="space-y-2">
-          <p class="text-xs font-bold text-zinc-300">📍 Paradas Activas en el Mapa (Eliminar / Ver):</p>
+          <p class="text-xs font-bold text-zinc-300">📍 Paradas Activas en el Mapa:</p>
           <div id="approved-stops-admin-list" class="space-y-2 text-xs max-h-48 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 5. Control y Bloqueo de Transportistas por Número de Teléfono -->
+        <!-- 5. Control, Bloqueo y Eliminación de Transportistas -->
         <div class="space-y-2 border-t border-zinc-800 pt-4">
-          <p class="text-xs font-bold text-cyan-400">🚕 Transportistas Registrados (Bloquear / Desbloquear Acceso):</p>
-          <div id="registered-drivers-admin-list" class="space-y-2 text-xs max-h-52 overflow-y-auto pr-1"></div>
+          <p class="text-xs font-bold text-cyan-400">🚕 Transportistas Registrados (Bloquear o Eliminar Registro):</p>
+          <p class="text-[11px] text-zinc-400">Si eliminas un registro, ese número de teléfono queda libre para registrarse nuevamente desde cero como usuario o transportista.</p>
+          <div id="registered-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
       </div>
@@ -355,7 +358,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y CONSTANTES OPERATIVAS
+    // 1. CONFIGURACIÓN SUPABASE Y CONSTANTES OPERATIVAS INTERNAS
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -368,23 +371,23 @@
     } catch (err) {}
 
     const UD4_CENTER = [10.429654, -66.976428];
-    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio estricto obligatorio de 50 metros
-    const SWEEP_INTERVAL_SECONDS = 30;     // Barrido automático cada 30 segundos
+    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio interno estricto de 50 metros
+    const SWEEP_INTERVAL_MS = 30000;       // Barrido silencioso automático cada 30 segundos
+    const CHECKIN_TTL_MS = 180000;         // Margen de 3 min en BD para soportar pantalla bloqueada en segundo plano
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
     let hasValidGpsFix = false;
     let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
     let userLocationMarker = null, userAccuracyCircle = null;
 
-    // Estado de Pasajero y Barrido de 30s
+    // Estado de Pasajero
     let activeCheckinStopId = null;
-    let sweepIntervalId = null;
-    let sweepCountdown = SWEEP_INTERVAL_SECONDS;
+    let backgroundWorker = null;
 
-    // Estado de Transportista Acreditado (Fijo e Inmutable)
+    // Estado de Transportista Acreditado
     let pendingVehicleTypeToVerify = null;
     let generatedLocalOtpCode = null;
-    let driverAccount = null; // { phone, vehicle_type, device_token, is_blocked }
+    let driverAccount = null;
     let isDriverTransmitting = true;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
 
@@ -392,11 +395,64 @@
     let isCreatorAuthenticated = false;
     let creatorMapEditMode = false;
 
-    let stopMarkers = {}, driverMarkers = {};
-    let stopsData = [], driversData = [];
+    let stopMarkers = {}, pendingStopMarkers = {}, driverMarkers = {};
+    let stopsData = [], pendingStopsData = [], driversData = [];
 
     // =========================================================================
-    // 2. IDENTIFICADOR DE DISPOSITIVO Y FÓRMULA HAVERSINE (DISTANCIA EN METROS)
+    // 2. MOTOR EN SEGUNDO PLANO (WEB WORKER) Y DESCONEXIÓN AL CERRAR PÁGINA
+    // =========================================================================
+    function startBackgroundHeartbeatWorker() {
+      if (backgroundWorker) return;
+      try {
+        // Un Web Worker en un hilo separado evita que el navegador congele el temporizador de 30s al bloquear la pantalla
+        const workerBlob = new Blob([`
+          setInterval(() => {
+            self.postMessage('tick');
+          }, ${SWEEP_INTERVAL_MS});
+        `], { type: 'application/javascript' });
+        backgroundWorker = new Worker(URL.createObjectURL(workerBlob));
+        backgroundWorker.onmessage = () => {
+          executeSilent30sBackgroundSweep();
+        };
+      } catch (e) {
+        setInterval(executeSilent30sBackgroundSweep, SWEEP_INTERVAL_MS);
+      }
+    }
+
+    // Al volver de pantalla bloqueada o segundo plano, sincronizar de inmediato y renovar WakeLock
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock();
+        await executeSilent30sBackgroundSweep();
+        refreshLiveStateFromSupabase();
+      } else {
+        // Si el teléfono se acaba de bloquear pero la página sigue abierta, enviar un latido de respaldo
+        await keepAliveWhileScreenLocked();
+      }
+    });
+
+    // Si el usuario CIERRA la página web del navegador o apaga el teléfono, restarlo inmediatamente de la parada
+    function removeUserOnPageClose() {
+      if (userRole === 'passenger' && activeCheckinStopId) {
+        const hash = localStorage.getItem('ud4_cached_daily_hash');
+        if (hash) {
+          const url = `${SUPABASE_URL}/rest/v1/stop_checkins?device_daily_hash=eq.${encodeURIComponent(hash)}`;
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            keepalive: true
+          }).catch(() => {});
+        }
+      }
+    }
+    window.addEventListener('pagehide', removeUserOnPageClose);
+    window.addEventListener('beforeunload', removeUserOnPageClose);
+
+    // =========================================================================
+    // 3. IDENTIFICADOR DE DISPOSITIVO Y FÓRMULA HAVERSINE
     // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
@@ -410,12 +466,14 @@
     async function getDailyDeviceHash() {
       const rawSeed = getDeviceToken();
       const today = new Date().toISOString().slice(0, 10);
+      let hash = (rawSeed + '_' + today).slice(0, 24);
       if (window.crypto && crypto.subtle) {
         const msgBuffer = new TextEncoder().encode(rawSeed + '_' + today);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 24);
+        hash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 24);
       }
-      return (rawSeed + '_' + today).slice(0, 24);
+      localStorage.setItem('ud4_cached_daily_hash', hash);
+      return hash;
     }
 
     function getDistanceMeters(lat1, lon1, lat2, lon2) {
@@ -427,15 +485,14 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
+    // Gradiente de color del contador (Solo se muestra desde 3+ personas)
     function getStopColor(count) {
-      if (count <= 0) return '#27272A';
-      const clamped = Math.min(Math.max(count, 1), 30);
-      const ratio = (clamped - 1) / (30 - 1);
+      const clamped = Math.min(Math.max(count, 3), 30);
+      const ratio = (clamped - 3) / (30 - 3);
       const hue = Math.round(145 * (1 - ratio));
       return `hsl(${hue}, 85%, 45%)`;
     }
 
-    // Normaliza teléfonos al formato +584145555555
     function normalizePhoneNumber(raw) {
       let cleaned = raw.replace(/[^0-9+]/g, '');
       if (cleaned.startsWith('04')) {
@@ -449,9 +506,15 @@
     }
 
     // =========================================================================
-    // 3. VERIFICACIÓN AL INICIAR: SI ES TRANSPORTISTA ACREDITADO, BLOQUEA ROL
+    // 4. VERIFICACIÓN AL INICIAR: LIMPIEZA DE PARADA PREVIA Y CHECK DE CHOFER
     // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
+      // Al abrir o recargar la página, aseguramos que el pasajero empiece sin parada marcada (debe pulsar "En la parada" nuevamente)
+      const hash = await getDailyDeviceHash();
+      if (supabaseClient) {
+        await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
+      }
+
       const savedDriver = localStorage.getItem('ud4_accredited_driver');
       if (savedDriver) {
         try {
@@ -467,36 +530,37 @@
         .from('registered_drivers')
         .select('*')
         .eq('phone', savedDriver.phone)
-        .single();
+        .maybeSingle();
 
+      // Si el Creador ELIMINÓ el registro del transportista, se libera el teléfono y el dispositivo para nuevo registro
       if (error || !data) {
         localStorage.removeItem('ud4_accredited_driver');
+        driverAccount = null;
         return;
       }
 
       if (data.is_blocked) {
-        alert('🚫 Tu número de teléfono (' + data.phone + ') ha sido bloqueado por el Creador de la plataforma.');
+        alert('🚫 Tu número de teléfono (' + data.phone + ') ha sido bloqueado por el Creador.');
         document.getElementById('onboarding-screen').innerHTML = `
           <div class="m-auto max-w-sm text-center space-y-3 p-6 bg-zinc-900 border border-red-500/40 rounded-2xl">
             <div class="text-4xl">🚫</div>
             <h2 class="text-base font-bold text-red-400">Acceso de Transportista Bloqueado</h2>
-            <p class="text-xs text-zinc-400">El número <strong class="text-white font-mono">${data.phone}</strong> fue suspendido por el administrador de UD-4 En Vivo.</p>
+            <p class="text-xs text-zinc-400">El número <strong class="text-white font-mono">${data.phone}</strong> fue suspendido por el Creador.</p>
           </div>`;
         return;
       }
 
-      // Si está acreditado y activo, entra directamente a su unidad sin poder ser Usuario ni cambiar vehículo
       driverAccount = data;
       enterAppAsAccreditedDriver(data.vehicle_type, data.phone);
     }
 
     // =========================================================================
-    // 4. FLUJO DE ACREDITACIÓN TELEFÓNICA DE TRANSPORTISTA (CARRO / BUS)
+    // 5. ACREDITACIÓN TELEFÓNICA DE TRANSPORTISTA (CARRO / BUS)
     // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
         if (driverAccount.vehicle_type !== vehicleType) {
-          alert(`Tu número ${driverAccount.phone} ya está acreditado permanentemente como ${driverAccount.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}. No puedes cambiar de vehículo.`);
+          alert(`Tu número ${driverAccount.phone} está acreditado como ${driverAccount.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}. No puedes cambiar de vehículo.`);
           return;
         }
         enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
@@ -524,7 +588,6 @@
 
       const normalizedPhone = normalizePhoneNumber(rawPhone);
 
-      // 1. Verificar en Supabase si ese teléfono ya está registrado o bloqueado
       if (supabaseClient) {
         const { data: existing } = await supabaseClient
           .from('registered_drivers')
@@ -538,7 +601,7 @@
             return;
           }
           if (existing.device_token !== getDeviceToken()) {
-            alert('⚠️ Este número de teléfono ya está registrado como transportista en otro dispositivo. No se permite doble registro con el mismo número.');
+            alert('⚠️ Este número de teléfono ya está registrado como transportista. No se permite doble registro hasta que el Creador elimine el registro anterior.');
             return;
           }
           if (existing.vehicle_type !== pendingVehicleTypeToVerify) {
@@ -548,7 +611,6 @@
         }
       }
 
-      // 2. Generar código de verificación de 6 dígitos (Intenta Supabase SMS Auth o entrega código directo)
       generatedLocalOtpCode = String(Math.floor(100000 + Math.random() * 900000));
       document.getElementById('display-driver-phone').textContent = normalizedPhone;
       document.getElementById('driver-step-phone').classList.add('hidden');
@@ -567,7 +629,7 @@
       if (smsSentViaSupabase) {
         noticeBox.textContent = '📲 Código SMS enviado a tu teléfono.';
       } else {
-        noticeBox.innerHTML = `📲 Código de acreditación generado para <b>${normalizedPhone}</b>: <strong class="text-white font-mono text-sm underline">${generatedLocalOtpCode}</strong>`;
+        noticeBox.innerHTML = `📲 Código de verificación para <b>${normalizedPhone}</b>: <strong class="text-white font-mono text-sm underline">${generatedLocalOtpCode}</strong>`;
       }
     }
 
@@ -600,7 +662,6 @@
 
       const myDeviceToken = getDeviceToken();
 
-      // Registrar en la tabla registered_drivers de forma única
       if (supabaseClient) {
         const { data: existing } = await supabaseClient
           .from('registered_drivers')
@@ -614,7 +675,7 @@
             return;
           }
           if (existing.device_token !== myDeviceToken) {
-            alert('⚠️ Doble registro denegado: este número ya pertenece a otro dispositivo.');
+            alert('⚠️ Doble registro denegado.');
             return;
           }
           driverAccount = existing;
@@ -636,13 +697,6 @@
           }
           driverAccount = inserted;
         }
-      } else {
-        driverAccount = {
-          phone: normalizedPhone,
-          vehicle_type: pendingVehicleTypeToVerify,
-          device_token: myDeviceToken,
-          is_blocked: false
-        };
       }
 
       localStorage.setItem('ud4_accredited_driver', JSON.stringify(driverAccount));
@@ -651,7 +705,7 @@
     }
 
     // =========================================================================
-    // 5. INICIALIZACIÓN DEL MAPA Y MARCADOR DE UBICACIÓN DEL USUARIO
+    // 6. INICIALIZACIÓN DEL MAPA Y MARCADOR DE UBICACIÓN DEL USUARIO
     // =========================================================================
     function initMap() {
       if (map) {
@@ -675,7 +729,6 @@
         crossOrigin: true
       }).addTo(map);
 
-      // Si el Creador tiene activo el Modo Edición en Mapa, tocar el mapa crea una parada nueva
       map.on('click', async (e) => {
         if (!isCreatorAuthenticated || !creatorMapEditMode) return;
         const stopName = prompt('🛠️ Crear nueva parada aprobada en este punto.\nEscribe el nombre de la parada:');
@@ -711,7 +764,7 @@
 
       if (!userLocationMarker) {
         userAccuracyCircle = L.circle([lat, lng], {
-          radius: Math.min(accuracyMeters, 80),
+          radius: Math.min(accuracyMeters, 60),
           color: '#3B82F6',
           weight: 1,
           fillColor: '#3B82F6',
@@ -724,7 +777,7 @@
       } else {
         userLocationMarker.setLatLng([lat, lng]);
         userAccuracyCircle.setLatLng([lat, lng]);
-        userAccuracyCircle.setRadius(Math.min(accuracyMeters, 80));
+        userAccuracyCircle.setRadius(Math.min(accuracyMeters, 60));
       }
     }
 
@@ -741,7 +794,7 @@
             updateUserLocationMarkerOnMap(currentPos.lat, currentPos.lng, pos.coords.accuracy);
             map.flyTo([currentPos.lat, currentPos.lng], 18, { duration: 0.8 });
           },
-          () => alert('Activa el permiso de ubicación GPS en tu navegador para ubicarte en el mapa.'),
+          () => alert('Activa el permiso de ubicación GPS en tu teléfono para ubicarte en el mapa.'),
           { enableHighAccuracy: true, timeout: 8000 }
         );
       }
@@ -755,23 +808,31 @@
     }
 
     // =========================================================================
-    // 6. RENDERIZADO DE PARADAS 📍 (ARRASTRABLES POR CREADOR) Y SUMATORIA TOTAL
+    // 7. RENDERIZADO DE PARADAS:
+    //    - APROBADAS: 📍 SIEMPRE VISIBLE, NÚMERO SOLO SI HAY >= 3 USUARIOS
+    //    - TOTAL EN PARADAS: SUMA TODOS LOS USUARIOS (INCLUSO SI SON 1 O 2)
+    //    - PENDIENTES (SOLO CREADOR): MISMO ICONO 📍 EN VERDE
     // =========================================================================
     function renderStops() {
       if (!map) return;
       Object.values(stopMarkers).forEach(m => map.removeLayer(m));
       stopMarkers = {};
 
+      Object.values(pendingStopMarkers).forEach(m => map.removeLayer(m));
+      pendingStopMarkers = {};
+
       let globalTotalPassengers = 0;
 
+      // 1. Renderizar Paradas Oficiales Aprobadas
       stopsData.forEach(stop => {
         if (stop.status !== 'approved') return;
 
         const count = stop.count || 0;
+        // Aunque en la parada haya 1 o 2 usuarios, sí se suman al Total en paradas
         globalTotalPassengers += count;
 
-        // El usuario que está dentro del radio de 50m de la parada permanece visible en el conteo en la esquina superior derecha del 📍
-        const hasVisibleCount = count > 0;
+        // REGLA ESTRICTA: En la parada solo se muestra el número a partir de 3 usuarios
+        const hasVisibleCount = count >= 3;
         const badgeBg = hasVisibleCount ? getStopColor(count) : '';
         const isCritical = count >= 30 ? 'critical-stop' : '';
 
@@ -813,29 +874,66 @@
           draggable: (isCreatorAuthenticated && creatorMapEditMode)
         });
 
-        const deleteBtnHtml = (isCreatorAuthenticated && creatorMapEditMode)
-          ? `<br/><button onclick="moderateStop('${stop.id}', false)" style="margin-top:6px; background:#EF4444; color:#fff; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">🗑️ Eliminar Parada</button>`
+        const popupCountInfo = hasVisibleCount
+          ? `<br/>Esperando: <b>${count} usuarios</b>`
           : '';
 
-        marker.bindPopup(`<b>📍 ${stop.name}</b><br/>En la parada: <b>${count} personas</b> (Radio 50m)${deleteBtnHtml}`);
+        const deleteBtnHtml = isCreatorAuthenticated
+          ? `<br/><button onclick="moderateStop('${stop.id}', false)" style="margin-top:6px; background:#EF4444; color:#fff; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🗑️ Eliminar Parada</button>`
+          : '';
 
-        // Si el Creador arrastra el icono 📍 en el mapa, actualiza su lat/lng en Supabase en tiempo real
+        marker.bindPopup(`<b>📍 ${stop.name}</b>${popupCountInfo}${deleteBtnHtml}`);
+
         marker.on('dragend', async (event) => {
           const newLatLng = event.target.getLatLng();
-          const { error } = await supabaseClient
+          await supabaseClient
             .from('stops')
             .update({ lat: newLatLng.lat, lng: newLatLng.lng })
             .eq('id', stop.id);
-
-          if (error) {
-            alert('Error al mover la parada: ' + error.message);
-          }
           refreshLiveStateFromSupabase();
         });
 
         marker.addTo(map);
         stopMarkers[stop.id] = marker;
       });
+
+      // 2. Renderizar Solicitudes de Paradas en VERDE en el mapa (Solo visibles para el Creador)
+      if (isCreatorAuthenticated && pendingStopsData.length > 0) {
+        pendingStopsData.forEach(pStop => {
+          const greenPinHtml = `
+            <div style="position:relative; width:42px; height:42px; display:flex; align-items:center; justify-content:center;">
+              <span class="pending-green-pin">📍</span>
+            </div>`;
+
+          const greenIcon = L.divIcon({ className: '', html: greenPinHtml, iconSize: [42, 42], iconAnchor: [21, 36] });
+          const pMarker = L.marker([pStop.lat, pStop.lng], {
+            icon: greenIcon,
+            draggable: creatorMapEditMode
+          });
+
+          pMarker.bindPopup(`
+            <div style="min-width:160px;">
+              <b style="color:#10B981;">🟢 Solicitud: ${pStop.name}</b>
+              <div style="margin-top:8px; display:flex; gap:6px;">
+                <button onclick="moderateStop('${pStop.id}', true)" style="background:#10B981; color:#000; font-weight:800; padding:4px 10px; border-radius:6px; font-size:11px;">✓ Aprobar</button>
+                <button onclick="moderateStop('${pStop.id}', false)" style="background:#EF4444; color:#fff; font-weight:700; padding:4px 10px; border-radius:6px; font-size:11px;">✕ Rechazar</button>
+              </div>
+            </div>
+          `);
+
+          pMarker.on('dragend', async (event) => {
+            const newLatLng = event.target.getLatLng();
+            await supabaseClient
+              .from('stops')
+              .update({ lat: newLatLng.lat, lng: newLatLng.lng })
+              .eq('id', pStop.id);
+            refreshLiveStateFromSupabase();
+          });
+
+          pMarker.addTo(map);
+          pendingStopMarkers[pStop.id] = pMarker;
+        });
+      }
 
       // Actualizar sumatoria total en tiempo real de todas las paradas
       const totalEl = document.getElementById('global-total-passengers');
@@ -871,13 +969,13 @@
 
         const icon = L.divIcon({ className: '', html, iconSize: [34, 34], iconAnchor: [17, 17] });
         driverMarkers[d.phone] = L.marker([d.lat, d.lng], { icon })
-          .bindPopup(`<b>${isBus ? '🚌 Autobús en ruta' : '🚗 Carro en ruta'}</b>`)
+          .bindPopup(`<b>${isBus ? '🚌 Autobús activo' : '🚗 Carro activo'}</b>`)
           .addTo(map);
       });
     }
 
     // =========================================================================
-    // 7. MODOS DE ENTRADA (PASAJERO VS TRANSPORTISTA BLOQUEADO)
+    // 8. MODOS DE ENTRADA Y BLOQUEO DEL BOTÓN "EN LA PARADA"
     // =========================================================================
     function enterAppAsPassenger() {
       if (driverAccount) {
@@ -898,8 +996,9 @@
       document.getElementById('btn-oled-mode').classList.add('hidden');
       document.getElementById('btn-change-role').classList.remove('hidden');
 
+      requestWakeLock();
       startGpsTracking();
-      startAutomatic30sPassengerSweep();
+      startBackgroundHeartbeatWorker();
     }
 
     function enterAppAsAccreditedDriver(vehicleType, phone) {
@@ -914,10 +1013,9 @@
       badge.textContent = isBus ? '🚌 Transportista · Bus' : '🚗 Transportista · Carro';
       badge.className = isBus ? 'text-xs font-bold text-amber-400' : 'text-xs font-bold text-cyan-400';
 
-      document.getElementById('driver-active-label').textContent = isBus ? '🚌 Transmitiendo Bus en Vivo' : '🚗 Transmitiendo Carro en Vivo';
+      document.getElementById('driver-active-label').textContent = isBus ? '🚌 Transmitiendo Bus' : '🚗 Transmitiendo Carro';
       document.getElementById('driver-phone-badge').textContent = phone;
 
-      // Bloquear botón de cambio de rol (un transportista no puede ser usuario ni cambiar vehículo)
       document.getElementById('btn-change-role').classList.add('hidden');
       document.getElementById('passenger-controls').classList.add('hidden');
       document.getElementById('driver-controls').classList.remove('hidden');
@@ -925,15 +1023,16 @@
 
       requestWakeLock();
       startGpsTracking();
+      startBackgroundHeartbeatWorker();
       startDriverInactivityWatch(isBus ? 360 : 180);
     }
 
     // =========================================================================
-    // 8. RASTREO GPS Y BARRIDO AUTOMÁTICO CADA 30 SEGUNDOS (RADIO 50 METROS)
+    // 9. RASTREO GPS Y BARRIDO SILENCIOSO CADA 30 SEGUNDOS (RADIO 50M)
     // =========================================================================
     function startGpsTracking() {
       if (!navigator.geolocation) {
-        document.getElementById('gps-status-text').textContent = 'GPS no soportado en este navegador';
+        document.getElementById('gps-status-text').textContent = 'Sin GPS';
         return;
       }
       if (watchId) navigator.geolocation.clearWatch(watchId);
@@ -945,24 +1044,14 @@
           currentPos = { lat: latitude, lng: longitude };
 
           updateUserLocationMarkerOnMap(latitude, longitude, accuracy);
-
-          // Calcular distancia a la parada más cercana
-          const closestInfo = findClosestApprovedStop(latitude, longitude);
-          if (closestInfo.stop) {
-            const distRound = Math.round(closestInfo.distance);
-            document.getElementById('gps-status-text').textContent = distRound <= STOP_CHECKIN_RADIUS_METERS
-              ? `✅ A ${distRound}m de ${closestInfo.stop.name}`
-              : `📍 Parada más cercana a ${distRound}m (Requiere ≤ 50m)`;
-          } else {
-            document.getElementById('gps-status-text').textContent = 'GPS activo en el mapa';
-          }
+          document.getElementById('gps-status-text').textContent = 'Conectado en tiempo real';
 
           if (userRole !== 'passenger' && driverAccount && isDriverTransmitting) {
             await handleDriverMovementUpdate(latitude, longitude);
           }
         },
         () => {
-          document.getElementById('gps-status-text').textContent = '⚠️ Activa el GPS para ubicarte y marcar parada';
+          document.getElementById('gps-status-text').textContent = 'Activa la ubicación GPS';
         },
         { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
       );
@@ -980,11 +1069,32 @@
       return { stop: closest, distance: minDist };
     }
 
-    // Al presionar "En la parada": asigna a la parada más cercana obligatoriamente dentro de 50 metros
+    function setCheckinButtonLockedState(locked, stopName = '') {
+      const btn = document.getElementById('btn-checkin');
+      const titleEl = document.getElementById('passenger-checkin-title');
+      const subEl = document.getElementById('passenger-checkin-sub');
+
+      if (locked) {
+        btn.disabled = true;
+        btn.textContent = '✓ En la parada';
+        btn.className = 'bg-zinc-800 text-emerald-400 border border-emerald-500/40 text-xs font-extrabold px-4 py-2.5 rounded-xl opacity-80 cursor-not-allowed';
+        titleEl.textContent = `📍 En parada: ${stopName}`;
+        subEl.textContent = 'Registrado en espera';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'En la parada';
+        btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
+        titleEl.textContent = 'Reporte de Parada';
+        subEl.textContent = 'Marca cuando estés esperando transporte';
+      }
+    }
+
+    // Al pulsar "En la parada", si está dentro del radio de 50m se suma y SE BLOQUEA EL BOTÓN
     async function manualCheckInClosestStop() {
-      if (!supabaseClient) return;
+      if (!supabaseClient || activeCheckinStopId) return;
+
       if (!hasValidGpsFix) {
-        alert('Esperando señal GPS precisa de tu teléfono. Presiona "🎯 Mi Ubicación" y permite el acceso al GPS.');
+        alert('Obteniendo tu ubicación GPS. Asegúrate de tener activa la ubicación.');
         locateUserOnMap();
         return;
       }
@@ -996,14 +1106,12 @@
       const { stop: closest, distance } = findClosestApprovedStop(currentPos.lat, currentPos.lng);
 
       if (!closest || distance > STOP_CHECKIN_RADIUS_METERS) {
-        const distMsg = closest ? `Estás a ${Math.round(distance)} metros de "${closest.name}".` : '';
-        alert(`⚠️ Debes estar obligatoriamente dentro de un radio de 50 metros de una parada para sumarte.\n${distMsg}`);
+        alert('Acércate a la parada para poder marcar "En la parada".');
         return;
       }
 
       const hash = await getDailyDeviceHash();
-      // Expira en 45 segundos si el barrido de 30 segundos no lo renueva
-      const expiresAt = new Date(Date.now() + 45 * 1000).toISOString();
+      const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
 
       const { error } = await supabaseClient.from('stop_checkins').upsert({
         device_daily_hash: hash,
@@ -1013,80 +1121,82 @@
       });
 
       if (error) {
-        alert('Error registrando en parada: ' + error.message);
+        alert('No se pudo registrar en la parada.');
         return;
       }
 
       activeCheckinStopId = closest.id;
-      sweepCountdown = SWEEP_INTERVAL_SECONDS;
-      document.getElementById('passenger-checkin-title').textContent = `✅ En parada: ${closest.name}`;
-      document.getElementById('passenger-checkin-sub').textContent = `A ${Math.round(distance)}m (Dentro del radio de 50m · Barrido 30s activo)`;
-      const btn = document.getElementById('btn-checkin');
-      btn.textContent = '✓ En la parada';
-      btn.className = 'bg-emerald-500 text-black text-xs font-extrabold px-4 py-2.5 rounded-xl transition';
-
+      setCheckinButtonLockedState(true, closest.name);
+      requestWakeLock();
       refreshLiveStateFromSupabase();
     }
 
-    // Barrido automático cada 30 segundos para confirmar si sigue dentro de los 50m o restarlo
-    function startAutomatic30sPassengerSweep() {
-      if (sweepIntervalId) clearInterval(sweepIntervalId);
-      sweepCountdown = SWEEP_INTERVAL_SECONDS;
+    // Barrido silencioso cada 30 segundos (y soporte en segundo plano con pantalla bloqueada)
+    async function executeSilent30sBackgroundSweep() {
+      if (!supabaseClient) return;
 
-      sweepIntervalId = setInterval(async () => {
-        sweepCountdown--;
-        const badge = document.getElementById('sweep-timer-badge');
-        if (badge) badge.textContent = `${sweepCountdown}s`;
-
-        if (sweepCountdown <= 0) {
-          sweepCountdown = SWEEP_INTERVAL_SECONDS;
-          await executePassenger50mSweep();
+      // Caso 1: Transportista activo en segundo plano
+      if (userRole !== 'passenger' && driverAccount && isDriverTransmitting) {
+        if (hasValidGpsFix) {
+          await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
         }
-      }, 1000);
-    }
-
-    async function executePassenger50mSweep() {
-      if (!supabaseClient || userRole !== 'passenger' || !activeCheckinStopId) {
         refreshLiveStateFromSupabase();
         return;
       }
 
-      const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
-      const hash = await getDailyDeviceHash();
+      // Caso 2: Pasajero con botón bloqueado "En la parada"
+      if (userRole === 'passenger' && activeCheckinStopId) {
+        const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
+        const hash = await getDailyDeviceHash();
 
-      if (!currentStop || !hasValidGpsFix) {
-        return;
-      }
+        if (!currentStop) {
+          activeCheckinStopId = null;
+          setCheckinButtonLockedState(false);
+          refreshLiveStateFromSupabase();
+          return;
+        }
 
-      const distToCheckedStop = getDistanceMeters(currentPos.lat, currentPos.lng, currentStop.lat, currentStop.lng);
+        // Si el navegador está visible o envió nueva coordenada GPS, verificamos el radio de 50 metros
+        const distToCheckedStop = getDistanceMeters(currentPos.lat, currentPos.lng, currentStop.lat, currentStop.lng);
 
-      if (distToCheckedStop <= STOP_CHECKIN_RADIUS_METERS) {
-        // Sigue dentro de los 50 metros: permanece visible en el conteo (renueva por 45s más)
-        const expiresAt = new Date(Date.now() + 45 * 1000).toISOString();
-        await supabaseClient.from('stop_checkins').upsert({
-          device_daily_hash: hash,
-          stop_id: currentStop.id,
-          expires_at: expiresAt,
-          updated_at: new Date().toISOString()
-        });
-        document.getElementById('passenger-checkin-sub').textContent = `Confirmado a ${Math.round(distToCheckedStop)}m (≤ 50m) · Barrido OK`;
-      } else {
-        // Salió del radio de 50 metros: restar inmediatamente al usuario de la parada
-        await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
-        activeCheckinStopId = null;
-
-        document.getElementById('passenger-checkin-title').textContent = 'Saliste de la parada (> 50m)';
-        document.getElementById('passenger-checkin-sub').textContent = `A ${Math.round(distToCheckedStop)}m de ${currentStop.name}. Restado del conteo.`;
-        const btn = document.getElementById('btn-checkin');
-        btn.textContent = 'En la parada';
-        btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
+        if (distToCheckedStop <= STOP_CHECKIN_RADIUS_METERS) {
+          // Sigue dentro de los 50 metros: permanece sumado y con el botón bloqueado
+          const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
+          await supabaseClient.from('stop_checkins').upsert({
+            device_daily_hash: hash,
+            stop_id: currentStop.id,
+            expires_at: expiresAt,
+            updated_at: new Date().toISOString()
+          });
+        } else {
+          // Salió de los 50 metros: se resta automáticamente de la parada y se reactiva el botón
+          await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
+          activeCheckinStopId = null;
+          setCheckinButtonLockedState(false);
+        }
       }
 
       refreshLiveStateFromSupabase();
     }
 
+    async function keepAliveWhileScreenLocked() {
+      if (!supabaseClient) return;
+      if (userRole === 'passenger' && activeCheckinStopId) {
+        const hash = await getDailyDeviceHash();
+        const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
+        await supabaseClient.from('stop_checkins').upsert({
+          device_daily_hash: hash,
+          stop_id: activeCheckinStopId,
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString()
+        });
+      } else if (userRole !== 'passenger' && driverAccount && isDriverTransmitting && hasValidGpsFix) {
+        await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
+      }
+    }
+
     // =========================================================================
-    // 9. TRANSMISIÓN DE TRANSPORTISTA Y CONTROL DE BLOQUEO EN TIEMPO REAL
+    // 10. TRANSMISIÓN DE TRANSPORTISTA
     // =========================================================================
     async function handleDriverMovementUpdate(lat, lng) {
       if (!supabaseClient || !driverAccount || !isDriverTransmitting) return;
@@ -1126,7 +1236,6 @@
 
         if (remaining === 0) {
           await toggleDriverTransmission(false);
-          alert('Unidad ocultada del mapa por detención prolongada. Presiona "Reanudar Ruta" cuando vuelvas a moverte.');
         }
       }, 1000);
     }
@@ -1141,20 +1250,20 @@
           await supabaseClient.from('active_drivers').delete().eq('phone', driverAccount.phone);
         }
         btn.textContent = 'Reanudar Ruta';
-        btn.className = 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-2 rounded-xl';
+        btn.className = 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
         label.textContent = '⏸️ Ruta en Pausa';
       } else {
         lastDriverMoveTime = Date.now();
         btn.textContent = 'Pausar Ruta';
-        btn.className = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl';
-        label.textContent = driverAccount.vehicle_type === 'bus' ? '🚌 Transmitiendo Bus en Vivo' : '🚗 Transmitiendo Carro en Vivo';
+        btn.className = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
+        label.textContent = driverAccount.vehicle_type === 'bus' ? '🚌 Transmitiendo Bus' : '🚗 Transmitiendo Carro';
         if (hasValidGpsFix) await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
       }
       refreshLiveStateFromSupabase();
     }
 
     // =========================================================================
-    // 10. PANEL DEL CREADOR: MOVER/CREAR/ELIMINAR PARADAS Y BLOQUEAR CHOFERES
+    // 11. PANEL DEL CREADOR: PARADAS VERDES, MOVER/CREAR Y ELIMINAR CHOFERES
     // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
@@ -1173,7 +1282,8 @@
       if (error) return alert('Error al enviar solicitud: ' + error.message);
       document.getElementById('input-stop-name').value = '';
       closeSuggestStopModal();
-      alert('✅ Solicitud enviada. La parada será visible en la PWA cuando el Creador la apruebe.');
+      alert('✅ Solicitud enviada al Creador.');
+      refreshLiveStateFromSupabase();
     }
 
     function openAdminModal() {
@@ -1190,15 +1300,15 @@
 
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        alert('Acceso denegado. Verifica tu usuario admin@ud4vivo.local y contraseña en Supabase Auth.');
+        alert('Acceso denegado. Verifica tu usuario admin@ud4vivo.local y contraseña.');
         return;
       }
 
       isCreatorAuthenticated = true;
       document.getElementById('admin-login-box').classList.add('hidden');
       document.getElementById('admin-panel-content').classList.remove('hidden');
-      loadCreatorDashboardData();
-      renderStops();
+      await loadCreatorDashboardData();
+      await refreshLiveStateFromSupabase();
     }
 
     function toggleCreatorMapEditMode(enable) {
@@ -1222,7 +1332,7 @@
       const lng = parseFloat(document.getElementById('creator-new-stop-lng').value);
 
       if (!name || isNaN(lat) || isNaN(lng)) {
-        alert('Completa el nombre y las coordenadas (puedes pulsar "Usar Centro del Mapa").');
+        alert('Completa el nombre y las coordenadas.');
         return;
       }
 
@@ -1251,28 +1361,30 @@
         supabaseClient.from('registered_drivers').select('*').order('created_at', { ascending: false })
       ]);
 
-      // 1. Paradas Pendientes
+      // 1. Paradas Pendientes (Aparecen en VERDE en el mapa)
       const pendingContainer = document.getElementById('pending-stops-list');
       const pending = (allStops || []).filter(s => s.status === 'pending');
+      pendingStopsData = pending;
+
       if (pending.length === 0) {
         pendingContainer.innerHTML = '<p class="text-zinc-500">No hay solicitudes pendientes.</p>';
       } else {
         pendingContainer.innerHTML = pending.map(s => `
-          <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex items-center justify-between gap-2">
-            <div>
-              <p class="font-bold text-white">📍 ${s.name}</p>
+          <div class="bg-zinc-900 border border-emerald-500/40 rounded-xl p-3 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <p class="font-bold text-emerald-400 truncate">🟢 ${s.name}</p>
               <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>
             </div>
             <div class="flex gap-1.5 shrink-0">
-              <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ver</button>
+              <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ver en Mapa</button>
               <button type="button" onclick="moderateStop('${s.id}', true)" class="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold">Aprobar</button>
-              <button type="button" onclick="moderateStop('${s.id}', false)" class="bg-red-600/30 text-red-300 px-2.5 py-1 rounded-lg">Eliminar</button>
+              <button type="button" onclick="moderateStop('${s.id}', false)" class="bg-red-600/30 text-red-300 px-2.5 py-1 rounded-lg">Rechazar</button>
             </div>
           </div>
         `).join('');
       }
 
-      // 2. Paradas Aprobadas (Para Eliminar o Centrar)
+      // 2. Paradas Aprobadas
       const approvedContainer = document.getElementById('approved-stops-admin-list');
       const approved = (allStops || []).filter(s => s.status === 'approved');
       approvedContainer.innerHTML = approved.map(s => `
@@ -1288,7 +1400,7 @@
         </div>
       `).join('');
 
-      // 3. Transportistas Registrados (Para Bloquear / Desbloquear Teléfono)
+      // 3. Transportistas Registrados (Bloquear / Desbloquear / ELIMINAR Registro)
       const driversContainer = document.getElementById('registered-drivers-admin-list');
       if (!allDrivers || allDrivers.length === 0) {
         driversContainer.innerHTML = '<p class="text-zinc-500">Aún no hay transportistas registrados.</p>';
@@ -1298,21 +1410,24 @@
           const statusBadge = d.is_blocked
             ? '<span class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded">Bloqueado</span>'
             : '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">Activo</span>';
-          const btnAction = d.is_blocked
-            ? `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', false)" class="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold">Desbloquear</button>`
-            : `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', true)" class="bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold">Bloquear</button>`;
+          const btnBlockAction = d.is_blocked
+            ? `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', false)" class="bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold">Desbloquear</button>`
+            : `<button type="button" onclick="toggleBlockDriverPhone('${d.phone}', true)" class="bg-amber-600 text-white px-2 py-1 rounded-lg font-bold">Bloquear</button>`;
 
           return `
             <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between gap-2">
-              <div>
-                <div class="flex items-center gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono font-bold text-white">${d.phone}</span>
                   ${statusBadge}
                 </div>
-                <p class="text-[10px] text-zinc-400 mt-0.5">Unidad fija: <b>${icon}</b></p>
+                <p class="text-[10px] text-zinc-400 mt-0.5">Unidad: <b>${icon}</b></p>
               </div>
               <div class="flex gap-1.5 shrink-0">
-                ${btnAction}
+                ${btnBlockAction}
+                <button type="button" onclick="deleteDriverRegistration('${d.phone}')" class="bg-red-600 hover:bg-red-500 text-white px-2.5 py-1 rounded-lg font-bold">
+                  Eliminar
+                </button>
               </div>
             </div>`;
         }).join('');
@@ -1330,7 +1445,7 @@
       } else {
         await supabaseClient.from('stops').delete().eq('id', stopId);
       }
-      await loadCreatorDashboardData();
+      if (isCreatorAuthenticated) await loadCreatorDashboardData();
       await refreshLiveStateFromSupabase();
     }
 
@@ -1341,7 +1456,7 @@
         .eq('phone', phone);
 
       if (error) {
-        alert('Error actualizando estado del transportista: ' + error.message);
+        alert('Error actualizando estado: ' + error.message);
         return;
       }
 
@@ -1353,13 +1468,37 @@
       await refreshLiveStateFromSupabase();
     }
 
+    // ELIMINAR REGISTRO DE TRANSPORTISTA: Libera el teléfono para un nuevo registro como usuario o transportista
+    async function deleteDriverRegistration(phone) {
+      if (!confirm(`¿Eliminar el registro del transportista ${phone}?\nEl número quedará libre para registrarse nuevamente como Usuario o Transportista.`)) {
+        return;
+      }
+
+      await supabaseClient.from('active_drivers').delete().eq('phone', phone);
+      const { error } = await supabaseClient.from('registered_drivers').delete().eq('phone', phone);
+
+      if (error) {
+        alert('Error al eliminar registro: ' + error.message);
+        return;
+      }
+
+      // Si se eliminó desde el mismo dispositivo, limpiar sesión local
+      if (driverAccount && driverAccount.phone === phone) {
+        localStorage.removeItem('ud4_accredited_driver');
+        driverAccount = null;
+      }
+
+      await loadCreatorDashboardData();
+      await refreshLiveStateFromSupabase();
+    }
+
     // =========================================================================
-    // 11. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
+    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
       try {
-        // Si el usuario actual es un transportista, verificar en tiempo real si fue bloqueado por el Creador
+        // Si el usuario actual es un transportista, verificar si fue bloqueado o eliminado por el Creador
         if (driverAccount) {
           const { data: myDriverStatus } = await supabaseClient
             .from('registered_drivers')
@@ -1367,18 +1506,39 @@
             .eq('phone', driverAccount.phone)
             .maybeSingle();
 
-          if (myDriverStatus && myDriverStatus.is_blocked) {
+          // Si fue eliminado por el Creador (!myDriverStatus), liberar el teléfono inmediatamente y volver al inicio
+          if (!myDriverStatus) {
+            localStorage.removeItem('ud4_accredited_driver');
+            driverAccount = null;
+            location.reload();
+            return;
+          }
+
+          if (myDriverStatus.is_blocked) {
             await supabaseClient.from('active_drivers').delete().eq('phone', driverAccount.phone);
             location.reload();
             return;
           }
         }
 
-        const [{ data: stops }, { data: counts }, { data: drivers }] = await Promise.all([
+        const queries = [
           supabaseClient.from('stops').select('*').eq('status', 'approved'),
           supabaseClient.from('stop_counts').select('*'),
           supabaseClient.from('active_drivers').select('*')
-        ]);
+        ];
+
+        if (isCreatorAuthenticated) {
+          queries.push(supabaseClient.from('stops').select('*').eq('status', 'pending'));
+        }
+
+        const results = await Promise.all(queries);
+        const stops = results[0].data;
+        const counts = results[1].data;
+        const drivers = results[2].data;
+
+        if (isCreatorAuthenticated && results[3]) {
+          pendingStopsData = results[3].data || [];
+        }
 
         if (stops) {
           const countMap = counts ? Object.fromEntries(counts.map(c => [c.stop_id, c.people_count])) : {};
@@ -1398,7 +1558,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v4')
+      supabaseClient.channel('ud4-live-channel-v5')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_drivers' }, refreshLiveStateFromSupabase)
@@ -1407,7 +1567,11 @@
     }
 
     async function requestWakeLock() {
-      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+      try {
+        if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
     }
 
     function toggleOledMode(show) {
@@ -1416,7 +1580,6 @@
 
     function returnToOnboarding() {
       if (driverAccount) {
-        alert('Tu cuenta está acreditada permanentemente como Transportista y no puede cambiar a modo Usuario.');
         return;
       }
       if (wakeLock) wakeLock.release();
