@@ -1,18 +1,50 @@
-const CACHE_NAME = 'ud4-pwa-v3';
+const CACHE_NAME = 'ud4-pwa-v4';
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 
-self.addEventListener('install', (e) => {
+self.addEventListener('install', (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS).catch(() => {}))
+  );
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => caches.delete(k)))
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      )
     )
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+self.addEventListener('fetch', (event) => {
+  const url = event.request.url;
+
+  // Nunca almacenar en caché respuestas en tiempo real de Supabase
+  if (url.includes('supabase.co')) {
+    return;
+  }
+
+  // Estrategia Network-First para cargar siempre la versión más reciente del mapa y código
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (event.request.method === 'GET' && response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone)).catch(() => {});
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
 });
