@@ -38,6 +38,8 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       transition: background-color 0.25s ease, color 0.25s ease;
     }
     #map { 
@@ -123,7 +125,7 @@
     .vehicle-marker { transition: transform 1.2s linear; }
 
     /* =====================================================================
-       BURBUJAS MINIMALISTAS CON PILA DE 3 RANURAS Y COLA (SIN SOLAPAMIENTO)
+       BURBUJAS NÍTIDAS DE ALTA DEFINICIÓN (SIN BLUR NI SUBPÍXELES BORROSOS)
        - Modo Noche: Fondo Blanco (#FFFFFF) con Texto Negro (#09090B) regular
        - Modo Día: Fondo Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular
        ===================================================================== */
@@ -131,115 +133,118 @@
       display: none !important;
     }
 
-    @keyframes side-bubble-grow-pop {
+    @keyframes side-bubble-crisp {
       0% {
         opacity: 0;
-        transform: translate(4px, -50%) scale(0.2);
+        transform: translate3d(4px, 0, 0) scale(0.6);
       }
-      12% {
+      8% {
         opacity: 1;
-        transform: translate(16px, -50%) scale(1.05);
+        transform: translate3d(16px, 0, 0) scale(1);
       }
-      20% {
+      90% {
         opacity: 1;
-        transform: translate(14px, -50%) scale(1);
+        transform: translate3d(16px, 0, 0) scale(1);
       }
-      86% {
-        opacity: 1;
-        transform: translate(14px, -50%) scale(1);
-      }
-      94% {
-        opacity: 0.95;
-        transform: translate(16px, -50%) scale(1.32);
+      96% {
+        opacity: 0.9;
+        transform: translate3d(18px, 0, 0) scale(1.22);
       }
       100% {
         opacity: 0;
-        transform: translate(18px, -50%) scale(1.65);
-        filter: blur(2px);
+        transform: translate3d(20px, 0, 0) scale(1.4);
       }
     }
 
     @keyframes side-pop-ring-burst {
-      0%, 86% {
+      0%, 90% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
+        transform: scale(0.8);
       }
-      92% {
-        opacity: 0.9;
-        transform: translate(-50%, -50%) scale(1.25);
+      95% {
+        opacity: 0.85;
+        transform: scale(1.2);
       }
       100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(1.85);
+        transform: scale(1.55);
       }
     }
 
     .stop-reaction-wrapper {
       position: relative;
       pointer-events: none;
-      width: 0;
-      height: 0;
     }
 
-    /* Base minimalista: Modo Noche (Blanca con texto negro regular) */
+    /* Renderizado 100% definido y nítido en pantallas móviles y desktop */
     .stop-reaction-bubble {
       position: absolute;
-      left: 2px;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transform-origin: left center;
-      animation: side-bubble-grow-pop 5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: side-bubble-crisp 5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       white-space: nowrap;
       z-index: 9999;
       pointer-events: none;
       background-color: #FFFFFF;
       color: #09090B;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       font-weight: 400; /* Texto regular */
-      font-size: 10px;
-      line-height: 1.2;
+      font-size: 12px;
+      line-height: 16px;
       letter-spacing: 0;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-      transition: background-color 0.2s ease, color 0.2s ease;
+      border: 1px solid rgba(9, 9, 11, 0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      filter: none !important;
+      -webkit-filter: none !important;
     }
 
-    /* Puntero izquierdo para Modo Noche (Blanco) */
+    /* Puntero izquierdo en píxeles enteros para Modo Noche (Blanco) */
     .stop-reaction-bubble::before {
       content: '';
       position: absolute;
-      left: -4px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-width: 4px 4px 4px 0;
-      border-style: solid;
-      border-color: transparent #FFFFFF transparent transparent;
+      left: -5px;
+      top: 7px;
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 5px solid #FFFFFF;
     }
 
-    /* Ajuste sutil para emojis manteniendo la misma cápsula minimalista */
+    /* Cápsula definida para emojis */
     .stop-reaction-bubble.type-emoji {
-      font-size: 13px;
-      padding: 3px 7px;
-      border-radius: 9999px;
+      font-size: 16px;
+      line-height: 18px;
+      padding: 3px 8px;
+      border-radius: 10px;
     }
 
     /* Modo Día: Burbuja Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular */
     body.day-mode .stop-reaction-bubble {
       background-color: #5B84EE !important;
       color: #FFFFFF !important;
-      box-shadow: 0 3px 10px rgba(91, 132, 238, 0.45), 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 2px 8px rgba(91, 132, 238, 0.4), 0 1px 3px rgba(0, 0, 0, 0.18) !important;
     }
 
     body.day-mode .stop-reaction-bubble::before {
-      border-color: transparent #5B84EE transparent transparent !important;
+      border-right-color: #5B84EE !important;
     }
 
     .burst-effect-ring {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
+      inset: 0;
+      border-radius: 8px;
       border: 1.5px solid #FFFFFF;
       animation: side-pop-ring-burst 5s ease-out forwards;
       pointer-events: none;
@@ -758,7 +763,7 @@
     const REACTION_COOLDOWN_SECONDS = 30;
     const REACTION_BUBBLE_DURATION_MS = 5000;
     const MIN_ZOOM_FOR_BUBBLES = 17;
-    const MAX_VISIBLE_BUBBLES_PER_STOP = 3; // Máximo 3 comentarios visibles en simultáneo por parada
+    const MAX_VISIBLE_BUBBLES_PER_STOP = 3;
 
     const MANUAL_WAIT_DURATION_SEC = 300;
     const MANUAL_CONFIRM_WINDOW_SEC = 20;
@@ -799,8 +804,6 @@
     let reactionCooldownTimer = null;
     let displayedReactionIds = new Set();
 
-    // Gestor de colas y 3 ranuras verticales sin solapamiento por cada parada:
-    // stopBubbleQueues[stopId] = { slots: [null, null, null], queue: [] }
     let stopBubbleQueues = {};
 
     let pendingVehicleTypeToVerify = null;
@@ -1742,7 +1745,6 @@
       document.body.classList.toggle('hide-zoom-reactions', currentZoom < MIN_ZOOM_FOR_BUBBLES);
     }
 
-    // Recibe cada nueva reacción y la encola o muestra si hay espacio entre los 3 slots de esa parada
     function spawnStopReactionBubbleOnMap(reaction) {
       if (!map || !reaction || !reaction.stop_id) return;
       if (displayedReactionIds.has(reaction.id)) return;
@@ -1751,8 +1753,8 @@
       const stopId = reaction.stop_id;
       if (!stopBubbleQueues[stopId]) {
         stopBubbleQueues[stopId] = {
-          slots: [null, null, null], // Máximo 3 comentarios visibles simultáneamente por parada
-          queue: []                  // El resto espera en cola FIFO
+          slots: [null, null, null],
+          queue: []
         };
       }
 
@@ -1760,16 +1762,13 @@
       processStopBubbleQueue(stopId);
     }
 
-    // Revisa si hay alguna ranura libre (0, 1 o 2) en la parada y muestra el siguiente comentario en cola
     function processStopBubbleQueue(stopId) {
       if (!map) return;
       const state = stopBubbleQueues[stopId];
       if (!state || state.queue.length === 0) return;
 
-      // Buscar la primera ranura libre de las 3 disponibles
       const freeSlotIndex = state.slots.findIndex(slot => slot === null);
       if (freeSlotIndex === -1) {
-        // Las 3 ranuras están ocupadas; el comentario espera en la cola a que termine alguno
         return;
       }
 
@@ -1780,11 +1779,11 @@
         return;
       }
 
-      // Desplazamiento vertical exclusivo por ranura para que NUNCA se solapen:
-      // Slot 0 (centro-medio): -16px
-      // Slot 1 (arriba):       -41px
-      // Slot 2 (abajo):         +9px
-      const slotVerticalOffsets = [-16, -41, 9];
+      // Posiciones verticales enteras exactas (sin decimales ni subpíxeles) para las 3 ranuras:
+      // Slot 0 (centro): -30px
+      // Slot 1 (arriba): -58px
+      // Slot 2 (abajo):   -2px
+      const slotVerticalOffsets = [-30, -58, -2];
       const topOffsetPx = slotVerticalOffsets[freeSlotIndex];
 
       const isEmoji = nextReaction.reaction_type === 'emoji';
@@ -1799,10 +1798,11 @@
         </div>
       `;
 
+      // iconSize fijo en píxeles pares evita que WebKit/Blink difumine el texto dentro del marcador
       const bubbleIcon = L.divIcon({
         className: '',
         html: bubbleHtml,
-        iconSize: [0, 0],
+        iconSize: [200, 30],
         iconAnchor: [0, 0]
       });
 
@@ -1812,14 +1812,12 @@
         zIndexOffset: 2000 + freeSlotIndex
       }).addTo(map);
 
-      // Ocupar la ranura
       state.slots[freeSlotIndex] = bubbleMarker;
 
       if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
         playAppSound('bubble');
       }
 
-      // Al cumplirse exactamente los 5 segundos, explota, libera la ranura y entra el primero en cola
       setTimeout(() => {
         if (map && bubbleMarker) {
           if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
@@ -1831,7 +1829,6 @@
         processStopBubbleQueue(stopId);
       }, REACTION_BUBBLE_DURATION_MS);
 
-      // Si aún quedan más ranuras libres y más elementos en cola, procesarlos también
       if (state.queue.length > 0 && state.slots.includes(null)) {
         processStopBubbleQueue(stopId);
       }
@@ -2989,7 +2986,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v12')
+      supabaseClient.channel('ud4-live-channel-v13')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
