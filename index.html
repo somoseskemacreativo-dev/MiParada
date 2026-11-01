@@ -38,6 +38,7 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
     #map { 
       position: fixed;
@@ -48,10 +49,52 @@
       z-index: 1; 
       background: #121216 !important; 
     }
-    .leaflet-tile-pane {
+
+    /* =====================================================================
+       MODO NOCHE (POR DEFECTO) VS MODO DÍA (MAPA A COLOR Y BOTONES BLANCOS)
+       ===================================================================== */
+    body:not(.day-mode) .leaflet-tile-pane {
       -webkit-filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
       filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
     }
+    body.day-mode {
+      background-color: #F4F4F5 !important;
+      color: #18181B !important;
+    }
+    body.day-mode #map {
+      background: #E4E4E7 !important;
+    }
+    body.day-mode .leaflet-tile-pane {
+      -webkit-filter: none !important;
+      filter: none !important;
+    }
+    body.day-mode .theme-card {
+      background-color: rgba(255, 255, 255, 0.96) !important;
+      border-color: #D4D4D8 !important;
+      color: #18181B !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+    }
+    body.day-mode .theme-btn {
+      background-color: #FFFFFF !important;
+      border-color: #D4D4D8 !important;
+      color: #18181B !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    }
+    body.day-mode .theme-btn:hover {
+      background-color: #F4F4F5 !important;
+    }
+    body.day-mode .theme-text-main {
+      color: #18181B !important;
+    }
+    body.day-mode .theme-text-sub {
+      color: #52525B !important;
+    }
+    body.day-mode .theme-input {
+      background-color: #F4F4F5 !important;
+      border-color: #D4D4D8 !important;
+      color: #18181B !important;
+    }
+
     .leaflet-control-attribution { 
       font-size: 9px !important; 
       background: rgba(9,9,11,0.75) !important; 
@@ -82,50 +125,53 @@
     .vehicle-marker { transition: transform 1.2s linear; }
 
     /* =====================================================================
-       ANIMACIÓN DE BURBUJA DE COMENTARIO / EMOJI DESDE LA PARADA (5 SEGUNDOS)
-       Crece desde el icono 📍 a tamaño legible y explota al llegar a 5s
+       BURBUJAS 60% MÁS PEQUEÑAS, AL LADO DEL ICONO 📍 Y SOLO EN ZOOM >= 17
        ===================================================================== */
-    @keyframes bubble-grow-float {
+    body.hide-zoom-reactions .stop-reaction-wrapper {
+      display: none !important;
+    }
+
+    @keyframes side-bubble-grow-pop {
       0% {
         opacity: 0;
-        transform: translate(-50%, 10px) scale(0.15);
+        transform: translate(2px, -50%) scale(0.15);
       }
-      12% {
+      14% {
         opacity: 1;
-        transform: translate(-50%, -18px) scale(1.12);
+        transform: translate(14px, -50%) scale(1.08);
       }
-      20% {
+      22% {
         opacity: 1;
-        transform: translate(-50%, -22px) scale(1);
+        transform: translate(12px, -50%) scale(1);
       }
-      86% {
+      85% {
         opacity: 1;
-        transform: translate(-50%, -30px) scale(1.03);
+        transform: translate(12px, -50%) scale(1);
       }
       94% {
         opacity: 0.95;
-        transform: translate(-50%, -33px) scale(1.45);
-        filter: brightness(1.6);
+        transform: translate(14px, -50%) scale(1.38);
+        filter: brightness(1.5);
       }
       100% {
         opacity: 0;
-        transform: translate(-50%, -36px) scale(1.9);
-        filter: blur(5px);
+        transform: translate(16px, -50%) scale(1.75);
+        filter: blur(3px);
       }
     }
 
-    @keyframes pop-ring-burst {
-      0%, 86% {
+    @keyframes side-pop-ring-burst {
+      0%, 85% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
+        transform: translate(-50%, -50%) scale(0.4);
       }
       92% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1.3);
+        transform: translate(-50%, -50%) scale(1.25);
       }
       100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(2.2);
+        transform: translate(-50%, -50%) scale(1.9);
       }
     }
 
@@ -136,12 +182,13 @@
       height: 0;
     }
 
+    /* 60% más pequeño que el diseño anterior y ubicado al lado derecho del 📍 */
     .stop-reaction-bubble {
       position: absolute;
-      bottom: 24px;
-      left: 0;
-      transform-origin: bottom center;
-      animation: bubble-grow-float 5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      top: -16px;
+      left: 4px;
+      transform-origin: left center;
+      animation: side-bubble-grow-pop 5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       white-space: nowrap;
       z-index: 9999;
       pointer-events: none;
@@ -151,33 +198,46 @@
       background: linear-gradient(135deg, #10B981 0%, #059669 100%);
       color: #FFFFFF;
       font-weight: 800;
-      font-size: 13px;
+      font-size: 8.5px;
+      line-height: 1.1;
       letter-spacing: -0.01em;
-      padding: 6px 13px;
-      border-radius: 16px;
-      border: 2px solid #FFFFFF;
-      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.55), 0 2px 8px rgba(0,0,0,0.85);
+      padding: 3px 6px;
+      border-radius: 7px;
+      border: 1px solid #FFFFFF;
+      box-shadow: 0 3px 8px rgba(16, 185, 129, 0.45), 0 1px 4px rgba(0,0,0,0.8);
     }
 
-    .stop-reaction-bubble.type-sms::after {
+    /* Puntero lateral izquierdo señalando exactamente al icono 📍 de la parada */
+    .stop-reaction-bubble.type-sms::before {
       content: '';
       position: absolute;
-      bottom: -7px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 7px 6px 0;
+      left: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 3.5px 4px 3.5px 0;
       border-style: solid;
-      border-color: #FFFFFF transparent;
+      border-color: transparent #FFFFFF transparent transparent;
     }
 
     .stop-reaction-bubble.type-emoji {
-      background: rgba(18, 18, 22, 0.92);
-      font-size: 30px;
+      background: rgba(18, 18, 22, 0.94);
+      font-size: 13px;
       line-height: 1;
-      padding: 7px 11px;
+      padding: 3px 5px;
       border-radius: 9999px;
-      border: 2px solid #34D399;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 15px rgba(52, 211, 153, 0.45);
+      border: 1px solid #34D399;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.8), 0 0 6px rgba(52, 211, 153, 0.4);
+    }
+
+    .stop-reaction-bubble.type-emoji::before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 3px 4px 3px 0;
+      border-style: solid;
+      border-color: transparent #34D399 transparent transparent;
     }
 
     .burst-effect-ring {
@@ -187,8 +247,8 @@
       width: 100%;
       height: 100%;
       border-radius: 9999px;
-      border: 2.5px dashed #6EE7B7;
-      animation: pop-ring-burst 5s ease-out forwards;
+      border: 1.5px dashed #6EE7B7;
+      animation: side-pop-ring-burst 5s ease-out forwards;
       pointer-events: none;
     }
   </style>
@@ -196,20 +256,19 @@
 <body class="relative">
 
   <!-- PANTALLA 1: SELECCIÓN DE ROL E INSTALACIÓN DE APP -->
-  <div id="onboarding-screen" class="fixed inset-0 z-50 bg-[#09090B] flex flex-col justify-between p-6 overflow-y-auto">
+  <div id="onboarding-screen" class="theme-card fixed inset-0 z-50 bg-[#09090B] flex flex-col justify-between p-6 overflow-y-auto">
     <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4 gap-2">
       <div class="flex items-center gap-3">
         <img src="./icon.png" onerror="this.onerror=null;this.src='./icon.jpg';" alt="Mi Parada" class="w-11 h-11 rounded-xl border border-zinc-700/80 object-cover shrink-0" />
         <div>
           <div class="flex items-center gap-2">
             <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <h1 class="text-base font-extrabold tracking-tight">MI PARADA · CARICUAO</h1>
+            <h1 class="theme-text-main text-base font-extrabold tracking-tight">MI PARADA · CARICUAO</h1>
           </div>
-          <p class="text-xs text-zinc-400">UD-4 · Movilidad Comunitaria en Tiempo Real</p>
+          <p class="theme-text-sub text-xs text-zinc-400">UD-4 · Movilidad Comunitaria en Tiempo Real</p>
         </div>
       </div>
 
-      <!-- Botón de Instalar como App en el Celular -->
       <button id="btn-install-pwa" type="button" onclick="triggerPwaInstall()" class="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition">
         <span>📲</span> Instalar App
       </button>
@@ -217,78 +276,77 @@
 
     <div class="my-auto max-w-md w-full mx-auto space-y-4 py-4">
       
-      <!-- Aviso si el transportista está en Lista de Espera por Verificación -->
       <div id="driver-pending-banner" class="hidden bg-amber-500/10 border border-amber-500/40 rounded-2xl p-4 space-y-1.5">
         <div class="flex items-center justify-between">
           <span class="text-xs font-extrabold text-amber-400">⏳ Solicitud de Transportista en Lista de Espera</span>
           <span id="pending-driver-phone-label" class="text-[11px] font-mono text-zinc-300"></span>
         </div>
-        <p class="text-[11px] text-zinc-300 leading-relaxed">
-          Tu número está pendiente por verificación del Creador. Mientras es verificado, puedes ingresar a la plataforma como <b>Usuario</b>. En cuanto el Creador presione <b>Verificado</b>, entrarás automáticamente como transportista.
+        <p class="theme-text-sub text-[11px] text-zinc-300 leading-relaxed">
+          Tu número está pendiente por verificación del Creador. Mientras es verificado, puedes ingresar a la plataforma como <b>Usuario</b>.
         </p>
       </div>
 
-      <p class="text-xs uppercase tracking-widest text-zinc-500 font-semibold text-center mb-2">Selecciona tu modo de acceso</p>
+      <p class="theme-text-sub text-xs uppercase tracking-widest text-zinc-500 font-semibold text-center mb-2">Selecciona tu modo de acceso</p>
 
       <!-- Opción 1: Usuario / Pasajero -->
-      <button id="btn-role-passenger" type="button" onclick="enterAppAsPassenger()" class="w-full cursor-pointer group bg-[#121216] hover:bg-zinc-900 border border-zinc-800 hover:border-emerald-500/60 rounded-2xl p-6 text-left transition-all flex items-center justify-between">
+      <button id="btn-role-passenger" type="button" onclick="enterAppAsPassenger()" class="theme-btn w-full cursor-pointer group bg-[#121216] hover:bg-zinc-900 border border-zinc-800 hover:border-emerald-500/60 rounded-2xl p-6 text-left transition-all flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-xl bg-zinc-800/80 group-hover:bg-emerald-500/10 flex items-center justify-center border border-zinc-700 group-hover:border-emerald-500/40 transition text-2xl">
             📍
           </div>
           <div>
-            <h2 class="text-base font-bold text-white">Soy Usuario</h2>
-            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas, comentar estado y marcar espera en UD-4</p>
+            <h2 class="theme-text-main text-base font-bold text-white">Soy Usuario</h2>
+            <p class="theme-text-sub text-xs text-zinc-400 mt-0.5">Ver paradas, comentar estado y marcar espera en UD-4</p>
           </div>
         </div>
         <span class="text-zinc-500 group-hover:text-emerald-400 text-lg">→</span>
       </button>
 
       <!-- Opción 2: Transportista (Carro 🚗, Autobús 🚌 o Moto 🛵) -->
-      <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
+      <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista</span>
+          <span class="theme-text-sub text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista</span>
           <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">Requiere Verificación</span>
         </div>
-        <p class="text-[11px] text-zinc-500 leading-relaxed">
+        <p class="theme-text-sub text-[11px] text-zinc-500 leading-relaxed">
           Registra tu número y unidad (Carro, Autobús o Moto). Quedarás en lista de espera hasta que el Creador te marque como <b>Verificado</b>.
         </p>
         <div class="grid grid-cols-3 gap-2.5">
-          <button type="button" onclick="openDriverVerificationModal('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
+          <button type="button" onclick="openDriverVerificationModal('car')" class="theme-btn cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
             <span class="text-3xl leading-none">🚗</span>
-            <span class="text-xs font-bold text-white">Carro</span>
-            <span class="text-[9px] text-zinc-500 text-center">Pausa 3m</span>
+            <span class="theme-text-main text-xs font-bold text-white">Carro</span>
+            <span class="theme-text-sub text-[9px] text-zinc-500 text-center">Pausa 3m</span>
           </button>
 
-          <button type="button" onclick="openDriverVerificationModal('bus')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
+          <button type="button" onclick="openDriverVerificationModal('bus')" class="theme-btn cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
             <span class="text-3xl leading-none">🚌</span>
-            <span class="text-xs font-bold text-white">Autobús</span>
-            <span class="text-[9px] text-zinc-500 text-center">Pausa 6m</span>
+            <span class="theme-text-main text-xs font-bold text-white">Autobús</span>
+            <span class="theme-text-sub text-[9px] text-zinc-500 text-center">Pausa 6m</span>
           </button>
 
-          <button type="button" onclick="openDriverVerificationModal('moto')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
+          <button type="button" onclick="openDriverVerificationModal('moto')" class="theme-btn cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
             <span class="text-3xl leading-none">🛵</span>
-            <span class="text-xs font-bold text-white">Moto</span>
-            <span class="text-[9px] text-zinc-500 text-center">Pausa 3m</span>
+            <span class="theme-text-main text-xs font-bold text-white">Moto</span>
+            <span class="theme-text-sub text-[9px] text-zinc-500 text-center">Pausa 3m</span>
           </button>
         </div>
       </div>
     </div>
 
     <div class="text-center space-y-2 pt-4 border-t border-zinc-900">
-      <p class="text-[11px] text-zinc-500">
-        🔒 <strong class="text-zinc-400">Privacidad Total:</strong> El conteo en cada parada 📍 se muestra a partir de 3 usuarios esperando.
+      <p class="theme-text-sub text-[11px] text-zinc-500">
+        🔒 <strong class="theme-text-main text-zinc-400">Privacidad Total:</strong> El conteo en cada parada 📍 se muestra a partir de 3 usuarios esperando.
       </p>
     </div>
   </div>
 
   <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN COMO APP -->
   <div id="modal-install-help" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
         <div class="flex items-center gap-2.5">
           <img src="./icon.png" onerror="this.onerror=null;this.src='./icon.jpg';" class="w-8 h-8 rounded-lg" />
-          <h3 class="text-sm font-bold text-white">Instalar Mi Parada como App</h3>
+          <h3 class="theme-text-main text-sm font-bold text-white">Instalar Mi Parada como App</h3>
         </div>
         <button type="button" onclick="document.getElementById('modal-install-help').classList.add('hidden')" class="text-xs text-zinc-400 hover:text-white">✕</button>
       </div>
@@ -310,20 +368,19 @@
 
   <!-- MODAL DE REGISTRO TELEFÓNICO DE TRANSPORTISTA -->
   <div id="modal-driver-auth" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-        <h3 id="driver-auth-title" class="text-sm font-bold text-white">Registro de Transportista</h3>
+        <h3 id="driver-auth-title" class="theme-text-main text-sm font-bold text-white">Registro de Transportista</h3>
         <button type="button" onclick="closeDriverVerificationModal()" class="text-xs text-zinc-400 hover:text-white">✕</button>
       </div>
 
-      <!-- Paso 1: Introducir Teléfono -->
       <div id="driver-step-phone" class="space-y-3">
-        <p class="text-xs text-zinc-400">Introduce tu número de teléfono móvil para validar tu solicitud:</p>
+        <p class="theme-text-sub text-xs text-zinc-400">Introduce tu número de teléfono móvil para validar tu solicitud:</p>
         <div>
           <label class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Número de Teléfono</label>
-          <input id="input-driver-phone" type="tel" placeholder="+58 414-555-5555" class="mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
+          <input id="input-driver-phone" type="tel" placeholder="+58 414-555-5555" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
         </div>
-        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-[11px] text-amber-300">
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-[11px] text-amber-400">
           ⏳ Nota: Tras validar el código, tu número entrará en la <b>Lista de Espera</b> del Creador. Al ser marcado como <b>Verificado</b>, quedarás activo como transportista.
         </div>
         <button type="button" onclick="sendDriverVerificationCode()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs py-3 rounded-xl transition">
@@ -331,11 +388,10 @@
         </button>
       </div>
 
-      <!-- Paso 2: Introducir Código OTP -->
       <div id="driver-step-otp" class="hidden space-y-3">
-        <p class="text-xs text-zinc-400">Introduce el código de 6 dígitos para <strong id="display-driver-phone" class="text-white font-mono"></strong>:</p>
-        <div id="otp-demo-notice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-[11px] text-emerald-300"></div>
-        <input id="input-driver-otp" type="text" maxlength="6" placeholder="000000" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-center text-lg tracking-widest text-white font-mono focus:outline-none focus:border-emerald-500" />
+        <p class="theme-text-sub text-xs text-zinc-400">Introduce el código de 6 dígitos para <strong id="display-driver-phone" class="theme-text-main text-white font-mono"></strong>:</p>
+        <div id="otp-demo-notice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-[11px] text-emerald-400"></div>
+        <input id="input-driver-otp" type="text" maxlength="6" placeholder="000000" class="theme-input w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-3 text-center text-lg tracking-widest text-white font-mono focus:outline-none focus:border-emerald-500" />
         <button type="button" onclick="verifyDriverOtpAndRegister()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs py-3 rounded-xl transition">
           Enviar a Lista de Espera
         </button>
@@ -346,32 +402,91 @@
   <!-- PANTALLA 2: MAPA EN VIVO -->
   <div id="map"></div>
 
-  <!-- BARRA SUPERIOR FLOTANTE CON SUMATORIA GLOBAL EN TIEMPO REAL -->
+  <!-- BARRA SUPERIOR FLOTANTE CON BOTÓN DE AJUSTES DESPLEGABLE -->
   <header class="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2 max-w-2xl mx-auto">
-    <div class="flex items-center justify-between bg-[#09090B]/95 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-3 py-2.5 shadow-2xl gap-2">
+    <div class="theme-card flex items-center justify-between bg-[#09090B]/95 backdrop-blur-md border border-zinc-800/90 rounded-2xl px-3 py-2.5 shadow-2xl gap-1.5">
       <div class="flex items-center gap-2 min-w-0">
-        <button id="btn-change-role" type="button" onclick="returnToOnboarding()" class="text-zinc-400 hover:text-white px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] shrink-0">
+        <button id="btn-change-role" type="button" onclick="returnToOnboarding()" class="theme-btn text-zinc-400 hover:text-white px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] shrink-0">
           ← Rol
         </button>
         <div class="truncate">
           <div class="flex items-center gap-1">
-            <span id="role-badge" class="text-xs font-bold text-emerald-400 truncate">Usuario</span>
-            <span class="text-[10px] text-zinc-500 shrink-0">· UD-4</span>
+            <span id="role-badge" class="text-xs font-bold text-emerald-500 truncate">Usuario</span>
+            <span class="theme-text-sub text-[10px] text-zinc-500 shrink-0">· UD-4</span>
           </div>
-          <p id="gps-status-text" class="text-[10px] text-zinc-400 truncate">GPS Activo</p>
+          <p id="gps-status-text" class="theme-text-sub text-[10px] text-zinc-400 truncate">GPS Activo</p>
         </div>
       </div>
 
-      <!-- Sumatoria Global en Tiempo Real de Todas las Paradas -->
+      <!-- Sumatoria Global + Botón Desplegable Ajustes + Creador -->
       <div class="flex items-center gap-1.5 shrink-0">
-        <div class="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span class="text-[11px] text-zinc-300 font-medium leading-tight">Total en<br class="sm:hidden"/> paradas:</span>
-          <strong id="global-total-passengers" class="text-sm font-extrabold text-emerald-400">0</strong>
+        <div class="bg-emerald-500/10 border border-emerald-500/40 rounded-xl px-2 py-1.5 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+          <span class="theme-text-main text-[10px] text-zinc-300 font-semibold leading-tight">Total en<br class="sm:hidden"/> paradas:</span>
+          <strong id="global-total-passengers" class="text-sm font-extrabold text-emerald-500">0</strong>
         </div>
 
-        <button type="button" onclick="openAdminModal()" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-2 rounded-xl font-medium shrink-0">
+        <!-- Botón de Ajustes Desplegable -->
+        <button id="btn-settings-dropdown" type="button" onclick="toggleSettingsDropdown()" class="theme-btn text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 px-2.5 py-2 rounded-xl font-bold shrink-0 flex items-center gap-1">
+          <span>⚙️</span> <span class="hidden sm:inline">Ajustes</span>
+        </button>
+
+        <button type="button" onclick="openAdminModal()" class="theme-btn text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-2.5 py-2 rounded-xl font-medium shrink-0">
           Creador
+        </button>
+      </div>
+    </div>
+
+    <!-- MENÚ DESPLEGABLE DE AJUSTES -->
+    <div id="settings-dropdown-menu" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-4 shadow-2xl space-y-3.5 max-w-sm ml-auto w-full">
+      <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2.5">
+        <span class="theme-text-main text-xs font-extrabold flex items-center gap-1.5">⚙️ Ajustes de la PWA</span>
+        <button type="button" onclick="toggleSettingsDropdown(false)" class="theme-text-sub text-xs hover:opacity-75 px-1">✕</button>
+      </div>
+
+      <!-- 1ra Opción Obligatoria: Borrar la caché de la PWA del dispositivo móvil -->
+      <button type="button" onclick="clearDevicePwaCacheAndReload()" class="w-full bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl px-3.5 py-2.5 text-xs font-bold flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><span>🧹</span> Borrar caché de la PWA</span>
+        <span class="text-[10px] font-normal opacity-80">Corregir errores</span>
+      </button>
+
+      <!-- Switch 1: Activar o Desactivar Ubicación GPS del dispositivo móvil -->
+      <div class="flex items-center justify-between gap-3 pt-1">
+        <div>
+          <p class="theme-text-main text-xs font-bold">Ubicación GPS del móvil</p>
+          <p id="settings-gps-desc" class="theme-text-sub text-[10px] text-zinc-400">Activado (Detección automática ≤ 50m)</p>
+        </div>
+        <button id="switch-gps-toggle" type="button" onclick="toggleDeviceGpsSwitch()" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-colors p-0.5 shrink-0">
+          <span id="switch-gps-knob" class="block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform"></span>
+        </button>
+      </div>
+
+      <!-- Switch 2: Modo Día / Modo Noche -->
+      <div class="flex items-center justify-between gap-3 pt-1">
+        <div>
+          <p class="theme-text-main text-xs font-bold">Modo Día / Modo Noche</p>
+          <p id="settings-theme-desc" class="theme-text-sub text-[10px] text-zinc-400">Modo Noche activo (Mapa oscuro)</p>
+        </div>
+        <button id="switch-theme-toggle" type="button" onclick="toggleDayNightModeSwitch()" class="w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0">
+          <span id="switch-theme-knob" class="block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform"></span>
+        </button>
+      </div>
+
+      <!-- Switch 3: Sonidos de la PWA -->
+      <div class="flex items-center justify-between gap-3 pt-1">
+        <div>
+          <p class="theme-text-main text-xs font-bold">Sonidos de la PWA</p>
+          <p id="settings-sound-desc" class="theme-text-sub text-[10px] text-zinc-400">Efectos de sonido activados</p>
+        </div>
+        <button id="switch-sound-toggle" type="button" onclick="toggleSoundSwitch()" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-colors p-0.5 shrink-0">
+          <span id="switch-sound-knob" class="block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform"></span>
+        </button>
+      </div>
+
+      <!-- Opción trasladada a Ajustes: Sugerir nueva parada -->
+      <div class="pt-2 border-t border-zinc-800/80">
+        <button type="button" onclick="toggleSettingsDropdown(false); openSuggestStopModal();" class="theme-btn w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-bold flex items-center justify-center gap-2 transition">
+          <span>+ 📍</span> Sugerir nueva parada en UD-4
         </button>
       </div>
     </div>
@@ -385,35 +500,59 @@
     </div>
   </header>
 
-  <!-- PANEL INFERIOR UNIFICADO (CON VENTANAS RESPONSIVAS DE SMS 20 CHARS Y EMOJIS) -->
+  <!-- MODAL: SELECCIONAR PARADA MANUALMENTE (AL PULSAR "UD-4" O "ESTOY AQUÍ" CON GPS DESACTIVADO) -->
+  <div id="modal-ud4-stops-selector" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div>
+          <h3 class="theme-text-main text-sm font-extrabold">📍 Paradas Activas en UD-4</h3>
+          <p id="ud4-modal-subtitle" class="theme-text-sub text-[11px] text-zinc-400">Selecciona 1 parada (Duración manual: 5 min)</p>
+        </div>
+        <button type="button" onclick="closeUd4StopsSelectorModal()" class="theme-text-sub text-xs hover:opacity-75 px-2 py-1">✕</button>
+      </div>
+
+      <div id="ud4-stops-buttons-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto pr-1 py-1"></div>
+
+      <div class="pt-2 border-t border-zinc-800 flex items-center justify-between gap-2">
+        <button type="button" onclick="centerOnUD4(); closeUd4StopsSelectorModal();" class="theme-btn text-xs bg-zinc-900 hover:bg-zinc-800 text-emerald-500 border border-zinc-700 px-3 py-2 rounded-xl font-bold">
+          🗺️ Centrar Mapa en UD-4
+        </button>
+        <button type="button" onclick="closeUd4StopsSelectorModal()" class="theme-text-sub text-xs px-3 py-2">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL INFERIOR UNIFICADO -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
 
     <!-- VENTANA FLOTANTE RESPONSIVA 1: SELECTOR DE EMOJIS DE ESTADO DE ÁNIMO -->
-    <div id="emoji-picker-popover" class="hidden bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl space-y-2 transition-all">
+    <div id="emoji-picker-popover" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl space-y-2 transition-all">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] font-bold text-emerald-400">Selecciona tu estado de ánimo en la parada:</span>
-        <button type="button" onclick="closeReactionPopovers()" class="text-xs text-zinc-400 hover:text-white px-1.5">✕</button>
+        <span class="text-[11px] font-bold text-emerald-500">Selecciona tu estado de ánimo en la parada:</span>
+        <button type="button" onclick="closeReactionPopovers()" class="theme-text-sub text-xs hover:opacity-75 px-1.5">✕</button>
       </div>
       <div class="grid grid-cols-9 gap-1 text-center">
-        <button type="button" onclick="sendStopReaction('emoji', '👋🏼')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">👋🏼</button>
-        <button type="button" onclick="sendStopReaction('emoji', '😎')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😎</button>
-        <button type="button" onclick="sendStopReaction('emoji', '😃')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😃</button>
-        <button type="button" onclick="sendStopReaction('emoji', '🙂')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">🙂</button>
-        <button type="button" onclick="sendStopReaction('emoji', '👀')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">👀</button>
-        <button type="button" onclick="sendStopReaction('emoji', '🙄')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">🙄</button>
-        <button type="button" onclick="sendStopReaction('emoji', '😓')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😓</button>
-        <button type="button" onclick="sendStopReaction('emoji', '😒')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😒</button>
-        <button type="button" onclick="sendStopReaction('emoji', '💩')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">💩</button>
+        <button type="button" onclick="sendStopReaction('emoji', '👋🏼')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">👋🏼</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😎')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">😎</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😃')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">😃</button>
+        <button type="button" onclick="sendStopReaction('emoji', '🙂')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">🙂</button>
+        <button type="button" onclick="sendStopReaction('emoji', '👀')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">👀</button>
+        <button type="button" onclick="sendStopReaction('emoji', '🙄')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">🙄</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😓')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">😓</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😒')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">😒</button>
+        <button type="button" onclick="sendStopReaction('emoji', '💩')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800/50">💩</button>
       </div>
     </div>
 
     <!-- VENTANA FLOTANTE RESPONSIVA 2: COMENTARIO SMS (MÁXIMO 20 CARACTERES CON ESPACIOS) -->
-    <div id="sms-input-popover" class="hidden bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl space-y-2.5 transition-all">
+    <div id="sms-input-popover" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl space-y-2.5 transition-all">
       <div class="flex items-center justify-between">
-        <span class="text-xs font-bold text-emerald-400">💬 Comentario rápido en parada</span>
+        <span class="text-xs font-bold text-emerald-500">💬 Comentario rápido en parada</span>
         <div class="flex items-center gap-2">
-          <span id="sms-char-counter" class="text-[11px] font-mono text-zinc-400">0/20</span>
-          <button type="button" onclick="closeReactionPopovers()" class="text-xs text-zinc-400 hover:text-white px-1">✕</button>
+          <span id="sms-char-counter" class="theme-text-sub text-[11px] font-mono text-zinc-400">0/20</span>
+          <button type="button" onclick="closeReactionPopovers()" class="theme-text-sub text-xs hover:opacity-75 px-1">✕</button>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -424,7 +563,7 @@
           oninput="updateSmsCharCounter()"
           onkeydown="if(event.key==='Enter') submitStopSms()"
           placeholder="Máx. 20 caracteres..."
-          class="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+          class="theme-input flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
         />
         <button type="button" onclick="submitStopSms()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shrink-0 transition">
           Enviar
@@ -432,60 +571,56 @@
       </div>
     </div>
 
-    <!-- Fila de Botones de Mapa + Botones SMS y Emoji (SOLO VISIBLES AL ESTAR "EN LA PARADA") -->
+    <!-- Fila de Botones de Mapa + Botones SMS y Emoji (SOLO VISIBLES AL ESTAR EN PARADA) -->
     <div class="flex items-center justify-between gap-2">
-      <!-- Botones exclusivos cuando el usuario marcó "En la parada" -->
       <div id="in-stop-reaction-buttons" class="hidden flex items-center gap-1.5">
         <button id="btn-open-sms" type="button" onclick="toggleSmsPopover()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
           <span>💬</span> <span id="lbl-btn-sms">SMS</span>
         </button>
-        <button id="btn-open-emoji" type="button" onclick="toggleEmojiPopover()" class="bg-zinc-900/95 hover:bg-zinc-800 text-amber-300 border border-amber-500/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        <button id="btn-open-emoji" type="button" onclick="toggleEmojiPopover()" class="theme-btn bg-zinc-900/95 hover:bg-zinc-800 text-amber-400 border border-amber-500/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
           <span>😎</span> <span id="lbl-btn-emoji">Emoji</span>
         </button>
       </div>
 
-      <!-- Botones de Navegación del Mapa -->
+      <!-- Botones de Navegación del Mapa (El botón UD-4 abre las paradas activas cuando el GPS está desactivado) -->
       <div class="flex items-center justify-end gap-1.5 ml-auto">
-        <button type="button" onclick="locateUserOnMap()" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
+        <button id="btn-my-location" type="button" onclick="locateUserOnMap()" class="theme-btn bg-[#121216]/95 hover:bg-zinc-800 text-blue-500 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
           <span>🎯</span> Mi Ubicación
         </button>
-        <button type="button" onclick="centerOnUD4()" class="bg-[#121216]/95 hover:bg-zinc-800 text-emerald-400 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
+        <button id="btn-ud4-main" type="button" onclick="handleUd4ButtonClick()" class="theme-btn bg-[#121216]/95 hover:bg-zinc-800 text-emerald-500 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
           <span>🗺️</span> UD-4
         </button>
-        <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden bg-[#121216]/95 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold">
+        <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden theme-btn bg-[#121216]/95 hover:bg-zinc-800 text-cyan-500 border border-cyan-500/30 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold">
           🌙 OLED
         </button>
       </div>
     </div>
 
-    <!-- Controles de Pasajero -->
-    <div id="passenger-controls" class="bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+    <!-- Controles de Pasajero (Sin el botón Sugerir, que ahora está en Ajustes) -->
+    <div id="passenger-controls" class="theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="flex-1 min-w-0">
-        <p id="passenger-checkin-title" class="text-xs font-bold text-white truncate">Reporte de Parada</p>
-        <p id="passenger-checkin-sub" class="text-[11px] text-zinc-400 truncate">Marca cuando estés esperando transporte</p>
+        <p id="passenger-checkin-title" class="theme-text-main text-xs font-bold text-white truncate">Reporte de Parada</p>
+        <p id="passenger-checkin-sub" class="theme-text-sub text-[11px] text-zinc-400 truncate">Marca cuando estés esperando transporte</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <button type="button" onclick="openSuggestStopModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-700">
-          + 📍 Sugerir
-        </button>
-        <button id="btn-checkin" type="button" onclick="manualCheckInClosestStop()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed">
+        <button id="btn-checkin" type="button" onclick="handlePrimaryCheckinButton()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-60 disabled:cursor-not-allowed">
           En la parada
         </button>
       </div>
     </div>
 
     <!-- Controles de Transportista Verificado -->
-    <div id="driver-controls" class="hidden bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+    <div id="driver-controls" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="min-w-0">
-        <p class="text-xs font-bold text-white flex items-center gap-1.5">
+        <p class="theme-text-main text-xs font-bold text-white flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
           <span id="driver-active-label" class="truncate">Transmitiendo Unidad</span>
         </p>
-        <p class="text-[11px] text-zinc-400 truncate">
-          Tel: <strong id="driver-phone-badge" class="text-zinc-200 font-mono"></strong> · Pausa en: <strong id="inactivity-countdown" class="text-white font-mono">03:00</strong>
+        <p class="theme-text-sub text-[11px] text-zinc-400 truncate">
+          Tel: <strong id="driver-phone-badge" class="theme-text-main text-zinc-200 font-mono"></strong> · Pausa en: <strong id="inactivity-countdown" class="theme-text-main text-white font-mono">03:00</strong>
         </p>
       </div>
-      <button id="btn-driver-pause" type="button" onclick="toggleDriverTransmission()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0">
+      <button id="btn-driver-pause" type="button" onclick="toggleDriverTransmission()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0">
         Pausar Ruta
       </button>
     </div>
@@ -498,14 +633,14 @@
     <p class="text-[11px] text-zinc-700 mt-2">Toca dos veces la pantalla para volver al mapa</p>
   </div>
 
-  <!-- MODAL: SUGERIR PARADA (USUARIO) -->
+  <!-- MODAL: SUGERIR PARADA (AHORA ACCESIBLE DESDE AJUSTES) -->
   <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
-      <h3 class="text-sm font-bold text-white">📍 Solicitar Nueva Parada</h3>
-      <p class="text-xs text-zinc-400">Se enviará tu ubicación actual al Creador. Al ser aprobada aparecerá como parada oficial en el mapa (distancia mínima entre paradas: 80m).</p>
-      <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque / Terraza..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
+      <h3 class="theme-text-main text-sm font-bold text-white">📍 Solicitar Nueva Parada</h3>
+      <p class="theme-text-sub text-xs text-zinc-400">Se enviará la coordenada actual al Creador. Al ser aprobada aparecerá como parada oficial en el mapa (distancia mínima entre paradas: 80m).</p>
+      <input id="input-stop-name" type="text" placeholder="Ej: Frente al Bloque / Terraza..." class="theme-input w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
       <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeSuggestStopModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
+        <button type="button" onclick="closeSuggestStopModal()" class="theme-text-sub text-xs text-zinc-400 px-3 py-2">Cancelar</button>
         <button type="button" onclick="submitStopSuggestion()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Enviar Solicitud</button>
       </div>
     </div>
@@ -513,29 +648,28 @@
 
   <!-- MODAL COMPLETO: PANEL DEL CREADOR -->
   <div id="modal-admin" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-        <h3 class="text-sm font-bold text-white">⚙️ Panel del Creador · Control Total UD-4</h3>
-        <button type="button" onclick="closeAdminModal()" class="text-xs text-zinc-400 hover:text-white">✕ Cerrar</button>
+        <h3 class="theme-text-main text-sm font-bold text-white">⚙️ Panel del Creador · Control Total UD-4</h3>
+        <button type="button" onclick="closeAdminModal()" class="theme-text-sub text-xs text-zinc-400 hover:text-white">✕ Cerrar</button>
       </div>
 
       <!-- Login del Creador -->
       <div id="admin-login-box" class="space-y-3">
-        <p class="text-xs text-zinc-400">Ingresa tus credenciales de Creador.</p>
-        <input id="admin-email" type="email" value="admin@ud4vivo.local" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300" />
-        <input id="admin-password" type="password" placeholder="Contraseña de Creador" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white" />
-        <button type="button" onclick="loginCreator()" class="w-full bg-white text-black font-bold text-xs py-2.5 rounded-xl hover:bg-zinc-200">Desbloquear Panel del Creador</button>
+        <p class="theme-text-sub text-xs text-zinc-400">Ingresa tus credenciales de Creador.</p>
+        <input id="admin-email" type="email" value="admin@ud4vivo.local" class="theme-input w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300" />
+        <input id="admin-password" type="password" placeholder="Contraseña de Creador" class="theme-input w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <button type="button" onclick="loginCreator()" class="w-full bg-emerald-500 text-black font-bold text-xs py-2.5 rounded-xl hover:bg-emerald-400">Desbloquear Panel del Creador</button>
       </div>
 
       <!-- Contenido Desbloqueado del Creador -->
       <div id="admin-panel-content" class="hidden space-y-5">
         
-        <!-- 1. Edición Visual en el Mapa -->
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <p class="text-xs font-bold text-amber-300">🛠️ Edición Visual en el Mapa</p>
-              <p class="text-[11px] text-zinc-400">Arrastra cualquier 📍 para moverlo, toca el mapa para crear paradas, o toca las solicitudes en <b>verde</b> para aprobarlas.</p>
+              <p class="text-xs font-bold text-amber-400">🛠️ Edición Visual en el Mapa</p>
+              <p class="theme-text-sub text-[11px] text-zinc-400">Arrastra cualquier 📍 para moverlo, toca el mapa para crear paradas, o toca las solicitudes en <b>verde</b> para aprobarlas.</p>
             </div>
             <button type="button" onclick="toggleCreatorMapEditMode(true)" class="bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs px-3 py-2 rounded-xl shrink-0">
               Editar en Mapa
@@ -543,7 +677,6 @@
           </div>
         </div>
 
-        <!-- 2. Exportar e Importar Archivo .txt de Paradas (Con Filtro de 80m) -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <p class="text-xs font-bold text-emerald-400">📄 Respaldo y Carga Masiva (.txt)</p>
@@ -563,7 +696,6 @@
           </div>
         </div>
 
-        <!-- 3. Crear Parada Manualmente -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
           <p class="text-xs font-bold text-white">➕ Agregar Nueva Parada Directa (Mín. 80m de distancia)</p>
           <input id="creator-new-stop-name" type="text" placeholder="Nombre de la nueva parada" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white" />
@@ -581,28 +713,24 @@
           </div>
         </div>
 
-        <!-- 4. Solicitudes de Paradas Pendientes -->
         <div class="space-y-2">
           <p class="text-xs font-bold text-emerald-400">🟢 Solicitudes de Paradas Pendientes (Verdes en el mapa):</p>
           <div id="pending-stops-list" class="space-y-2 text-xs"></div>
         </div>
 
-        <!-- 5. Lista de Paradas Activas en el Mapa -->
         <div class="space-y-2">
-          <p class="text-xs font-bold text-zinc-300">📍 Paradas Activas en el Mapa:</p>
+          <p class="theme-text-main text-xs font-bold text-zinc-300">📍 Paradas Activas en el Mapa:</p>
           <div id="approved-stops-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 6. LISTA DE ESPERA DE TRANSPORTISTAS POR VERIFICACIÓN (Carro, Bus, Moto) -->
         <div class="space-y-2 border-t border-zinc-800 pt-4">
           <p class="text-xs font-bold text-amber-400">⏳ Lista de Espera de Transportistas (Carro / Bus / Moto):</p>
-          <p class="text-[11px] text-zinc-400">
+          <p class="theme-text-sub text-[11px] text-zinc-400">
             Presiona <b>Verificado</b> para acreditarlo en la lista de transportistas de la app, o <b>No verificado</b> para eliminarlo del registro (solo podrá ingresar como usuario).
           </p>
           <div id="waitlist-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 7. LISTA DE TRANSPORTISTAS VERIFICADOS EN LA APP -->
         <div class="space-y-2 border-t border-zinc-800 pt-4">
           <p class="text-xs font-bold text-cyan-400">🚕 Lista de Transportistas de la App (Verificados):</p>
           <div id="registered-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
@@ -614,7 +742,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES DE UD-4
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -627,12 +755,17 @@
     } catch (err) {}
 
     const UD4_CENTER = [10.42955, -66.97637];
-    const STOP_CHECKIN_RADIUS_METERS = 50;
-    const MIN_STOP_DISTANCE_METERS = 80;
+    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio obligatorio de 50m con GPS activo
+    const MIN_STOP_DISTANCE_METERS = 80;   // Mínimo 80m entre 2 paradas
     const SWEEP_INTERVAL_MS = 30000;
     const CHECKIN_TTL_MS = 180000;
-    const REACTION_COOLDOWN_SECONDS = 30; // 1 comentario o emoji cada 30 segundos
-    const REACTION_BUBBLE_DURATION_MS = 5000; // La burbuja explota y desaparece a los 5 segundos
+    const REACTION_COOLDOWN_SECONDS = 30;
+    const REACTION_BUBBLE_DURATION_MS = 5000;
+    const MIN_ZOOM_FOR_BUBBLES = 17; // Nivel de zoom donde se ven los números de bloque de los edificios (Imagen A)
+
+    // Tiempos del Modo Manual (cuando el GPS del dispositivo está desactivado)
+    const MANUAL_WAIT_DURATION_SEC = 300; // 5 minutos (300 segundos)
+    const MANUAL_CONFIRM_WINDOW_SEC = 20; // 20 segundos para presionar "Sigo esperando"
 
     const DEFAULT_UD4_STOPS = [
       { id: 'ud4-1', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
@@ -650,6 +783,10 @@
     ];
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
+    let isDeviceGpsEnabled = true; // Switch en Ajustes para activar/desactivar GPS
+    let isDayMode = false;         // Switch en Ajustes para Modo Día / Modo Noche
+    let isSoundEnabled = true;     // Switch en Ajustes para Sonido
+
     let hasValidGpsFix = false;
     let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
     let userLocationMarker = null, userAccuracyCircle = null;
@@ -657,7 +794,12 @@
     let activeCheckinStopId = null;
     let backgroundWorker = null;
 
-    // Cooldown de 30 segundos para comentarios SMS o Emojis
+    // Variables del Ciclo Manual Sin GPS (5 min bloqueado -> 20 seg ventana "Sigo esperando")
+    let isManualCheckinActive = false;
+    let manualPhase = 'none'; // 'waiting_5m' | 'confirm_20s' | 'none'
+    let manualTimerInterval = null;
+    let manualRemainingSeconds = 0;
+
     let reactionCooldownRemaining = 0;
     let reactionCooldownTimer = null;
     let displayedReactionIds = new Set();
@@ -674,7 +816,435 @@
     let stopMarkers = {}, pendingStopMarkers = {}, driverMarkers = {};
     let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
 
-    // Helpers de etiquetas e íconos para Carro 🚗, Autobús 🚌 y Moto 🛵
+    // =========================================================================
+    // 2. MOTOR DE SONIDO SINTETIZADO (WEB AUDIO API)
+    // =========================================================================
+    let audioCtx = null;
+
+    function initAudioEngine() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function playAppSound(type) {
+      if (!isSoundEnabled) return;
+      try {
+        initAudioEngine();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'checkin') {
+          // Doble tono ascendente de confirmación al marcar parada
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.09); // E5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'bubble') {
+          // Sonido suave de burbuja emergente (SMS / Emoji)
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(380, now);
+          osc.frequency.exponentialRampToValueAtTime(780, now + 0.11);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } else if (type === 'pop') {
+          // Sonido corto al explotar la burbuja a los 5 segundos
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(900, now);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
+          gain.gain.setValueAtTime(0.09, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          osc.start(now);
+          osc.stop(now + 0.07);
+        } else if (type === 'alert20s') {
+          // Alerta cuando se activa el botón "Sigo esperando" por 20 segundos
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(740, now);
+          osc.frequency.setValueAtTime(880, now + 0.12);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'checkout') {
+          // Tono descendente al salir de la parada (> 50m o expiración de 20s)
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(260, now + 0.22);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+          osc.start(now);
+          osc.stop(now + 0.24);
+        }
+      } catch (e) {}
+    }
+
+    // Desbloquear audio en el primer toque del usuario en la pantalla
+    window.addEventListener('pointerdown', () => initAudioEngine(), { once: true });
+
+    // =========================================================================
+    // 3. MENÚ DESPLEGABLE DE AJUSTES (BORRAR CACHÉ, SWITCH GPS, MODO DÍA/NOCHE)
+    // =========================================================================
+    function toggleSettingsDropdown(forceState) {
+      const menu = document.getElementById('settings-dropdown-menu');
+      const show = typeof forceState === 'boolean' ? forceState : menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !show);
+    }
+
+    // 1ra Opción: Borrar caché de la PWA del dispositivo móvil
+    async function clearDevicePwaCacheAndReload() {
+      if (!confirm('¿Borrar la memoria caché de la PWA en este dispositivo y recargar para corregir errores?')) {
+        return;
+      }
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const reg of regs) {
+            await reg.unregister();
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+          }
+        }
+      } catch (e) {}
+      window.location.reload(true);
+    }
+
+    // Switch 2da Opción: Desactivar o Activar la ubicación GPS del dispositivo móvil
+    async function toggleDeviceGpsSwitch() {
+      isDeviceGpsEnabled = !isDeviceGpsEnabled;
+      updateGpsSwitchUI();
+
+      // Si tenía una parada marcada en el otro modo, reiniciamos su estado limpio
+      if (activeCheckinStopId) {
+        await removeCurrentPassengerCheckinFromDb(false);
+      }
+
+      if (isDeviceGpsEnabled) {
+        stopManualWaitTimers();
+        startGpsTracking();
+      } else {
+        // Desactivar rastreo GPS del navegador y ocultar marcador azul
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        hasValidGpsFix = false;
+        if (map && userLocationMarker) {
+          map.removeLayer(userLocationMarker);
+          map.removeLayer(userAccuracyCircle);
+          userLocationMarker = null;
+          userAccuracyCircle = null;
+        }
+        document.getElementById('gps-status-text').textContent = 'GPS Desactivado · Modo Manual';
+      }
+
+      refreshPrimaryButtonLabelAndState();
+    }
+
+    function updateGpsSwitchUI() {
+      const btn = document.getElementById('switch-gps-toggle');
+      const knob = document.getElementById('switch-gps-knob');
+      const desc = document.getElementById('settings-gps-desc');
+
+      if (isDeviceGpsEnabled) {
+        btn.className = 'w-12 h-6 rounded-full bg-emerald-600 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
+        desc.textContent = 'Activado (Detección automática ≤ 50m)';
+      } else {
+        btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
+        desc.textContent = 'Desactivado (Selección manual 5 min)';
+      }
+    }
+
+    // Switch 3ra Opción: Modo Día (Mapa a color y botones blancos) / Modo Noche
+    function toggleDayNightModeSwitch() {
+      isDayMode = !isDayMode;
+      localStorage.setItem('ud4_day_mode', isDayMode ? '1' : '0');
+      applyDayNightThemeUI();
+    }
+
+    function applyDayNightThemeUI() {
+      document.body.classList.toggle('day-mode', isDayMode);
+      const btn = document.getElementById('switch-theme-toggle');
+      const knob = document.getElementById('switch-theme-knob');
+      const desc = document.getElementById('settings-theme-desc');
+
+      if (isDayMode) {
+        btn.className = 'w-12 h-6 rounded-full bg-amber-500 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
+        desc.textContent = 'Modo Día activo (Mapa a color y botones blancos)';
+      } else {
+        btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
+        desc.textContent = 'Modo Noche activo (Mapa oscuro)';
+      }
+    }
+
+    // Switch 4ta Opción: Sonidos
+    function toggleSoundSwitch() {
+      isSoundEnabled = !isSoundEnabled;
+      const btn = document.getElementById('switch-sound-toggle');
+      const knob = document.getElementById('switch-sound-knob');
+      const desc = document.getElementById('settings-sound-desc');
+
+      if (isSoundEnabled) {
+        btn.className = 'w-12 h-6 rounded-full bg-emerald-600 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
+        desc.textContent = 'Efectos de sonido activados';
+        playAppSound('checkin');
+      } else {
+        btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
+        desc.textContent = 'Silenciado';
+      }
+    }
+
+    // =========================================================================
+    // 4. MODO MANUAL SIN GPS ("ESTOY AQUÍ" -> BOTÓN "UD-4" -> "SIGO ESPERANDO")
+    // =========================================================================
+    function handleUd4ButtonClick() {
+      // Si el GPS está desactivado y es Usuario, el botón UD-4 abre la lista de paradas activas como botones
+      if (!isDeviceGpsEnabled && userRole === 'passenger') {
+        openUd4StopsSelectorModal();
+      } else {
+        centerOnUD4();
+      }
+    }
+
+    function openUd4StopsSelectorModal() {
+      const modal = document.getElementById('modal-ud4-stops-selector');
+      const grid = document.getElementById('ud4-stops-buttons-grid');
+      const approved = stopsData.filter(s => s.status === 'approved');
+
+      if (approved.length === 0) {
+        grid.innerHTML = '<p class="text-xs text-zinc-400 col-span-2">Cargando paradas de UD-4...</p>';
+      } else {
+        grid.innerHTML = approved.map(s => {
+          const isSelected = activeCheckinStopId === s.id;
+          const borderClass = isSelected
+            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
+            : 'border-zinc-700/80 bg-zinc-900/90 hover:border-emerald-500/60 text-white';
+          return `
+            <button
+              type="button"
+              onclick="selectManualStopFromUd4List('${s.id}')"
+              class="theme-btn ${borderClass} border rounded-xl p-3 text-left transition flex items-center justify-between gap-2"
+            >
+              <div class="truncate">
+                <p class="theme-text-main text-xs font-bold truncate">📍 ${s.name}</p>
+                <p class="theme-text-sub text-[10px] text-zinc-400">${isSelected ? '✓ Parada seleccionada' : 'Toca para marcar espera'}</p>
+              </div>
+              <span class="text-xs font-extrabold text-emerald-500 shrink-0">→</span>
+            </button>
+          `;
+        }).join('');
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeUd4StopsSelectorModal() {
+      document.getElementById('modal-ud4-stops-selector').classList.add('hidden');
+    }
+
+    // Al elegir una parada de la lista UD-4 con el GPS desactivado (Solo 1 parada por dispositivo)
+    async function selectManualStopFromUd4List(stopId) {
+      if (!supabaseClient) return;
+      const targetStop = stopsData.find(s => s.id === stopId && s.status === 'approved');
+      if (!targetStop) return;
+
+      closeUd4StopsSelectorModal();
+
+      // El registro manual dura 5 minutos (300s) + 25s de margen para la ventana de confirmación
+      const hash = await getDailyDeviceHash();
+      const expiresAt = new Date(Date.now() + (MANUAL_WAIT_DURATION_SEC + 25) * 1000).toISOString();
+
+      // Upsert sobre device_daily_hash garantiza que un dispositivo NUNCA pueda marcar 2 o más paradas
+      const { error } = await supabaseClient.from('stop_checkins').upsert({
+        device_daily_hash: hash,
+        stop_id: targetStop.id,
+        expires_at: expiresAt,
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        alert('No se pudo registrar en la parada.');
+        return;
+      }
+
+      activeCheckinStopId = targetStop.id;
+      isManualCheckinActive = true;
+      playAppSound('checkin');
+
+      if (map) {
+        map.flyTo([targetStop.lat, targetStop.lng], 18, { duration: 0.7 });
+      }
+
+      startManual5MinCycle(targetStop.name);
+      refreshLiveStateFromSupabase();
+    }
+
+    function startManual5MinCycle(stopName) {
+      stopManualWaitTimers();
+      manualPhase = 'waiting_5m';
+      manualRemainingSeconds = MANUAL_WAIT_DURATION_SEC; // 300 segundos (5 min)
+
+      const reactionBtns = document.getElementById('in-stop-reaction-buttons');
+      if (reactionBtns) reactionBtns.classList.remove('hidden');
+
+      updateManualButtonCountdownUI(stopName);
+
+      manualTimerInterval = setInterval(async () => {
+        manualRemainingSeconds--;
+
+        if (manualPhase === 'waiting_5m') {
+          if (manualRemainingSeconds > 0) {
+            updateManualButtonCountdownUI(stopName);
+          } else {
+            // Pasaron los 5 minutos: se activa el botón "Sigo esperando" por 20 segundos
+            manualPhase = 'confirm_20s';
+            manualRemainingSeconds = MANUAL_CONFIRM_WINDOW_SEC; // 20 segundos
+            playAppSound('alert20s');
+            updateManualButtonCountdownUI(stopName);
+          }
+        } else if (manualPhase === 'confirm_20s') {
+          if (manualRemainingSeconds > 0) {
+            updateManualButtonCountdownUI(stopName);
+          } else {
+            // No presionó "Sigo esperando" en los 20 segundos siguientes: se resta de la parada y vuelve "Estoy aquí"
+            stopManualWaitTimers();
+            await removeCurrentPassengerCheckinFromDb(true);
+          }
+        }
+      }, 1000);
+    }
+
+    function updateManualButtonCountdownUI(stopName) {
+      const btn = document.getElementById('btn-checkin');
+      const titleEl = document.getElementById('passenger-checkin-title');
+      const subEl = document.getElementById('passenger-checkin-sub');
+      const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
+      const displayStopName = currentStop ? currentStop.name : stopName;
+
+      if (manualPhase === 'waiting_5m') {
+        const mins = String(Math.floor(manualRemainingSeconds / 60)).padStart(2, '0');
+        const secs = String(manualRemainingSeconds % 60).padStart(2, '0');
+        btn.disabled = true; // Bloqueado durante los 5 minutos
+        btn.textContent = `Sigo esperando (${mins}:${secs})`;
+        btn.className = 'bg-zinc-800 text-emerald-400 border border-emerald-500/40 text-xs font-extrabold px-3.5 py-2.5 rounded-xl opacity-80 cursor-not-allowed';
+        titleEl.textContent = `📍 En parada: ${displayStopName}`;
+        subEl.textContent = `Modo manual activo · Se activará confirmación en ${mins}:${secs}`;
+      } else if (manualPhase === 'confirm_20s') {
+        btn.disabled = false; // Se activa pasado los 5 min durante 20 segundos
+        btn.textContent = `Sigo esperando (${manualRemainingSeconds}s)`;
+        btn.className = 'bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold px-4 py-2.5 rounded-xl animate-pulse shadow-lg transition';
+        titleEl.textContent = `⚠️ ¿Sigues en ${displayStopName}?`;
+        subEl.textContent = `Pulsa "Sigo esperando" en ${manualRemainingSeconds}s o saldrás de la parada`;
+      }
+    }
+
+    function stopManualWaitTimers() {
+      if (manualTimerInterval) {
+        clearInterval(manualTimerInterval);
+        manualTimerInterval = null;
+      }
+      manualPhase = 'none';
+      manualRemainingSeconds = 0;
+    }
+
+    // Acción principal del botón inferior según el estado del GPS y la fase actual
+    async function handlePrimaryCheckinButton() {
+      // MODO 1: GPS ACTIVADO ("En la parada")
+      if (isDeviceGpsEnabled) {
+        await manualCheckInClosestStopWithGps();
+        return;
+      }
+
+      // MODO 2: GPS DESACTIVADO ("Estoy aquí" / "Sigo esperando")
+      if (!activeCheckinStopId || manualPhase === 'none') {
+        // Al pulsar "Estoy aquí", le pedimos seleccionar la parada en el selector UD-4
+        openUd4StopsSelectorModal();
+        return;
+      }
+
+      // Si está en la ventana de 20 segundos y presiona "Sigo esperando", renueva por otros 5 minutos
+      if (manualPhase === 'confirm_20s' && activeCheckinStopId) {
+        const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
+        const hash = await getDailyDeviceHash();
+        const expiresAt = new Date(Date.now() + (MANUAL_WAIT_DURATION_SEC + 25) * 1000).toISOString();
+
+        await supabaseClient.from('stop_checkins').upsert({
+          device_daily_hash: hash,
+          stop_id: activeCheckinStopId,
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString()
+        });
+
+        playAppSound('checkin');
+        startManual5MinCycle(currentStop ? currentStop.name : 'Parada UD-4');
+        refreshLiveStateFromSupabase();
+      }
+    }
+
+    async function removeCurrentPassengerCheckinFromDb(playSoundEffect = true) {
+      const hash = await getDailyDeviceHash();
+      if (supabaseClient) {
+        await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
+      }
+      activeCheckinStopId = null;
+      isManualCheckinActive = false;
+      stopManualWaitTimers();
+      if (playSoundEffect) playAppSound('checkout');
+      refreshPrimaryButtonLabelAndState();
+      refreshLiveStateFromSupabase();
+    }
+
+    function refreshPrimaryButtonLabelAndState() {
+      const btn = document.getElementById('btn-checkin');
+      const titleEl = document.getElementById('passenger-checkin-title');
+      const subEl = document.getElementById('passenger-checkin-sub');
+      const reactionBtns = document.getElementById('in-stop-reaction-buttons');
+
+      if (!activeCheckinStopId) {
+        btn.disabled = false;
+        if (reactionBtns) reactionBtns.classList.add('hidden');
+        closeReactionPopovers();
+
+        if (isDeviceGpsEnabled) {
+          btn.textContent = 'En la parada';
+          btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
+          titleEl.textContent = 'Reporte de Parada';
+          subEl.textContent = 'Marca cuando estés a menos de 50m de la parada';
+        } else {
+          btn.textContent = 'Estoy aquí';
+          btn.className = 'bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
+          titleEl.textContent = 'Modo Manual (GPS Desactivado)';
+          subEl.textContent = 'Pulsa "Estoy aquí" o "UD-4" para elegir tu parada (5 min)';
+        }
+      }
+    }
+
+    // =========================================================================
+    // 5. HELPERS DE VEHÍCULOS E INSTALACIÓN PWA
+    // =========================================================================
     function getVehicleEmoji(vType) {
       if (vType === 'bus') return '🚌';
       if (vType === 'moto') return '🛵';
@@ -691,9 +1261,6 @@
       return '#22D3EE';
     }
 
-    // =========================================================================
-    // 2. INSTALACIÓN NATIVA DE LA PWA COMO APLICACIÓN EN EL CELULAR
-    // =========================================================================
     let deferredInstallPrompt = null;
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -720,7 +1287,7 @@
     }
 
     // =========================================================================
-    // 3. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
+    // 6. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
     // =========================================================================
     function startBackgroundHeartbeatWorker() {
       if (backgroundWorker) return;
@@ -769,7 +1336,7 @@
     window.addEventListener('beforeunload', removeUserOnPageClose);
 
     // =========================================================================
-    // 4. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
+    // 7. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
     // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
@@ -840,9 +1407,14 @@
     }
 
     // =========================================================================
-    // 5. VERIFICACIÓN AL INICIAR: LISTA DE ESPERA VS VERIFICADO
+    // 8. VERIFICACIÓN AL INICIAR
     // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
+      if (localStorage.getItem('ud4_day_mode') === '1') {
+        isDayMode = true;
+        applyDayNightThemeUI();
+      }
+
       const hash = await getDailyDeviceHash();
       if (supabaseClient) {
         await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
@@ -897,7 +1469,7 @@
     }
 
     // =========================================================================
-    // 6. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA (CARRO / BUS / MOTO)
+    // 9. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA (CARRO / BUS / MOTO)
     // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
@@ -974,7 +1546,7 @@
       if (smsSentViaSupabase) {
         noticeBox.textContent = '📲 Código SMS enviado a tu teléfono.';
       } else {
-        noticeBox.innerHTML = `📲 Código de verificación para <b>${normalizedPhone}</b>: <strong class="text-white font-mono text-sm underline">${generatedLocalOtpCode}</strong>`;
+        noticeBox.innerHTML = `📲 Código de verificación para <b>${normalizedPhone}</b>: <strong class="font-mono text-sm underline">${generatedLocalOtpCode}</strong>`;
       }
     }
 
@@ -1059,17 +1631,18 @@
     }
 
     // =========================================================================
-    // 7. MAPA, PARADAS Y BURBUJAS QUE EXPLOTAN A LOS 5 SEGUNDOS
+    // 10. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y BURBUJAS AL LADO DE LA PARADA
     // =========================================================================
     function initMap() {
       if (map) {
         map.invalidateSize();
+        updateBubbleVisibilityByZoom();
         return;
       }
 
       map = L.map('map', {
         center: UD4_CENTER,
-        zoom: 16,
+        zoom: 17, // Inicia en zoom 17 (donde se observan los números de bloque de los edificios como en la Imagen A)
         minZoom: 13,
         maxZoom: 19,
         zoomControl: false,
@@ -1083,7 +1656,11 @@
         crossOrigin: true
       }).addTo(map);
 
+      // Controlar visibilidad de las burbujas según el nivel de acercamiento a los edificios (Zoom >= 17)
+      map.on('zoomend', updateBubbleVisibilityByZoom);
+
       map.on('click', async (e) => {
+        toggleSettingsDropdown(false);
         if (!isCreatorAuthenticated || !creatorMapEditMode) return;
 
         const conflict = findConflictingStopWithin80m(e.latlng.lat, e.latlng.lng);
@@ -1105,7 +1682,8 @@
         else refreshLiveStateFromSupabase();
       });
 
-      map.setView(UD4_CENTER, 16);
+      map.setView(UD4_CENTER, 17);
+      updateBubbleVisibilityByZoom();
       subscribeRealtime();
 
       window.addEventListener('resize', () => {
@@ -1113,7 +1691,14 @@
       });
     }
 
-    // Lanza la burbuja emergente (SMS o Emoji) desde el icono 📍 de la parada y la explota a los 5 segundos
+    // Las interacciones solo se ven cuando el mapa tiene el acercamiento donde se leen los bloques (Zoom >= 17)
+    function updateBubbleVisibilityByZoom() {
+      if (!map) return;
+      const currentZoom = map.getZoom();
+      document.body.classList.toggle('hide-zoom-reactions', currentZoom < MIN_ZOOM_FOR_BUBBLES);
+    }
+
+    // Lanza la burbuja (60% más pequeña) justo al lado derecho del icono 📍 de la parada
     function spawnStopReactionBubbleOnMap(reaction) {
       if (!map || !reaction || !reaction.stop_id) return;
       if (displayedReactionIds.has(reaction.id)) return;
@@ -1138,7 +1723,7 @@
         className: '',
         html: bubbleHtml,
         iconSize: [0, 0],
-        iconAnchor: [0, 26]
+        iconAnchor: [0, 0]
       });
 
       const bubbleMarker = L.marker([targetStop.lat, targetStop.lng], {
@@ -1147,15 +1732,20 @@
         zIndexOffset: 2000
       }).addTo(map);
 
-      // A los 5 segundos exactos (cuando termina la animación de explosión), se remueve del mapa
+      if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
+        playAppSound('bubble');
+      }
+
       setTimeout(() => {
         if (map && bubbleMarker) {
+          if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
+            playAppSound('pop');
+          }
           map.removeLayer(bubbleMarker);
         }
       }, REACTION_BUBBLE_DURATION_MS);
     }
 
-    // Controles de las ventanas de SMS (20 caracteres) y Emoji (👋🏼😎😃🙂👀🙄😓😒💩)
     function toggleSmsPopover() {
       if (!activeCheckinStopId) return;
       if (reactionCooldownRemaining > 0) return;
@@ -1197,7 +1787,6 @@
 
     async function submitStopSms() {
       const input = document.getElementById('input-stop-sms');
-      // Se respetan los espacios internos pero se valida que tenga contenido y máximo 20 caracteres
       const rawText = input.value;
       if (!rawText || rawText.trim().length === 0) {
         return;
@@ -1214,10 +1803,15 @@
 
       closeReactionPopovers();
 
+      // Si el usuario tiene el mapa muy alejado (< zoom 17), acercar automáticamente a su parada para que vea su burbuja y los edificios
+      const myStop = stopsData.find(s => s.id === activeCheckinStopId);
+      if (map && myStop && map.getZoom() < MIN_ZOOM_FOR_BUBBLES) {
+        map.flyTo([myStop.lat, myStop.lng], 18, { duration: 0.5 });
+      }
+
       const hash = await getDailyDeviceHash();
       const localId = 'local_' + Date.now();
 
-      // Mostrar inmediatamente en el mapa del propio usuario desde el icono de su parada
       spawnStopReactionBubbleOnMap({
         id: localId,
         stop_id: activeCheckinStopId,
@@ -1227,7 +1821,7 @@
 
       start30sReactionCooldown();
 
-      const { data, error } = await supabaseClient
+      const { data } = await supabaseClient
         .from('stop_reactions')
         .insert({
           stop_id: activeCheckinStopId,
@@ -1280,7 +1874,7 @@
     }
 
     function updateUserLocationMarkerOnMap(lat, lng, accuracyMeters = 25) {
-      if (!map) return;
+      if (!map || !isDeviceGpsEnabled) return;
 
       const userHtml = `
         <div style="position:relative; width:22px; height:22px; display:flex; align-items:center; justify-content:center;">
@@ -1291,25 +1885,29 @@
 
       if (!userLocationMarker) {
         userAccuracyCircle = L.circle([lat, lng], {
-          radius: Math.min(accuracyMeters, 60),
+          radius: Math.min(accuracyMeters, 50),
           color: '#3B82F6',
           weight: 1,
           fillColor: '#3B82F6',
-          fillOpacity: 0.12
+          fillOpacity: 0.14
         }).addTo(map);
 
         userLocationMarker = L.marker([lat, lng], { icon, zIndexOffset: 900 })
-          .bindPopup('<b>🎯 Tu ubicación actual</b>')
+          .bindPopup('<b>🎯 Tu ubicación GPS (Radio 50m)</b>')
           .addTo(map);
       } else {
         userLocationMarker.setLatLng([lat, lng]);
         userAccuracyCircle.setLatLng([lat, lng]);
-        userAccuracyCircle.setRadius(Math.min(accuracyMeters, 60));
+        userAccuracyCircle.setRadius(Math.min(accuracyMeters, 50));
       }
     }
 
     function locateUserOnMap() {
       if (!map) return;
+      if (!isDeviceGpsEnabled) {
+        alert('La ubicación GPS está desactivada en ⚙️ Ajustes.\nActívala en el switch de Ajustes o usa el botón "UD-4" para elegir tu parada manualmente.');
+        return;
+      }
       if (hasValidGpsFix) {
         map.flyTo([currentPos.lat, currentPos.lng], 18, { duration: 0.8 });
         if (userLocationMarker) userLocationMarker.openPopup();
@@ -1321,7 +1919,7 @@
             updateUserLocationMarkerOnMap(currentPos.lat, currentPos.lng, pos.coords.accuracy);
             map.flyTo([currentPos.lat, currentPos.lng], 18, { duration: 0.8 });
           },
-          () => alert('Activa el permiso de ubicación GPS en tu teléfono para ubicarte en el mapa.'),
+          () => alert('Activa el permiso de ubicación GPS en tu teléfono o desactiva el switch de GPS en ⚙️ Ajustes para usar el modo manual.'),
           { enableHighAccuracy: true, timeout: 8000 }
         );
       }
@@ -1330,7 +1928,7 @@
     function centerOnUD4() {
       if (map) {
         map.invalidateSize();
-        map.flyTo(UD4_CENTER, 16, { duration: 0.7 });
+        map.flyTo(UD4_CENTER, 17, { duration: 0.7 });
       }
     }
 
@@ -1498,7 +2096,7 @@
     }
 
     // =========================================================================
-    // 8. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO (CARRO / BUS / MOTO)
+    // 11. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
     // =========================================================================
     function enterAppAsPassenger() {
       if (driverAccount && driverAccount.verification_status === 'verified') {
@@ -1510,18 +2108,19 @@
       document.getElementById('onboarding-screen').classList.add('hidden');
       initMap();
 
-      setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 16); } }, 150);
+      setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 17); } }, 150);
 
       const isWaitlisted = driverAccount && driverAccount.verification_status === 'pending';
       document.getElementById('role-badge').textContent = isWaitlisted ? 'Usuario (Chofer en Espera)' : 'Usuario · Pasajero';
-      document.getElementById('role-badge').className = 'text-xs font-bold text-emerald-400 truncate';
+      document.getElementById('role-badge').className = 'text-xs font-bold text-emerald-500 truncate';
       document.getElementById('passenger-controls').classList.remove('hidden');
       document.getElementById('driver-controls').classList.add('hidden');
       document.getElementById('btn-oled-mode').classList.add('hidden');
       document.getElementById('btn-change-role').classList.remove('hidden');
 
+      refreshPrimaryButtonLabelAndState();
       requestWakeLock();
-      startGpsTracking();
+      if (isDeviceGpsEnabled) startGpsTracking();
       startBackgroundHeartbeatWorker();
     }
 
@@ -1530,13 +2129,13 @@
       document.getElementById('onboarding-screen').classList.add('hidden');
       initMap();
 
-      setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 16); } }, 150);
+      setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 17); } }, 150);
 
       const badge = document.getElementById('role-badge');
       badge.textContent = `${getVehicleEmoji(vehicleType)} Transportista · ${getVehicleLabel(vehicleType)}`;
       badge.className = vehicleType === 'bus'
-        ? 'text-xs font-bold text-amber-400 truncate'
-        : (vehicleType === 'moto' ? 'text-xs font-bold text-blue-400 truncate' : 'text-xs font-bold text-cyan-400 truncate');
+        ? 'text-xs font-bold text-amber-500 truncate'
+        : (vehicleType === 'moto' ? 'text-xs font-bold text-blue-500 truncate' : 'text-xs font-bold text-cyan-500 truncate');
 
       document.getElementById('driver-active-label').textContent = `${getVehicleEmoji(vehicleType)} Transmitiendo ${getVehicleLabel(vehicleType)}`;
       document.getElementById('driver-phone-badge').textContent = phone;
@@ -1555,11 +2154,12 @@
     }
 
     // =========================================================================
-    // 9. RASTREO GPS, BOTÓN "EN LA PARADA" Y ACTIVACIÓN DE BOTONES SMS / EMOJI
+    // 12. RASTREO GPS EN TIEMPO REAL Y SALIDA INMEDIATA SI SALE DE LOS 50M
     // =========================================================================
     function startGpsTracking() {
+      if (!isDeviceGpsEnabled && userRole === 'passenger') return;
       if (!navigator.geolocation) {
-        document.getElementById('gps-status-text').textContent = 'Sin GPS';
+        document.getElementById('gps-status-text').textContent = 'Sin soporte GPS';
         return;
       }
       if (watchId) navigator.geolocation.clearWatch(watchId);
@@ -1571,16 +2171,27 @@
           currentPos = { lat: latitude, lng: longitude };
 
           updateUserLocationMarkerOnMap(latitude, longitude, accuracy);
-          document.getElementById('gps-status-text').textContent = 'Conectado en tiempo real';
+          document.getElementById('gps-status-text').textContent = 'GPS Activo · Tiempo Real';
+
+          // Si el usuario tiene marcada una parada con GPS activo y se mueve o lo recoge un transportista (> 50m), restarlo de inmediato
+          if (userRole === 'passenger' && isDeviceGpsEnabled && activeCheckinStopId && !isManualCheckinActive) {
+            const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
+            if (currentStop) {
+              const dist = getDistanceMeters(latitude, longitude, currentStop.lat, currentStop.lng);
+              if (dist > STOP_CHECKIN_RADIUS_METERS) {
+                await removeCurrentPassengerCheckinFromDb(true);
+              }
+            }
+          }
 
           if (userRole !== 'passenger' && driverAccount && driverAccount.verification_status === 'verified' && isDriverTransmitting) {
             await handleDriverMovementUpdate(latitude, longitude);
           }
         },
         () => {
-          document.getElementById('gps-status-text').textContent = 'Activa la ubicación GPS';
+          document.getElementById('gps-status-text').textContent = isDeviceGpsEnabled ? 'Activa tu GPS o usa Ajustes' : 'Modo Manual (Sin GPS)';
         },
-        { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+        { enableHighAccuracy: true, maximumAge: 2500, timeout: 10000 }
       );
     }
 
@@ -1596,8 +2207,7 @@
       return { stop: closest, distance: minDist };
     }
 
-    // Muestra u oculta los botones SMS y Emoji dependiendo de si el usuario está "En la parada"
-    function setCheckinButtonLockedState(locked, stopName = '') {
+    function setGpsCheckinButtonLockedState(locked, stopName = '') {
       const btn = document.getElementById('btn-checkin');
       const titleEl = document.getElementById('passenger-checkin-title');
       const subEl = document.getElementById('passenger-checkin-sub');
@@ -1608,24 +2218,19 @@
         btn.textContent = '✓ En la parada';
         btn.className = 'bg-zinc-800 text-emerald-400 border border-emerald-500/40 text-xs font-extrabold px-4 py-2.5 rounded-xl opacity-80 cursor-not-allowed';
         titleEl.textContent = `📍 En parada: ${stopName}`;
-        subEl.textContent = 'Puedes enviar SMS o Emoji desde tu parada';
+        subEl.textContent = 'Dentro del radio de 50m · Puedes enviar SMS o Emoji';
         if (reactionBtns) reactionBtns.classList.remove('hidden');
       } else {
-        btn.disabled = false;
-        btn.textContent = 'En la parada';
-        btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
-        titleEl.textContent = 'Reporte de Parada';
-        subEl.textContent = 'Marca cuando estés esperando transporte';
-        if (reactionBtns) reactionBtns.classList.add('hidden');
-        closeReactionPopovers();
+        refreshPrimaryButtonLabelAndState();
       }
     }
 
-    async function manualCheckInClosestStop() {
+    // Marcar "En la parada" con GPS activado (Obligatorio estar a <= 50 metros)
+    async function manualCheckInClosestStopWithGps() {
       if (!supabaseClient || activeCheckinStopId) return;
 
       if (!hasValidGpsFix) {
-        alert('Obteniendo tu ubicación GPS. Asegúrate de tener activa la ubicación.');
+        alert('Obteniendo señal GPS de tu dispositivo.\nSi prefieres marcar tu parada manualmente sin GPS, abre ⚙️ Ajustes y desactiva el switch de Ubicación GPS.');
         locateUserOnMap();
         return;
       }
@@ -1637,7 +2242,7 @@
       const { stop: closest, distance } = findClosestApprovedStop(currentPos.lat, currentPos.lng);
 
       if (!closest || distance > STOP_CHECKIN_RADIUS_METERS) {
-        alert('Acércate a la parada para poder marcar "En la parada".');
+        alert(`Debes estar a menos de 50 metros de una parada para marcar "En la parada" (Parada más cercana: ${closest ? closest.name + ' a ' + Math.round(distance) + 'm' : 'ninguna'}).`);
         return;
       }
 
@@ -1657,11 +2262,14 @@
       }
 
       activeCheckinStopId = closest.id;
-      setCheckinButtonLockedState(true, closest.name);
+      isManualCheckinActive = false;
+      playAppSound('checkin');
+      setGpsCheckinButtonLockedState(true, closest.name);
       requestWakeLock();
       refreshLiveStateFromSupabase();
     }
 
+    // Barrido silencioso cada 30 segundos
     async function executeSilent30sBackgroundSweep() {
       if (!supabaseClient) return;
 
@@ -1673,14 +2281,13 @@
         return;
       }
 
-      if (userRole === 'passenger' && activeCheckinStopId) {
+      // Si es pasajero en modo GPS automático, verificar que siga a <= 50 metros de la parada
+      if (userRole === 'passenger' && isDeviceGpsEnabled && activeCheckinStopId && !isManualCheckinActive) {
         const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
         const hash = await getDailyDeviceHash();
 
         if (!currentStop) {
-          activeCheckinStopId = null;
-          setCheckinButtonLockedState(false);
-          refreshLiveStateFromSupabase();
+          await removeCurrentPassengerCheckinFromDb(false);
           return;
         }
 
@@ -1695,9 +2302,8 @@
             updated_at: new Date().toISOString()
           });
         } else {
-          await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
-          activeCheckinStopId = null;
-          setCheckinButtonLockedState(false);
+          // Salió del radio de 50 metros (caminó o lo recogió un transportista): restarlo
+          await removeCurrentPassengerCheckinFromDb(true);
         }
       }
 
@@ -1706,7 +2312,7 @@
 
     async function keepAliveWhileScreenLocked() {
       if (!supabaseClient) return;
-      if (userRole === 'passenger' && activeCheckinStopId) {
+      if (userRole === 'passenger' && activeCheckinStopId && isDeviceGpsEnabled && !isManualCheckinActive) {
         const hash = await getDailyDeviceHash();
         const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
         await supabaseClient.from('stop_checkins').upsert({
@@ -1772,12 +2378,12 @@
           await supabaseClient.from('active_drivers').delete().eq('phone', driverAccount.phone);
         }
         btn.textContent = 'Reanudar Ruta';
-        btn.className = 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
+        btn.className = 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
         label.textContent = '⏸️ Ruta en Pausa';
       } else {
         lastDriverMoveTime = Date.now();
         btn.textContent = 'Pausar Ruta';
-        btn.className = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
+        btn.className = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
         label.textContent = `${getVehicleEmoji(driverAccount.vehicle_type)} Transmitiendo ${getVehicleLabel(driverAccount.vehicle_type)}`;
         if (hasValidGpsFix) await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
       }
@@ -1785,7 +2391,7 @@
     }
 
     // =========================================================================
-    // 10. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
+    // 13. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
     // =========================================================================
     function exportActiveStopsToTxt() {
       const approved = stopsData.filter(s => s.status === 'approved');
@@ -1910,7 +2516,7 @@
     }
 
     // =========================================================================
-    // 11. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
+    // 14. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
     // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
@@ -1919,21 +2525,27 @@
       const name = document.getElementById('input-stop-name').value.trim();
       if (!name) return alert('Escribe un nombre de referencia para la parada.');
 
+      const coords = (isDeviceGpsEnabled && hasValidGpsFix)
+        ? currentPos
+        : (map ? { lat: map.getCenter().lat, lng: map.getCenter().lng } : currentPos);
+
       const { error } = await supabaseClient.from('stops').insert({
         name,
-        lat: currentPos.lat,
-        lng: currentPos.lng,
+        lat: coords.lat,
+        lng: coords.lng,
         status: 'pending'
       });
 
       if (error) return alert('Error al enviar solicitud: ' + error.message);
       document.getElementById('input-stop-name').value = '';
       closeSuggestStopModal();
+      playAppSound('checkin');
       alert('✅ Solicitud enviada al Creador.');
       refreshLiveStateFromSupabase();
     }
 
     function openAdminModal() {
+      toggleSettingsDropdown(false);
       document.getElementById('modal-admin').classList.remove('hidden');
       if (isCreatorAuthenticated) {
         loadCreatorDashboardData();
@@ -2051,7 +2663,6 @@
         </div>
       `).join('');
 
-      // LISTA DE ESPERA DE TRANSPORTISTAS (Carro 🚗, Bus 🚌, Moto 🛵)
       const waitlistContainer = document.getElementById('waitlist-drivers-admin-list');
       const waitlistDrivers = (allDrivers || []).filter(d => d.verification_status === 'pending');
 
@@ -2081,7 +2692,6 @@
         }).join('');
       }
 
-      // LISTA DE TRANSPORTISTAS VERIFICADOS DE LA APP
       const driversContainer = document.getElementById('registered-drivers-admin-list');
       const verifiedDrivers = (allDrivers || []).filter(d => d.verification_status === 'verified');
 
@@ -2210,7 +2820,7 @@
     }
 
     // =========================================================================
-    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE (INCLUYE BURBUJAS EN PARADAS)
+    // 15. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
@@ -2239,6 +2849,7 @@
             driverAccount = myDriverStatus;
             localStorage.setItem('ud4_accredited_driver', JSON.stringify(myDriverStatus));
             document.getElementById('driver-pending-banner').classList.add('hidden');
+            playAppSound('checkin');
             enterAppAsAccreditedDriver(myDriverStatus.vehicle_type, myDriverStatus.phone);
             return;
           }
@@ -2281,7 +2892,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v9')
+      supabaseClient.channel('ud4-live-channel-v10')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
@@ -2317,6 +2928,7 @@
         return;
       }
       if (wakeLock) wakeLock.release();
+      toggleSettingsDropdown(false);
       document.getElementById('oled-overlay').classList.add('hidden');
       document.getElementById('onboarding-screen').classList.remove('hidden');
     }
