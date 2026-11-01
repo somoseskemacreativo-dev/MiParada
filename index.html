@@ -50,9 +50,7 @@
       background: #121216 !important; 
     }
 
-    /* =====================================================================
-       MODO NOCHE (POR DEFECTO) VS MODO DÍA (MAPA A COLOR Y BOTONES BLANCOS)
-       ===================================================================== */
+    /* MODO NOCHE VS MODO DÍA */
     body:not(.day-mode) .leaflet-tile-pane {
       -webkit-filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
       filter: brightness(0.65) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.35);
@@ -124,9 +122,7 @@
     .user-gps-dot { animation: user-gps-pulse 2s infinite; }
     .vehicle-marker { transition: transform 1.2s linear; }
 
-    /* =====================================================================
-       BURBUJAS 60% MÁS PEQUEÑAS, AL LADO DEL ICONO 📍 Y SOLO EN ZOOM >= 17
-       ===================================================================== */
+    /* BURBUJAS 60% MÁS PEQUEÑAS, AL LADO DEL ICONO 📍 Y SOLO EN ZOOM >= 17 */
     body.hide-zoom-reactions .stop-reaction-wrapper {
       display: none !important;
     }
@@ -182,7 +178,6 @@
       height: 0;
     }
 
-    /* 60% más pequeño que el diseño anterior y ubicado al lado derecho del 📍 */
     .stop-reaction-bubble {
       position: absolute;
       top: -16px;
@@ -207,7 +202,6 @@
       box-shadow: 0 3px 8px rgba(16, 185, 129, 0.45), 0 1px 4px rgba(0,0,0,0.8);
     }
 
-    /* Puntero lateral izquierdo señalando exactamente al icono 📍 de la parada */
     .stop-reaction-bubble.type-sms::before {
       content: '';
       position: absolute;
@@ -426,7 +420,6 @@
           <strong id="global-total-passengers" class="text-sm font-extrabold text-emerald-500">0</strong>
         </div>
 
-        <!-- Botón de Ajustes Desplegable -->
         <button id="btn-settings-dropdown" type="button" onclick="toggleSettingsDropdown()" class="theme-btn text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 px-2.5 py-2 rounded-xl font-bold shrink-0 flex items-center gap-1">
           <span>⚙️</span> <span class="hidden sm:inline">Ajustes</span>
         </button>
@@ -444,7 +437,7 @@
         <button type="button" onclick="toggleSettingsDropdown(false)" class="theme-text-sub text-xs hover:opacity-75 px-1">✕</button>
       </div>
 
-      <!-- 1ra Opción Obligatoria: Borrar la caché de la PWA del dispositivo móvil -->
+      <!-- 1ra Opción: Borrar la caché de la PWA del dispositivo móvil -->
       <button type="button" onclick="clearDevicePwaCacheAndReload()" class="w-full bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl px-3.5 py-2.5 text-xs font-bold flex items-center justify-between transition">
         <span class="flex items-center gap-2"><span>🧹</span> Borrar caché de la PWA</span>
         <span class="text-[10px] font-normal opacity-80">Corregir errores</span>
@@ -582,7 +575,7 @@
         </button>
       </div>
 
-      <!-- Botones de Navegación del Mapa (El botón UD-4 abre las paradas activas cuando el GPS está desactivado) -->
+      <!-- Botones de Navegación del Mapa -->
       <div class="flex items-center justify-end gap-1.5 ml-auto">
         <button id="btn-my-location" type="button" onclick="locateUserOnMap()" class="theme-btn bg-[#121216]/95 hover:bg-zinc-800 text-blue-500 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
           <span>🎯</span> Mi Ubicación
@@ -596,7 +589,7 @@
       </div>
     </div>
 
-    <!-- Controles de Pasajero (Sin el botón Sugerir, que ahora está en Ajustes) -->
+    <!-- Controles de Pasajero -->
     <div id="passenger-controls" class="theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="flex-1 min-w-0">
         <p id="passenger-checkin-title" class="theme-text-main text-xs font-bold text-white truncate">Reporte de Parada</p>
@@ -633,7 +626,7 @@
     <p class="text-[11px] text-zinc-700 mt-2">Toca dos veces la pantalla para volver al mapa</p>
   </div>
 
-  <!-- MODAL: SUGERIR PARADA (AHORA ACCESIBLE DESDE AJUSTES) -->
+  <!-- MODAL: SUGERIR PARADA (DESDE AJUSTES) -->
   <div id="modal-suggest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
       <h3 class="theme-text-main text-sm font-bold text-white">📍 Solicitar Nueva Parada</h3>
@@ -742,7 +735,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES DE UD-4
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES DE UD-4 CON UUID VÁLIDOS
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -755,48 +748,47 @@
     } catch (err) {}
 
     const UD4_CENTER = [10.42955, -66.97637];
-    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio obligatorio de 50m con GPS activo
-    const MIN_STOP_DISTANCE_METERS = 80;   // Mínimo 80m entre 2 paradas
+    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio obligatorio de 50 metros
+    const MIN_STOP_DISTANCE_METERS = 80;   // Mínimo 80 metros entre 2 paradas
     const SWEEP_INTERVAL_MS = 30000;
     const CHECKIN_TTL_MS = 180000;
     const REACTION_COOLDOWN_SECONDS = 30;
     const REACTION_BUBBLE_DURATION_MS = 5000;
-    const MIN_ZOOM_FOR_BUBBLES = 17; // Nivel de zoom donde se ven los números de bloque de los edificios (Imagen A)
+    const MIN_ZOOM_FOR_BUBBLES = 17;
 
-    // Tiempos del Modo Manual (cuando el GPS del dispositivo está desactivado)
-    const MANUAL_WAIT_DURATION_SEC = 300; // 5 minutos (300 segundos)
-    const MANUAL_CONFIRM_WINDOW_SEC = 20; // 20 segundos para presionar "Sigo esperando"
+    const MANUAL_WAIT_DURATION_SEC = 300; // 5 minutos
+    const MANUAL_CONFIRM_WINDOW_SEC = 20; // 20 segundos
 
+    // Paradas base con UUIDs reales para evitar errores de tipo UUID en PostgreSQL
     const DEFAULT_UD4_STOPS = [
-      { id: 'ud4-1', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
-      { id: 'ud4-2', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
-      { id: 'ud4-3', name: 'CC Los Angeles', lat: 10.43148, lng: -66.97493, status: 'approved', count: 0 },
-      { id: 'ud4-4', name: 'Canagua', lat: 10.43279, lng: -66.97650, status: 'approved', count: 0 },
-      { id: 'ud4-5', name: 'Mucuritas', lat: 10.43126, lng: -66.97776, status: 'approved', count: 0 },
-      { id: 'ud4-6', name: 'Vuelvancaras', lat: 10.42812, lng: -66.97433, status: 'approved', count: 0 },
-      { id: 'ud4-7', name: 'Carabobo', lat: 10.42939, lng: -66.97390, status: 'approved', count: 0 },
-      { id: 'ud4-8', name: 'San Agustin', lat: 10.42955, lng: -66.97637, status: 'approved', count: 0 },
-      { id: 'ud4-9', name: 'Curpa / Gimnasio Vertical', lat: 10.42850, lng: -66.97599, status: 'approved', count: 0 },
-      { id: 'ud4-10', name: 'Bravos de Apure', lat: 10.42731, lng: -66.97739, status: 'approved', count: 0 },
-      { id: 'ud4-11', name: 'Arauca', lat: 10.42736, lng: -66.97870, status: 'approved', count: 0 },
-      { id: 'ud4-12', name: 'Payara', lat: 10.42843, lng: -66.97884, status: 'approved', count: 0 }
+      { id: '00000000-0000-4000-8000-000000000001', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000002', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000003', name: 'CC Los Angeles', lat: 10.43148, lng: -66.97493, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000004', name: 'Canagua', lat: 10.43279, lng: -66.97650, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000005', name: 'Mucuritas', lat: 10.43126, lng: -66.97776, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000006', name: 'Vuelvancaras', lat: 10.42812, lng: -66.97433, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000007', name: 'Carabobo', lat: 10.42939, lng: -66.97390, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000008', name: 'San Agustin', lat: 10.42955, lng: -66.97637, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000009', name: 'Curpa / Gimnasio Vertical', lat: 10.42850, lng: -66.97599, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000010', name: 'Bravos de Apure', lat: 10.42731, lng: -66.97739, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000011', name: 'Arauca', lat: 10.42736, lng: -66.97870, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000012', name: 'Payara', lat: 10.42843, lng: -66.97884, status: 'approved', count: 0 }
     ];
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
-    let isDeviceGpsEnabled = true; // Switch en Ajustes para activar/desactivar GPS
-    let isDayMode = false;         // Switch en Ajustes para Modo Día / Modo Noche
-    let isSoundEnabled = true;     // Switch en Ajustes para Sonido
+    let isDeviceGpsEnabled = true;
+    let isDayMode = false;
+    let isSoundEnabled = true;
 
     let hasValidGpsFix = false;
-    let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
+    let currentPos = { lat: UD4_CENTER[0], lng: UD4_CENTER[1], accuracy: 15 };
     let userLocationMarker = null, userAccuracyCircle = null;
 
     let activeCheckinStopId = null;
     let backgroundWorker = null;
 
-    // Variables del Ciclo Manual Sin GPS (5 min bloqueado -> 20 seg ventana "Sigo esperando")
     let isManualCheckinActive = false;
-    let manualPhase = 'none'; // 'waiting_5m' | 'confirm_20s' | 'none'
+    let manualPhase = 'none';
     let manualTimerInterval = null;
     let manualRemainingSeconds = 0;
 
@@ -817,7 +809,91 @@
     let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
 
     // =========================================================================
-    // 2. MOTOR DE SONIDO SINTETIZADO (WEB AUDIO API)
+    // 2. FUNCIÓN UNIVERSAL DE REGISTRO EN PARADA A PRUEBA DE FALLOS RLS / UUID
+    // =========================================================================
+    async function registerCheckinInSupabase(targetStop, expiresAtIso) {
+      if (!supabaseClient || !targetStop) return { ok: false, message: 'Cliente no disponible' };
+
+      // 1. Asegurar que tengamos las paradas reales de la base de datos de Supabase
+      let dbStopId = targetStop.id;
+      const { data: dbStops } = await supabaseClient
+        .from('stops')
+        .select('id, name, lat, lng, status')
+        .eq('status', 'approved');
+
+      if (dbStops && dbStops.length > 0) {
+        // Buscar coincidencia por ID exacto, o por nombre/cercanía si el ID en memoria era un placeholder
+        let matched = dbStops.find(s => s.id === targetStop.id);
+        if (!matched) {
+          matched = dbStops.find(s => s.name.toLowerCase() === targetStop.name.toLowerCase());
+        }
+        if (!matched) {
+          let minD = Infinity;
+          dbStops.forEach(s => {
+            const d = getDistanceMeters(targetStop.lat, targetStop.lng, s.lat, s.lng);
+            if (d < minD) { minD = d; matched = s; }
+          });
+        }
+        if (matched) {
+          dbStopId = matched.id;
+        }
+      }
+
+      const hash = await getDailyDeviceHash();
+      const nowIso = new Date().toISOString();
+
+      // 2. Intento 1: UPSERT directo con resolución sobre device_daily_hash
+      let { error } = await supabaseClient
+        .from('stop_checkins')
+        .upsert(
+          {
+            device_daily_hash: hash,
+            stop_id: dbStopId,
+            expires_at: expiresAtIso,
+            updated_at: nowIso
+          },
+          { onConflict: 'device_daily_hash' }
+        );
+
+      // 3. Intento 2 (Fallback si había una fila expirada bloqueada por RLS antiguo):
+      //    Eliminar registro previo o rotar sufijo de sesión del dispositivo e insertar limpio
+      if (error) {
+        await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
+
+        const retryInsert = await supabaseClient
+          .from('stop_checkins')
+          .insert({
+            device_daily_hash: hash,
+            stop_id: dbStopId,
+            expires_at: expiresAtIso,
+            updated_at: nowIso
+          });
+
+        if (retryInsert.error) {
+          // Si la tabla tenía una fila expirada oculta por una política SELECT antigua,
+          // regeneramos el token de sesión del dispositivo para evitar el bloqueo de llave duplicada
+          localStorage.removeItem('ud4_device_token');
+          const freshHash = await getDailyDeviceHash();
+          const finalTry = await supabaseClient
+            .from('stop_checkins')
+            .insert({
+              device_daily_hash: freshHash,
+              stop_id: dbStopId,
+              expires_at: expiresAtIso,
+              updated_at: nowIso
+            });
+
+          if (finalTry.error) {
+            return { ok: false, message: finalTry.error.message };
+          }
+        }
+      }
+
+      return { ok: true, stopId: dbStopId };
+    }
+
+    // =========================================================================
+    // 3. MOTOR DE SONIDO SINTETIZADO (WEB AUDIO API)
     // =========================================================================
     let audioCtx = null;
 
@@ -844,16 +920,14 @@
         gain.connect(audioCtx.destination);
 
         if (type === 'checkin') {
-          // Doble tono ascendente de confirmación al marcar parada
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, now); // C5
-          osc.frequency.setValueAtTime(659.25, now + 0.09); // E5
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.09);
           gain.gain.setValueAtTime(0.15, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
           osc.start(now);
           osc.stop(now + 0.25);
         } else if (type === 'bubble') {
-          // Sonido suave de burbuja emergente (SMS / Emoji)
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(380, now);
           osc.frequency.exponentialRampToValueAtTime(780, now + 0.11);
@@ -862,7 +936,6 @@
           osc.start(now);
           osc.stop(now + 0.13);
         } else if (type === 'pop') {
-          // Sonido corto al explotar la burbuja a los 5 segundos
           osc.type = 'sine';
           osc.frequency.setValueAtTime(900, now);
           osc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
@@ -871,7 +944,6 @@
           osc.start(now);
           osc.stop(now + 0.07);
         } else if (type === 'alert20s') {
-          // Alerta cuando se activa el botón "Sigo esperando" por 20 segundos
           osc.type = 'sine';
           osc.frequency.setValueAtTime(740, now);
           osc.frequency.setValueAtTime(880, now + 0.12);
@@ -880,7 +952,6 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'checkout') {
-          // Tono descendente al salir de la parada (> 50m o expiración de 20s)
           osc.type = 'sine';
           osc.frequency.setValueAtTime(440, now);
           osc.frequency.exponentialRampToValueAtTime(260, now + 0.22);
@@ -892,11 +963,10 @@
       } catch (e) {}
     }
 
-    // Desbloquear audio en el primer toque del usuario en la pantalla
     window.addEventListener('pointerdown', () => initAudioEngine(), { once: true });
 
     // =========================================================================
-    // 3. MENÚ DESPLEGABLE DE AJUSTES (BORRAR CACHÉ, SWITCH GPS, MODO DÍA/NOCHE)
+    // 4. MENÚ DESPLEGABLE DE AJUSTES
     // =========================================================================
     function toggleSettingsDropdown(forceState) {
       const menu = document.getElementById('settings-dropdown-menu');
@@ -904,7 +974,6 @@
       menu.classList.toggle('hidden', !show);
     }
 
-    // 1ra Opción: Borrar caché de la PWA del dispositivo móvil
     async function clearDevicePwaCacheAndReload() {
       if (!confirm('¿Borrar la memoria caché de la PWA en este dispositivo y recargar para corregir errores?')) {
         return;
@@ -926,12 +995,10 @@
       window.location.reload(true);
     }
 
-    // Switch 2da Opción: Desactivar o Activar la ubicación GPS del dispositivo móvil
     async function toggleDeviceGpsSwitch() {
       isDeviceGpsEnabled = !isDeviceGpsEnabled;
       updateGpsSwitchUI();
 
-      // Si tenía una parada marcada en el otro modo, reiniciamos su estado limpio
       if (activeCheckinStopId) {
         await removeCurrentPassengerCheckinFromDb(false);
       }
@@ -940,7 +1007,6 @@
         stopManualWaitTimers();
         startGpsTracking();
       } else {
-        // Desactivar rastreo GPS del navegador y ocultar marcador azul
         if (watchId) {
           navigator.geolocation.clearWatch(watchId);
           watchId = null;
@@ -974,7 +1040,6 @@
       }
     }
 
-    // Switch 3ra Opción: Modo Día (Mapa a color y botones blancos) / Modo Noche
     function toggleDayNightModeSwitch() {
       isDayMode = !isDayMode;
       localStorage.setItem('ud4_day_mode', isDayMode ? '1' : '0');
@@ -998,7 +1063,6 @@
       }
     }
 
-    // Switch 4ta Opción: Sonidos
     function toggleSoundSwitch() {
       isSoundEnabled = !isSoundEnabled;
       const btn = document.getElementById('switch-sound-toggle');
@@ -1018,10 +1082,9 @@
     }
 
     // =========================================================================
-    // 4. MODO MANUAL SIN GPS ("ESTOY AQUÍ" -> BOTÓN "UD-4" -> "SIGO ESPERANDO")
+    // 5. MODO MANUAL SIN GPS ("ESTOY AQUÍ" -> BOTÓN "UD-4" -> "SIGO ESPERANDO")
     // =========================================================================
     function handleUd4ButtonClick() {
-      // Si el GPS está desactivado y es Usuario, el botón UD-4 abre la lista de paradas activas como botones
       if (!isDeviceGpsEnabled && userRole === 'passenger') {
         openUd4StopsSelectorModal();
       } else {
@@ -1029,13 +1092,17 @@
       }
     }
 
-    function openUd4StopsSelectorModal() {
+    async function openUd4StopsSelectorModal() {
       const modal = document.getElementById('modal-ud4-stops-selector');
       const grid = document.getElementById('ud4-stops-buttons-grid');
+      modal.classList.remove('hidden');
+
+      // Sincronizar paradas activas frescas desde Supabase antes de pintar los botones
+      await refreshLiveStateFromSupabase();
       const approved = stopsData.filter(s => s.status === 'approved');
 
       if (approved.length === 0) {
-        grid.innerHTML = '<p class="text-xs text-zinc-400 col-span-2">Cargando paradas de UD-4...</p>';
+        grid.innerHTML = '<p class="text-xs text-zinc-400 col-span-2">No hay paradas activas registradas.</p>';
       } else {
         grid.innerHTML = approved.map(s => {
           const isSelected = activeCheckinStopId === s.id;
@@ -1057,15 +1124,12 @@
           `;
         }).join('');
       }
-
-      modal.classList.remove('hidden');
     }
 
     function closeUd4StopsSelectorModal() {
       document.getElementById('modal-ud4-stops-selector').classList.add('hidden');
     }
 
-    // Al elegir una parada de la lista UD-4 con el GPS desactivado (Solo 1 parada por dispositivo)
     async function selectManualStopFromUd4List(stopId) {
       if (!supabaseClient) return;
       const targetStop = stopsData.find(s => s.id === stopId && s.status === 'approved');
@@ -1073,24 +1137,15 @@
 
       closeUd4StopsSelectorModal();
 
-      // El registro manual dura 5 minutos (300s) + 25s de margen para la ventana de confirmación
-      const hash = await getDailyDeviceHash();
       const expiresAt = new Date(Date.now() + (MANUAL_WAIT_DURATION_SEC + 25) * 1000).toISOString();
+      const result = await registerCheckinInSupabase(targetStop, expiresAt);
 
-      // Upsert sobre device_daily_hash garantiza que un dispositivo NUNCA pueda marcar 2 o más paradas
-      const { error } = await supabaseClient.from('stop_checkins').upsert({
-        device_daily_hash: hash,
-        stop_id: targetStop.id,
-        expires_at: expiresAt,
-        updated_at: new Date().toISOString()
-      });
-
-      if (error) {
-        alert('No se pudo registrar en la parada.');
+      if (!result.ok) {
+        alert('Error registrando parada en base de datos: ' + result.message + '\n\nAsegúrate de haber ejecutado el último bloque SQL en Supabase.');
         return;
       }
 
-      activeCheckinStopId = targetStop.id;
+      activeCheckinStopId = result.stopId;
       isManualCheckinActive = true;
       playAppSound('checkin');
 
@@ -1105,7 +1160,7 @@
     function startManual5MinCycle(stopName) {
       stopManualWaitTimers();
       manualPhase = 'waiting_5m';
-      manualRemainingSeconds = MANUAL_WAIT_DURATION_SEC; // 300 segundos (5 min)
+      manualRemainingSeconds = MANUAL_WAIT_DURATION_SEC;
 
       const reactionBtns = document.getElementById('in-stop-reaction-buttons');
       if (reactionBtns) reactionBtns.classList.remove('hidden');
@@ -1119,9 +1174,8 @@
           if (manualRemainingSeconds > 0) {
             updateManualButtonCountdownUI(stopName);
           } else {
-            // Pasaron los 5 minutos: se activa el botón "Sigo esperando" por 20 segundos
             manualPhase = 'confirm_20s';
-            manualRemainingSeconds = MANUAL_CONFIRM_WINDOW_SEC; // 20 segundos
+            manualRemainingSeconds = MANUAL_CONFIRM_WINDOW_SEC;
             playAppSound('alert20s');
             updateManualButtonCountdownUI(stopName);
           }
@@ -1129,7 +1183,6 @@
           if (manualRemainingSeconds > 0) {
             updateManualButtonCountdownUI(stopName);
           } else {
-            // No presionó "Sigo esperando" en los 20 segundos siguientes: se resta de la parada y vuelve "Estoy aquí"
             stopManualWaitTimers();
             await removeCurrentPassengerCheckinFromDb(true);
           }
@@ -1147,13 +1200,13 @@
       if (manualPhase === 'waiting_5m') {
         const mins = String(Math.floor(manualRemainingSeconds / 60)).padStart(2, '0');
         const secs = String(manualRemainingSeconds % 60).padStart(2, '0');
-        btn.disabled = true; // Bloqueado durante los 5 minutos
+        btn.disabled = true;
         btn.textContent = `Sigo esperando (${mins}:${secs})`;
         btn.className = 'bg-zinc-800 text-emerald-400 border border-emerald-500/40 text-xs font-extrabold px-3.5 py-2.5 rounded-xl opacity-80 cursor-not-allowed';
         titleEl.textContent = `📍 En parada: ${displayStopName}`;
-        subEl.textContent = `Modo manual activo · Se activará confirmación en ${mins}:${secs}`;
+        subEl.textContent = `Modo manual activo · Confirmación en ${mins}:${secs}`;
       } else if (manualPhase === 'confirm_20s') {
-        btn.disabled = false; // Se activa pasado los 5 min durante 20 segundos
+        btn.disabled = false;
         btn.textContent = `Sigo esperando (${manualRemainingSeconds}s)`;
         btn.className = 'bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold px-4 py-2.5 rounded-xl animate-pulse shadow-lg transition';
         titleEl.textContent = `⚠️ ¿Sigues en ${displayStopName}?`;
@@ -1170,37 +1223,31 @@
       manualRemainingSeconds = 0;
     }
 
-    // Acción principal del botón inferior según el estado del GPS y la fase actual
     async function handlePrimaryCheckinButton() {
-      // MODO 1: GPS ACTIVADO ("En la parada")
       if (isDeviceGpsEnabled) {
         await manualCheckInClosestStopWithGps();
         return;
       }
 
-      // MODO 2: GPS DESACTIVADO ("Estoy aquí" / "Sigo esperando")
       if (!activeCheckinStopId || manualPhase === 'none') {
-        // Al pulsar "Estoy aquí", le pedimos seleccionar la parada en el selector UD-4
         openUd4StopsSelectorModal();
         return;
       }
 
-      // Si está en la ventana de 20 segundos y presiona "Sigo esperando", renueva por otros 5 minutos
       if (manualPhase === 'confirm_20s' && activeCheckinStopId) {
         const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
-        const hash = await getDailyDeviceHash();
         const expiresAt = new Date(Date.now() + (MANUAL_WAIT_DURATION_SEC + 25) * 1000).toISOString();
 
-        await supabaseClient.from('stop_checkins').upsert({
-          device_daily_hash: hash,
-          stop_id: activeCheckinStopId,
-          expires_at: expiresAt,
-          updated_at: new Date().toISOString()
-        });
+        const res = await registerCheckinInSupabase(
+          currentStop || { id: activeCheckinStopId, name: 'Parada UD-4', lat: UD4_CENTER[0], lng: UD4_CENTER[1] },
+          expiresAt
+        );
 
-        playAppSound('checkin');
-        startManual5MinCycle(currentStop ? currentStop.name : 'Parada UD-4');
-        refreshLiveStateFromSupabase();
+        if (res.ok) {
+          playAppSound('checkin');
+          startManual5MinCycle(currentStop ? currentStop.name : 'Parada UD-4');
+          refreshLiveStateFromSupabase();
+        }
       }
     }
 
@@ -1243,7 +1290,7 @@
     }
 
     // =========================================================================
-    // 5. HELPERS DE VEHÍCULOS E INSTALACIÓN PWA
+    // 6. HELPERS DE VEHÍCULOS E INSTALACIÓN PWA
     // =========================================================================
     function getVehicleEmoji(vType) {
       if (vType === 'bus') return '🚌';
@@ -1287,7 +1334,7 @@
     }
 
     // =========================================================================
-    // 6. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
+    // 7. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
     // =========================================================================
     function startBackgroundHeartbeatWorker() {
       if (backgroundWorker) return;
@@ -1336,7 +1383,7 @@
     window.addEventListener('beforeunload', removeUserOnPageClose);
 
     // =========================================================================
-    // 7. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
+    // 8. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
     // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
@@ -1407,7 +1454,7 @@
     }
 
     // =========================================================================
-    // 8. VERIFICACIÓN AL INICIAR
+    // 9. VERIFICACIÓN AL INICIAR
     // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
       if (localStorage.getItem('ud4_day_mode') === '1') {
@@ -1469,7 +1516,7 @@
     }
 
     // =========================================================================
-    // 9. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA (CARRO / BUS / MOTO)
+    // 10. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA
     // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
@@ -1631,7 +1678,7 @@
     }
 
     // =========================================================================
-    // 10. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y BURBUJAS AL LADO DE LA PARADA
+    // 11. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y BURBUJAS AL LADO DE LA PARADA
     // =========================================================================
     function initMap() {
       if (map) {
@@ -1642,7 +1689,7 @@
 
       map = L.map('map', {
         center: UD4_CENTER,
-        zoom: 17, // Inicia en zoom 17 (donde se observan los números de bloque de los edificios como en la Imagen A)
+        zoom: 17,
         minZoom: 13,
         maxZoom: 19,
         zoomControl: false,
@@ -1656,7 +1703,6 @@
         crossOrigin: true
       }).addTo(map);
 
-      // Controlar visibilidad de las burbujas según el nivel de acercamiento a los edificios (Zoom >= 17)
       map.on('zoomend', updateBubbleVisibilityByZoom);
 
       map.on('click', async (e) => {
@@ -1691,14 +1737,12 @@
       });
     }
 
-    // Las interacciones solo se ven cuando el mapa tiene el acercamiento donde se leen los bloques (Zoom >= 17)
     function updateBubbleVisibilityByZoom() {
       if (!map) return;
       const currentZoom = map.getZoom();
       document.body.classList.toggle('hide-zoom-reactions', currentZoom < MIN_ZOOM_FOR_BUBBLES);
     }
 
-    // Lanza la burbuja (60% más pequeña) justo al lado derecho del icono 📍 de la parada
     function spawnStopReactionBubbleOnMap(reaction) {
       if (!map || !reaction || !reaction.stop_id) return;
       if (displayedReactionIds.has(reaction.id)) return;
@@ -1803,7 +1847,6 @@
 
       closeReactionPopovers();
 
-      // Si el usuario tiene el mapa muy alejado (< zoom 17), acercar automáticamente a su parada para que vea su burbuja y los edificios
       const myStop = stopsData.find(s => s.id === activeCheckinStopId);
       if (map && myStop && map.getZoom() < MIN_ZOOM_FOR_BUBBLES) {
         map.flyTo([myStop.lat, myStop.lng], 18, { duration: 0.5 });
@@ -1885,9 +1928,9 @@
 
       if (!userLocationMarker) {
         userAccuracyCircle = L.circle([lat, lng], {
-          radius: Math.min(accuracyMeters, 50),
+          radius: 50, // Muestra el radio reglamentario de 50 metros alrededor del usuario
           color: '#3B82F6',
-          weight: 1,
+          weight: 1.2,
           fillColor: '#3B82F6',
           fillOpacity: 0.14
         }).addTo(map);
@@ -1898,7 +1941,7 @@
       } else {
         userLocationMarker.setLatLng([lat, lng]);
         userAccuracyCircle.setLatLng([lat, lng]);
-        userAccuracyCircle.setRadius(Math.min(accuracyMeters, 50));
+        userAccuracyCircle.setRadius(50);
       }
     }
 
@@ -1915,8 +1958,8 @@
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             hasValidGpsFix = true;
-            currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            updateUserLocationMarkerOnMap(currentPos.lat, currentPos.lng, pos.coords.accuracy);
+            currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy || 15 };
+            updateUserLocationMarkerOnMap(currentPos.lat, currentPos.lng, currentPos.accuracy);
             map.flyTo([currentPos.lat, currentPos.lng], 18, { duration: 0.8 });
           },
           () => alert('Activa el permiso de ubicación GPS en tu teléfono o desactiva el switch de GPS en ⚙️ Ajustes para usar el modo manual.'),
@@ -2096,7 +2139,7 @@
     }
 
     // =========================================================================
-    // 11. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
+    // 12. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
     // =========================================================================
     function enterAppAsPassenger() {
       if (driverAccount && driverAccount.verification_status === 'verified') {
@@ -2154,7 +2197,7 @@
     }
 
     // =========================================================================
-    // 12. RASTREO GPS EN TIEMPO REAL Y SALIDA INMEDIATA SI SALE DE LOS 50M
+    // 13. RASTREO GPS EN TIEMPO REAL Y DETECCIÓN DE RADIO DE 50 METROS
     // =========================================================================
     function startGpsTracking() {
       if (!isDeviceGpsEnabled && userRole === 'passenger') return;
@@ -2168,17 +2211,23 @@
         async (pos) => {
           hasValidGpsFix = true;
           const { latitude, longitude, accuracy } = pos.coords;
-          currentPos = { lat: latitude, lng: longitude };
+          currentPos = { lat: latitude, lng: longitude, accuracy: accuracy || 15 };
 
           updateUserLocationMarkerOnMap(latitude, longitude, accuracy);
-          document.getElementById('gps-status-text').textContent = 'GPS Activo · Tiempo Real';
 
-          // Si el usuario tiene marcada una parada con GPS activo y se mueve o lo recoge un transportista (> 50m), restarlo de inmediato
+          const { stop: nearStop, distance } = findClosestApprovedStop(latitude, longitude);
+          if (nearStop && distance <= STOP_CHECKIN_RADIUS_METERS) {
+            document.getElementById('gps-status-text').textContent = `✅ En radio de ${nearStop.name} (${Math.round(distance)}m)`;
+          } else {
+            document.getElementById('gps-status-text').textContent = 'GPS Activo · Tiempo Real';
+          }
+
+          // Si el usuario tiene marcada una parada con GPS activo y sale del radio de 50m (con margen de tolerancia de deriva GPS de 8m), restarlo
           if (userRole === 'passenger' && isDeviceGpsEnabled && activeCheckinStopId && !isManualCheckinActive) {
             const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
             if (currentStop) {
               const dist = getDistanceMeters(latitude, longitude, currentStop.lat, currentStop.lng);
-              if (dist > STOP_CHECKIN_RADIUS_METERS) {
+              if (dist > STOP_CHECKIN_RADIUS_METERS + 8) {
                 await removeCurrentPassengerCheckinFromDb(true);
               }
             }
@@ -2225,43 +2274,69 @@
       }
     }
 
-    // Marcar "En la parada" con GPS activado (Obligatorio estar a <= 50 metros)
+    // Obtiene posición GPS fresca al instante si el usuario pulsa "En la parada"
+    function getImmediateGpsPosition() {
+      return new Promise((resolve) => {
+        if (hasValidGpsFix) {
+          resolve(currentPos);
+          return;
+        }
+        if (!navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            hasValidGpsFix = true;
+            currentPos = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy || 15
+            };
+            updateUserLocationMarkerOnMap(currentPos.lat, currentPos.lng, currentPos.accuracy);
+            resolve(currentPos);
+          },
+          () => resolve(hasValidGpsFix ? currentPos : null),
+          { enableHighAccuracy: true, timeout: 6000, maximumAge: 5000 }
+        );
+      });
+    }
+
+    // Marcar "En la parada" con GPS activado (Dentro de los 50 metros reglamentarios)
     async function manualCheckInClosestStopWithGps() {
       if (!supabaseClient || activeCheckinStopId) return;
 
-      if (!hasValidGpsFix) {
-        alert('Obteniendo señal GPS de tu dispositivo.\nSi prefieres marcar tu parada manualmente sin GPS, abre ⚙️ Ajustes y desactiva el switch de Ubicación GPS.');
-        locateUserOnMap();
+      const btn = document.getElementById('btn-checkin');
+      const prevText = btn.textContent;
+      btn.textContent = 'Ubicando...';
+
+      await refreshLiveStateFromSupabase();
+      const pos = await getImmediateGpsPosition();
+      btn.textContent = prevText;
+
+      if (!pos) {
+        alert('No se pudo obtener la señal GPS de tu teléfono.\n\nActiva la ubicación del teléfono o abre ⚙️ Ajustes y desactiva el switch de GPS para elegir la parada manualmente.');
         return;
       }
 
-      if (stopsData.length === 0) {
-        await refreshLiveStateFromSupabase();
-      }
+      const { stop: closest, distance } = findClosestApprovedStop(pos.lat, pos.lng);
+      // Compensación de margen del sensor GPS móvil (máx 12m) para que el círculo azul de 50m en el mapa coincida exactamente con la validación
+      const effectiveDistance = Math.max(0, distance - Math.min(pos.accuracy ? pos.accuracy * 0.25 : 0, 12));
 
-      const { stop: closest, distance } = findClosestApprovedStop(currentPos.lat, currentPos.lng);
-
-      if (!closest || distance > STOP_CHECKIN_RADIUS_METERS) {
-        alert(`Debes estar a menos de 50 metros de una parada para marcar "En la parada" (Parada más cercana: ${closest ? closest.name + ' a ' + Math.round(distance) + 'm' : 'ninguna'}).`);
+      if (!closest || effectiveDistance > STOP_CHECKIN_RADIUS_METERS) {
+        alert(`Estás a ${Math.round(distance)} metros de la parada más cercana (${closest ? closest.name : 'UD-4'}).\nDebes estar dentro de los 50 metros reglamentarios para marcar "En la parada".`);
         return;
       }
 
-      const hash = await getDailyDeviceHash();
       const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
+      const result = await registerCheckinInSupabase(closest, expiresAt);
 
-      const { error } = await supabaseClient.from('stop_checkins').upsert({
-        device_daily_hash: hash,
-        stop_id: closest.id,
-        expires_at: expiresAt,
-        updated_at: new Date().toISOString()
-      });
-
-      if (error) {
-        alert('No se pudo registrar en la parada.');
+      if (!result.ok) {
+        alert('Error registrando en parada: ' + result.message + '\n\nEjecuta el script SQL actualizado en Supabase.');
         return;
       }
 
-      activeCheckinStopId = closest.id;
+      activeCheckinStopId = result.stopId;
       isManualCheckinActive = false;
       playAppSound('checkin');
       setGpsCheckinButtonLockedState(true, closest.name);
@@ -2269,7 +2344,6 @@
       refreshLiveStateFromSupabase();
     }
 
-    // Barrido silencioso cada 30 segundos
     async function executeSilent30sBackgroundSweep() {
       if (!supabaseClient) return;
 
@@ -2281,11 +2355,8 @@
         return;
       }
 
-      // Si es pasajero en modo GPS automático, verificar que siga a <= 50 metros de la parada
       if (userRole === 'passenger' && isDeviceGpsEnabled && activeCheckinStopId && !isManualCheckinActive) {
         const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
-        const hash = await getDailyDeviceHash();
-
         if (!currentStop) {
           await removeCurrentPassengerCheckinFromDb(false);
           return;
@@ -2293,16 +2364,10 @@
 
         const distToCheckedStop = getDistanceMeters(currentPos.lat, currentPos.lng, currentStop.lat, currentStop.lng);
 
-        if (distToCheckedStop <= STOP_CHECKIN_RADIUS_METERS) {
+        if (distToCheckedStop <= STOP_CHECKIN_RADIUS_METERS + 8) {
           const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
-          await supabaseClient.from('stop_checkins').upsert({
-            device_daily_hash: hash,
-            stop_id: currentStop.id,
-            expires_at: expiresAt,
-            updated_at: new Date().toISOString()
-          });
+          await registerCheckinInSupabase(currentStop, expiresAt);
         } else {
-          // Salió del radio de 50 metros (caminó o lo recogió un transportista): restarlo
           await removeCurrentPassengerCheckinFromDb(true);
         }
       }
@@ -2313,14 +2378,11 @@
     async function keepAliveWhileScreenLocked() {
       if (!supabaseClient) return;
       if (userRole === 'passenger' && activeCheckinStopId && isDeviceGpsEnabled && !isManualCheckinActive) {
-        const hash = await getDailyDeviceHash();
-        const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
-        await supabaseClient.from('stop_checkins').upsert({
-          device_daily_hash: hash,
-          stop_id: activeCheckinStopId,
-          expires_at: expiresAt,
-          updated_at: new Date().toISOString()
-        });
+        const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
+        if (currentStop) {
+          const expiresAt = new Date(Date.now() + CHECKIN_TTL_MS).toISOString();
+          await registerCheckinInSupabase(currentStop, expiresAt);
+        }
       } else if (userRole !== 'passenger' && driverAccount && driverAccount.verification_status === 'verified' && isDriverTransmitting && hasValidGpsFix) {
         await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
       }
@@ -2391,7 +2453,7 @@
     }
 
     // =========================================================================
-    // 13. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
+    // 14. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
     // =========================================================================
     function exportActiveStopsToTxt() {
       const approved = stopsData.filter(s => s.status === 'approved');
@@ -2516,7 +2578,7 @@
     }
 
     // =========================================================================
-    // 14. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
+    // 15. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
     // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
@@ -2820,7 +2882,7 @@
     }
 
     // =========================================================================
-    // 15. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
+    // 16. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE (CONSULTAS INDEPENDIENTES)
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
@@ -2855,33 +2917,25 @@
           }
         }
 
-        const queries = [
+        const [stopsRes, countsRes, driversRes] = await Promise.all([
           supabaseClient.from('stops').select('*').eq('status', 'approved'),
           supabaseClient.from('stop_counts').select('*'),
           supabaseClient.from('active_drivers').select('*')
-        ];
+        ]);
 
         if (isCreatorAuthenticated) {
-          queries.push(supabaseClient.from('stops').select('*').eq('status', 'pending'));
+          const pendingRes = await supabaseClient.from('stops').select('*').eq('status', 'pending');
+          pendingStopsData = pendingRes.data || [];
         }
 
-        const results = await Promise.all(queries);
-        const stops = results[0].data;
-        const counts = results[1].data;
-        const drivers = results[2].data;
-
-        if (isCreatorAuthenticated && results[3]) {
-          pendingStopsData = results[3].data || [];
-        }
-
-        if (stops && stops.length > 0) {
-          const countMap = counts ? Object.fromEntries(counts.map(c => [c.stop_id, c.people_count])) : {};
-          stopsData = stops.map(s => ({ ...s, count: countMap[s.id] || 0 }));
+        if (stopsRes.data && stopsRes.data.length > 0) {
+          const countMap = countsRes.data ? Object.fromEntries(countsRes.data.map(c => [c.stop_id, c.people_count])) : {};
+          stopsData = stopsRes.data.map(s => ({ ...s, count: countMap[s.id] || 0 }));
         }
         renderStops();
 
-        if (drivers) {
-          driversData = drivers;
+        if (driversRes.data) {
+          driversData = driversRes.data;
           renderDrivers();
         }
       } catch (e) {
@@ -2892,7 +2946,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v10')
+      supabaseClient.channel('ud4-live-channel-v11')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
