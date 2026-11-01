@@ -122,7 +122,11 @@
     .user-gps-dot { animation: user-gps-pulse 2s infinite; }
     .vehicle-marker { transition: transform 1.2s linear; }
 
-    /* BURBUJAS 60% MÁS PEQUEÑAS, AL LADO DEL ICONO 📍 Y SOLO EN ZOOM >= 17 */
+    /* =====================================================================
+       BURBUJAS MINIMALISTAS CON PILA DE 3 RANURAS Y COLA (SIN SOLAPAMIENTO)
+       - Modo Noche: Fondo Blanco (#FFFFFF) con Texto Negro (#09090B) regular
+       - Modo Día: Fondo Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular
+       ===================================================================== */
     body.hide-zoom-reactions .stop-reaction-wrapper {
       display: none !important;
     }
@@ -130,44 +134,43 @@
     @keyframes side-bubble-grow-pop {
       0% {
         opacity: 0;
-        transform: translate(2px, -50%) scale(0.15);
+        transform: translate(4px, -50%) scale(0.2);
       }
-      14% {
+      12% {
         opacity: 1;
-        transform: translate(14px, -50%) scale(1.08);
+        transform: translate(16px, -50%) scale(1.05);
       }
-      22% {
+      20% {
         opacity: 1;
-        transform: translate(12px, -50%) scale(1);
+        transform: translate(14px, -50%) scale(1);
       }
-      85% {
+      86% {
         opacity: 1;
-        transform: translate(12px, -50%) scale(1);
+        transform: translate(14px, -50%) scale(1);
       }
       94% {
         opacity: 0.95;
-        transform: translate(14px, -50%) scale(1.38);
-        filter: brightness(1.5);
+        transform: translate(16px, -50%) scale(1.32);
       }
       100% {
         opacity: 0;
-        transform: translate(16px, -50%) scale(1.75);
-        filter: blur(3px);
+        transform: translate(18px, -50%) scale(1.65);
+        filter: blur(2px);
       }
     }
 
     @keyframes side-pop-ring-burst {
-      0%, 85% {
+      0%, 86% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.4);
+        transform: translate(-50%, -50%) scale(0.5);
       }
       92% {
-        opacity: 1;
+        opacity: 0.9;
         transform: translate(-50%, -50%) scale(1.25);
       }
       100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(1.9);
+        transform: translate(-50%, -50%) scale(1.85);
       }
     }
 
@@ -178,60 +181,56 @@
       height: 0;
     }
 
+    /* Base minimalista: Modo Noche (Blanca con texto negro regular) */
     .stop-reaction-bubble {
       position: absolute;
-      top: -16px;
-      left: 4px;
+      left: 2px;
       transform-origin: left center;
       animation: side-bubble-grow-pop 5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       white-space: nowrap;
       z-index: 9999;
       pointer-events: none;
+      background-color: #FFFFFF;
+      color: #09090B;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400; /* Texto regular */
+      font-size: 10px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      padding: 4px 8px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    .stop-reaction-bubble.type-sms {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-      color: #FFFFFF;
-      font-weight: 800;
-      font-size: 8.5px;
-      line-height: 1.1;
-      letter-spacing: -0.01em;
-      padding: 3px 6px;
-      border-radius: 7px;
-      border: 1px solid #FFFFFF;
-      box-shadow: 0 3px 8px rgba(16, 185, 129, 0.45), 0 1px 4px rgba(0,0,0,0.8);
-    }
-
-    .stop-reaction-bubble.type-sms::before {
+    /* Puntero izquierdo para Modo Noche (Blanco) */
+    .stop-reaction-bubble::before {
       content: '';
       position: absolute;
       left: -4px;
       top: 50%;
       transform: translateY(-50%);
-      border-width: 3.5px 4px 3.5px 0;
+      border-width: 4px 4px 4px 0;
       border-style: solid;
       border-color: transparent #FFFFFF transparent transparent;
     }
 
+    /* Ajuste sutil para emojis manteniendo la misma cápsula minimalista */
     .stop-reaction-bubble.type-emoji {
-      background: rgba(18, 18, 22, 0.94);
       font-size: 13px;
-      line-height: 1;
-      padding: 3px 5px;
+      padding: 3px 7px;
       border-radius: 9999px;
-      border: 1px solid #34D399;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.8), 0 0 6px rgba(52, 211, 153, 0.4);
     }
 
-    .stop-reaction-bubble.type-emoji::before {
-      content: '';
-      position: absolute;
-      left: -4px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-width: 3px 4px 3px 0;
-      border-style: solid;
-      border-color: transparent #34D399 transparent transparent;
+    /* Modo Día: Burbuja Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular */
+    body.day-mode .stop-reaction-bubble {
+      background-color: #5B84EE !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(91, 132, 238, 0.45), 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    body.day-mode .stop-reaction-bubble::before {
+      border-color: transparent #5B84EE transparent transparent !important;
     }
 
     .burst-effect-ring {
@@ -240,10 +239,14 @@
       left: 50%;
       width: 100%;
       height: 100%;
-      border-radius: 9999px;
-      border: 1.5px dashed #6EE7B7;
+      border-radius: 10px;
+      border: 1.5px solid #FFFFFF;
       animation: side-pop-ring-burst 5s ease-out forwards;
       pointer-events: none;
+    }
+
+    body.day-mode .burst-effect-ring {
+      border-color: #5B84EE !important;
     }
   </style>
 </head>
@@ -748,18 +751,18 @@
     } catch (err) {}
 
     const UD4_CENTER = [10.42955, -66.97637];
-    const STOP_CHECKIN_RADIUS_METERS = 50; // Radio obligatorio de 50 metros
-    const MIN_STOP_DISTANCE_METERS = 80;   // Mínimo 80 metros entre 2 paradas
+    const STOP_CHECKIN_RADIUS_METERS = 50;
+    const MIN_STOP_DISTANCE_METERS = 80;
     const SWEEP_INTERVAL_MS = 30000;
     const CHECKIN_TTL_MS = 180000;
     const REACTION_COOLDOWN_SECONDS = 30;
     const REACTION_BUBBLE_DURATION_MS = 5000;
     const MIN_ZOOM_FOR_BUBBLES = 17;
+    const MAX_VISIBLE_BUBBLES_PER_STOP = 3; // Máximo 3 comentarios visibles en simultáneo por parada
 
-    const MANUAL_WAIT_DURATION_SEC = 300; // 5 minutos
-    const MANUAL_CONFIRM_WINDOW_SEC = 20; // 20 segundos
+    const MANUAL_WAIT_DURATION_SEC = 300;
+    const MANUAL_CONFIRM_WINDOW_SEC = 20;
 
-    // Paradas base con UUIDs reales para evitar errores de tipo UUID en PostgreSQL
     const DEFAULT_UD4_STOPS = [
       { id: '00000000-0000-4000-8000-000000000001', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
       { id: '00000000-0000-4000-8000-000000000002', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
@@ -796,6 +799,10 @@
     let reactionCooldownTimer = null;
     let displayedReactionIds = new Set();
 
+    // Gestor de colas y 3 ranuras verticales sin solapamiento por cada parada:
+    // stopBubbleQueues[stopId] = { slots: [null, null, null], queue: [] }
+    let stopBubbleQueues = {};
+
     let pendingVehicleTypeToVerify = null;
     let generatedLocalOtpCode = null;
     let driverAccount = null;
@@ -814,7 +821,6 @@
     async function registerCheckinInSupabase(targetStop, expiresAtIso) {
       if (!supabaseClient || !targetStop) return { ok: false, message: 'Cliente no disponible' };
 
-      // 1. Asegurar que tengamos las paradas reales de la base de datos de Supabase
       let dbStopId = targetStop.id;
       const { data: dbStops } = await supabaseClient
         .from('stops')
@@ -822,7 +828,6 @@
         .eq('status', 'approved');
 
       if (dbStops && dbStops.length > 0) {
-        // Buscar coincidencia por ID exacto, o por nombre/cercanía si el ID en memoria era un placeholder
         let matched = dbStops.find(s => s.id === targetStop.id);
         if (!matched) {
           matched = dbStops.find(s => s.name.toLowerCase() === targetStop.name.toLowerCase());
@@ -842,7 +847,6 @@
       const hash = await getDailyDeviceHash();
       const nowIso = new Date().toISOString();
 
-      // 2. Intento 1: UPSERT directo con resolución sobre device_daily_hash
       let { error } = await supabaseClient
         .from('stop_checkins')
         .upsert(
@@ -855,8 +859,6 @@
           { onConflict: 'device_daily_hash' }
         );
 
-      // 3. Intento 2 (Fallback si había una fila expirada bloqueada por RLS antiguo):
-      //    Eliminar registro previo o rotar sufijo de sesión del dispositivo e insertar limpio
       if (error) {
         await supabaseClient.from('stop_checkins').delete().eq('device_daily_hash', hash);
 
@@ -870,8 +872,6 @@
           });
 
         if (retryInsert.error) {
-          // Si la tabla tenía una fila expirada oculta por una política SELECT antigua,
-          // regeneramos el token de sesión del dispositivo para evitar el bloqueo de llave duplicada
           localStorage.removeItem('ud4_device_token');
           const freshHash = await getDailyDeviceHash();
           const finalTry = await supabaseClient
@@ -1055,11 +1055,11 @@
       if (isDayMode) {
         btn.className = 'w-12 h-6 rounded-full bg-amber-500 relative transition-colors p-0.5 shrink-0';
         knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
-        desc.textContent = 'Modo Día activo (Mapa a color y botones blancos)';
+        desc.textContent = 'Modo Día activo (Mapa a color y burbujas azules)';
       } else {
         btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
         knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
-        desc.textContent = 'Modo Noche activo (Mapa oscuro)';
+        desc.textContent = 'Modo Noche activo (Mapa oscuro y burbujas blancas)';
       }
     }
 
@@ -1097,7 +1097,6 @@
       const grid = document.getElementById('ud4-stops-buttons-grid');
       modal.classList.remove('hidden');
 
-      // Sincronizar paradas activas frescas desde Supabase antes de pintar los botones
       await refreshLiveStateFromSupabase();
       const approved = stopsData.filter(s => s.status === 'approved');
 
@@ -1678,7 +1677,7 @@
     }
 
     // =========================================================================
-    // 11. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y BURBUJAS AL LADO DE LA PARADA
+    // 11. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y SISTEMA DE COLA DE 3 BURBUJAS
     // =========================================================================
     function initMap() {
       if (map) {
@@ -1743,20 +1742,57 @@
       document.body.classList.toggle('hide-zoom-reactions', currentZoom < MIN_ZOOM_FOR_BUBBLES);
     }
 
+    // Recibe cada nueva reacción y la encola o muestra si hay espacio entre los 3 slots de esa parada
     function spawnStopReactionBubbleOnMap(reaction) {
       if (!map || !reaction || !reaction.stop_id) return;
       if (displayedReactionIds.has(reaction.id)) return;
       displayedReactionIds.add(reaction.id);
 
-      const targetStop = stopsData.find(s => s.id === reaction.stop_id);
-      if (!targetStop) return;
+      const stopId = reaction.stop_id;
+      if (!stopBubbleQueues[stopId]) {
+        stopBubbleQueues[stopId] = {
+          slots: [null, null, null], // Máximo 3 comentarios visibles simultáneamente por parada
+          queue: []                  // El resto espera en cola FIFO
+        };
+      }
 
-      const isEmoji = reaction.reaction_type === 'emoji';
-      const safeContent = escapeHtml(reaction.content);
+      stopBubbleQueues[stopId].queue.push(reaction);
+      processStopBubbleQueue(stopId);
+    }
+
+    // Revisa si hay alguna ranura libre (0, 1 o 2) en la parada y muestra el siguiente comentario en cola
+    function processStopBubbleQueue(stopId) {
+      if (!map) return;
+      const state = stopBubbleQueues[stopId];
+      if (!state || state.queue.length === 0) return;
+
+      // Buscar la primera ranura libre de las 3 disponibles
+      const freeSlotIndex = state.slots.findIndex(slot => slot === null);
+      if (freeSlotIndex === -1) {
+        // Las 3 ranuras están ocupadas; el comentario espera en la cola a que termine alguno
+        return;
+      }
+
+      const nextReaction = state.queue.shift();
+      const targetStop = stopsData.find(s => s.id === stopId);
+      if (!targetStop) {
+        processStopBubbleQueue(stopId);
+        return;
+      }
+
+      // Desplazamiento vertical exclusivo por ranura para que NUNCA se solapen:
+      // Slot 0 (centro-medio): -16px
+      // Slot 1 (arriba):       -41px
+      // Slot 2 (abajo):         +9px
+      const slotVerticalOffsets = [-16, -41, 9];
+      const topOffsetPx = slotVerticalOffsets[freeSlotIndex];
+
+      const isEmoji = nextReaction.reaction_type === 'emoji';
+      const safeContent = escapeHtml(nextReaction.content);
 
       const bubbleHtml = `
         <div class="stop-reaction-wrapper">
-          <div class="stop-reaction-bubble ${isEmoji ? 'type-emoji' : 'type-sms'}">
+          <div class="stop-reaction-bubble ${isEmoji ? 'type-emoji' : 'type-sms'}" style="top: ${topOffsetPx}px;">
             ${safeContent}
             <span class="burst-effect-ring"></span>
           </div>
@@ -1773,13 +1809,17 @@
       const bubbleMarker = L.marker([targetStop.lat, targetStop.lng], {
         icon: bubbleIcon,
         interactive: false,
-        zIndexOffset: 2000
+        zIndexOffset: 2000 + freeSlotIndex
       }).addTo(map);
+
+      // Ocupar la ranura
+      state.slots[freeSlotIndex] = bubbleMarker;
 
       if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
         playAppSound('bubble');
       }
 
+      // Al cumplirse exactamente los 5 segundos, explota, libera la ranura y entra el primero en cola
       setTimeout(() => {
         if (map && bubbleMarker) {
           if (map.getZoom() >= MIN_ZOOM_FOR_BUBBLES) {
@@ -1787,7 +1827,14 @@
           }
           map.removeLayer(bubbleMarker);
         }
+        state.slots[freeSlotIndex] = null;
+        processStopBubbleQueue(stopId);
       }, REACTION_BUBBLE_DURATION_MS);
+
+      // Si aún quedan más ranuras libres y más elementos en cola, procesarlos también
+      if (state.queue.length > 0 && state.slots.includes(null)) {
+        processStopBubbleQueue(stopId);
+      }
     }
 
     function toggleSmsPopover() {
@@ -1928,7 +1975,7 @@
 
       if (!userLocationMarker) {
         userAccuracyCircle = L.circle([lat, lng], {
-          radius: 50, // Muestra el radio reglamentario de 50 metros alrededor del usuario
+          radius: 50,
           color: '#3B82F6',
           weight: 1.2,
           fillColor: '#3B82F6',
@@ -2222,7 +2269,6 @@
             document.getElementById('gps-status-text').textContent = 'GPS Activo · Tiempo Real';
           }
 
-          // Si el usuario tiene marcada una parada con GPS activo y sale del radio de 50m (con margen de tolerancia de deriva GPS de 8m), restarlo
           if (userRole === 'passenger' && isDeviceGpsEnabled && activeCheckinStopId && !isManualCheckinActive) {
             const currentStop = stopsData.find(s => s.id === activeCheckinStopId);
             if (currentStop) {
@@ -2274,7 +2320,6 @@
       }
     }
 
-    // Obtiene posición GPS fresca al instante si el usuario pulsa "En la parada"
     function getImmediateGpsPosition() {
       return new Promise((resolve) => {
         if (hasValidGpsFix) {
@@ -2302,7 +2347,6 @@
       });
     }
 
-    // Marcar "En la parada" con GPS activado (Dentro de los 50 metros reglamentarios)
     async function manualCheckInClosestStopWithGps() {
       if (!supabaseClient || activeCheckinStopId) return;
 
@@ -2320,7 +2364,6 @@
       }
 
       const { stop: closest, distance } = findClosestApprovedStop(pos.lat, pos.lng);
-      // Compensación de margen del sensor GPS móvil (máx 12m) para que el círculo azul de 50m en el mapa coincida exactamente con la validación
       const effectiveDistance = Math.max(0, distance - Math.min(pos.accuracy ? pos.accuracy * 0.25 : 0, 12));
 
       if (!closest || effectiveDistance > STOP_CHECKIN_RADIUS_METERS) {
@@ -2882,7 +2925,7 @@
     }
 
     // =========================================================================
-    // 16. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE (CONSULTAS INDEPENDIENTES)
+    // 16. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
@@ -2946,7 +2989,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v11')
+      supabaseClient.channel('ud4-live-channel-v12')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
