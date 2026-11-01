@@ -11,10 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="Mi Parada" />
   <title>Mi Parada · Caricuao UD-4</title>
 
-  <!-- Manifiesto PWA para Instalación Nativa -->
   <link rel="manifest" href="./manifest.json" />
 
-  <!-- Íconos para Safari (iOS) y Chrome -->
   <link rel="icon" type="image/png" sizes="512x512" href="./icon.png" />
   <link rel="icon" type="image/jpeg" sizes="512x512" href="./icon.jpg" />
   <link rel="apple-touch-icon" href="./icon.png" />
@@ -82,6 +80,117 @@
     .critical-stop { animation: pulse-ring 2s infinite; }
     .user-gps-dot { animation: user-gps-pulse 2s infinite; }
     .vehicle-marker { transition: transform 1.2s linear; }
+
+    /* =====================================================================
+       ANIMACIÓN DE BURBUJA DE COMENTARIO / EMOJI DESDE LA PARADA (5 SEGUNDOS)
+       Crece desde el icono 📍 a tamaño legible y explota al llegar a 5s
+       ===================================================================== */
+    @keyframes bubble-grow-float {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(0.15);
+      }
+      12% {
+        opacity: 1;
+        transform: translate(-50%, -18px) scale(1.12);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -22px) scale(1);
+      }
+      86% {
+        opacity: 1;
+        transform: translate(-50%, -30px) scale(1.03);
+      }
+      94% {
+        opacity: 0.95;
+        transform: translate(-50%, -33px) scale(1.45);
+        filter: brightness(1.6);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -36px) scale(1.9);
+        filter: blur(5px);
+      }
+    }
+
+    @keyframes pop-ring-burst {
+      0%, 86% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      92% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.2);
+      }
+    }
+
+    .stop-reaction-wrapper {
+      position: relative;
+      pointer-events: none;
+      width: 0;
+      height: 0;
+    }
+
+    .stop-reaction-bubble {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      transform-origin: bottom center;
+      animation: bubble-grow-float 5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      white-space: nowrap;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .stop-reaction-bubble.type-sms {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      padding: 6px 13px;
+      border-radius: 16px;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.55), 0 2px 8px rgba(0,0,0,0.85);
+    }
+
+    .stop-reaction-bubble.type-sms::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 7px 6px 0;
+      border-style: solid;
+      border-color: #FFFFFF transparent;
+    }
+
+    .stop-reaction-bubble.type-emoji {
+      background: rgba(18, 18, 22, 0.92);
+      font-size: 30px;
+      line-height: 1;
+      padding: 7px 11px;
+      border-radius: 9999px;
+      border: 2px solid #34D399;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85), 0 0 15px rgba(52, 211, 153, 0.45);
+    }
+
+    .burst-effect-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      border-radius: 9999px;
+      border: 2.5px dashed #6EE7B7;
+      animation: pop-ring-burst 5s ease-out forwards;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="relative">
@@ -129,32 +238,38 @@
           </div>
           <div>
             <h2 class="text-base font-bold text-white">Soy Usuario</h2>
-            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas, unidades y marcar espera en UD-4</p>
+            <p class="text-xs text-zinc-400 mt-0.5">Ver paradas, comentar estado y marcar espera en UD-4</p>
           </div>
         </div>
         <span class="text-zinc-500 group-hover:text-emerald-400 text-lg">→</span>
       </button>
 
-      <!-- Opción 2: Transportista -->
+      <!-- Opción 2: Transportista (Carro 🚗, Autobús 🚌 o Moto 🛵) -->
       <div class="bg-[#121216] border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Soy Transportista</span>
           <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">Requiere Verificación</span>
         </div>
         <p class="text-[11px] text-zinc-500 leading-relaxed">
-          Registra tu número y unidad. Quedarás en lista de espera hasta que el Creador te marque como <b>Verificado</b>.
+          Registra tu número y unidad (Carro, Autobús o Moto). Quedarás en lista de espera hasta que el Creador te marque como <b>Verificado</b>.
         </p>
-        <div class="grid grid-cols-2 gap-3">
-          <button type="button" onclick="openDriverVerificationModal('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
+        <div class="grid grid-cols-3 gap-2.5">
+          <button type="button" onclick="openDriverVerificationModal('car')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-cyan-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
             <span class="text-3xl leading-none">🚗</span>
-            <span class="text-sm font-bold text-white">Carro</span>
-            <span class="text-[10px] text-zinc-500">Pausa tras 3m detenido</span>
+            <span class="text-xs font-bold text-white">Carro</span>
+            <span class="text-[9px] text-zinc-500 text-center">Pausa 3m</span>
           </button>
 
-          <button type="button" onclick="openDriverVerificationModal('bus')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-4 flex flex-col items-center gap-2 transition">
+          <button type="button" onclick="openDriverVerificationModal('bus')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
             <span class="text-3xl leading-none">🚌</span>
-            <span class="text-sm font-bold text-white">Autobús</span>
-            <span class="text-[10px] text-zinc-500">Pausa tras 6m detenido</span>
+            <span class="text-xs font-bold text-white">Autobús</span>
+            <span class="text-[9px] text-zinc-500 text-center">Pausa 6m</span>
+          </button>
+
+          <button type="button" onclick="openDriverVerificationModal('moto')" class="cursor-pointer bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/50 rounded-xl p-3.5 flex flex-col items-center gap-1.5 transition">
+            <span class="text-3xl leading-none">🛵</span>
+            <span class="text-xs font-bold text-white">Moto</span>
+            <span class="text-[9px] text-zinc-500 text-center">Pausa 3m</span>
           </button>
         </div>
       </div>
@@ -167,7 +282,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN COMO APP (PARA IPHONE / ANDROID MANUAL) -->
+  <!-- MODAL DE INSTRUCCIONES DE INSTALACIÓN COMO APP -->
   <div id="modal-install-help" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-[#121216] border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -270,20 +385,77 @@
     </div>
   </header>
 
-  <!-- PANEL INFERIOR UNIFICADO (SIN SOLAPAMIENTOS EN MÓVIL) -->
+  <!-- PANEL INFERIOR UNIFICADO (CON VENTANAS RESPONSIVAS DE SMS 20 CHARS Y EMOJIS) -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
-    
-    <!-- Fila de Botones de Mapa -->
-    <div class="flex items-center justify-end gap-2">
-      <button type="button" onclick="locateUserOnMap()" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
-        <span>🎯</span> Mi Ubicación
-      </button>
-      <button type="button" onclick="centerOnUD4()" class="bg-[#121216]/95 hover:bg-zinc-800 text-emerald-400 border border-zinc-700/80 shadow-lg px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
-        <span>🗺️</span> Centro UD-4
-      </button>
-      <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden bg-[#121216]/95 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 shadow-lg px-3 py-2 rounded-xl text-xs font-bold">
-        🌙 OLED
-      </button>
+
+    <!-- VENTANA FLOTANTE RESPONSIVA 1: SELECTOR DE EMOJIS DE ESTADO DE ÁNIMO -->
+    <div id="emoji-picker-popover" class="hidden bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl space-y-2 transition-all">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-bold text-emerald-400">Selecciona tu estado de ánimo en la parada:</span>
+        <button type="button" onclick="closeReactionPopovers()" class="text-xs text-zinc-400 hover:text-white px-1.5">✕</button>
+      </div>
+      <div class="grid grid-cols-9 gap-1 text-center">
+        <button type="button" onclick="sendStopReaction('emoji', '👋🏼')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">👋🏼</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😎')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😎</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😃')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😃</button>
+        <button type="button" onclick="sendStopReaction('emoji', '🙂')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">🙂</button>
+        <button type="button" onclick="sendStopReaction('emoji', '👀')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">👀</button>
+        <button type="button" onclick="sendStopReaction('emoji', '🙄')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">🙄</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😓')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😓</button>
+        <button type="button" onclick="sendStopReaction('emoji', '😒')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">😒</button>
+        <button type="button" onclick="sendStopReaction('emoji', '💩')" class="text-2xl hover:scale-125 active:scale-95 transition p-1.5 rounded-xl hover:bg-zinc-800">💩</button>
+      </div>
+    </div>
+
+    <!-- VENTANA FLOTANTE RESPONSIVA 2: COMENTARIO SMS (MÁXIMO 20 CARACTERES CON ESPACIOS) -->
+    <div id="sms-input-popover" class="hidden bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl space-y-2.5 transition-all">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-emerald-400">💬 Comentario rápido en parada</span>
+        <div class="flex items-center gap-2">
+          <span id="sms-char-counter" class="text-[11px] font-mono text-zinc-400">0/20</span>
+          <button type="button" onclick="closeReactionPopovers()" class="text-xs text-zinc-400 hover:text-white px-1">✕</button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input
+          id="input-stop-sms"
+          type="text"
+          maxlength="20"
+          oninput="updateSmsCharCounter()"
+          onkeydown="if(event.key==='Enter') submitStopSms()"
+          placeholder="Máx. 20 caracteres..."
+          class="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+        />
+        <button type="button" onclick="submitStopSms()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shrink-0 transition">
+          Enviar
+        </button>
+      </div>
+    </div>
+
+    <!-- Fila de Botones de Mapa + Botones SMS y Emoji (SOLO VISIBLES AL ESTAR "EN LA PARADA") -->
+    <div class="flex items-center justify-between gap-2">
+      <!-- Botones exclusivos cuando el usuario marcó "En la parada" -->
+      <div id="in-stop-reaction-buttons" class="hidden flex items-center gap-1.5">
+        <button id="btn-open-sms" type="button" onclick="toggleSmsPopover()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span>💬</span> <span id="lbl-btn-sms">SMS</span>
+        </button>
+        <button id="btn-open-emoji" type="button" onclick="toggleEmojiPopover()" class="bg-zinc-900/95 hover:bg-zinc-800 text-amber-300 border border-amber-500/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span>😎</span> <span id="lbl-btn-emoji">Emoji</span>
+        </button>
+      </div>
+
+      <!-- Botones de Navegación del Mapa -->
+      <div class="flex items-center justify-end gap-1.5 ml-auto">
+        <button type="button" onclick="locateUserOnMap()" class="bg-[#121216]/95 hover:bg-zinc-800 text-blue-400 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
+          <span>🎯</span> Mi Ubicación
+        </button>
+        <button type="button" onclick="centerOnUD4()" class="bg-[#121216]/95 hover:bg-zinc-800 text-emerald-400 border border-zinc-700/80 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
+          <span>🗺️</span> UD-4
+        </button>
+        <button id="btn-oled-mode" type="button" onclick="toggleOledMode(true)" class="hidden bg-[#121216]/95 hover:bg-zinc-800 text-cyan-400 border border-cyan-500/30 shadow-lg px-2.5 py-2 rounded-xl text-xs font-bold">
+          🌙 OLED
+        </button>
+      </div>
     </div>
 
     <!-- Controles de Pasajero -->
@@ -358,7 +530,7 @@
       <!-- Contenido Desbloqueado del Creador -->
       <div id="admin-panel-content" class="hidden space-y-5">
         
-        <!-- 1. Herramienta para Mover Paradas Arrastrándolas o Crear Tocando el Mapa -->
+        <!-- 1. Edición Visual en el Mapa -->
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -374,7 +546,7 @@
         <!-- 2. Exportar e Importar Archivo .txt de Paradas (Con Filtro de 80m) -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-bold text-emerald-400">📄Respaldo y Carga Masiva (.txt)</p>
+            <p class="text-xs font-bold text-emerald-400">📄 Respaldo y Carga Masiva (.txt)</p>
             <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded">Filtro Auto ≥ 80m</span>
           </div>
           <p class="text-[11px] text-zinc-400 leading-relaxed">
@@ -409,7 +581,7 @@
           </div>
         </div>
 
-        <!-- 4. Solicitudes de Paradas Pendientes (Verdes en el mapa) -->
+        <!-- 4. Solicitudes de Paradas Pendientes -->
         <div class="space-y-2">
           <p class="text-xs font-bold text-emerald-400">🟢 Solicitudes de Paradas Pendientes (Verdes en el mapa):</p>
           <div id="pending-stops-list" class="space-y-2 text-xs"></div>
@@ -421,9 +593,9 @@
           <div id="approved-stops-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 6. NUEVO: LISTA DE ESPERA DE TRANSPORTISTAS POR VERIFICACIÓN -->
+        <!-- 6. LISTA DE ESPERA DE TRANSPORTISTAS POR VERIFICACIÓN (Carro, Bus, Moto) -->
         <div class="space-y-2 border-t border-zinc-800 pt-4">
-          <p class="text-xs font-bold text-amber-400">⏳ Lista de Espera de Transportistas (Por Verificar):</p>
+          <p class="text-xs font-bold text-amber-400">⏳ Lista de Espera de Transportistas (Carro / Bus / Moto):</p>
           <p class="text-[11px] text-zinc-400">
             Presiona <b>Verificado</b> para acreditarlo en la lista de transportistas de la app, o <b>No verificado</b> para eliminarlo del registro (solo podrá ingresar como usuario).
           </p>
@@ -442,7 +614,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES (IMÁGENES A, B, C y D)
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -454,13 +626,14 @@
       }
     } catch (err) {}
 
-    const UD4_CENTER = [10.42955, -66.97637]; // San Agustín / Centro UD-4
-    const STOP_CHECKIN_RADIUS_METERS = 50;    // Radio obligatorio de 50m para pasajeros
-    const MIN_STOP_DISTANCE_METERS = 80;      // Distancia mínima obligatoria de 80m entre 2 paradas
-    const SWEEP_INTERVAL_MS = 30000;          // Barrido silencioso cada 30s
-    const CHECKIN_TTL_MS = 180000;            // Persistencia en segundo plano
+    const UD4_CENTER = [10.42955, -66.97637];
+    const STOP_CHECKIN_RADIUS_METERS = 50;
+    const MIN_STOP_DISTANCE_METERS = 80;
+    const SWEEP_INTERVAL_MS = 30000;
+    const CHECKIN_TTL_MS = 180000;
+    const REACTION_COOLDOWN_SECONDS = 30; // 1 comentario o emoji cada 30 segundos
+    const REACTION_BUBBLE_DURATION_MS = 5000; // La burbuja explota y desaparece a los 5 segundos
 
-    // Paradas por defecto según imágenes A, B, C y D
     const DEFAULT_UD4_STOPS = [
       { id: 'ud4-1', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
       { id: 'ud4-2', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
@@ -484,9 +657,14 @@
     let activeCheckinStopId = null;
     let backgroundWorker = null;
 
+    // Cooldown de 30 segundos para comentarios SMS o Emojis
+    let reactionCooldownRemaining = 0;
+    let reactionCooldownTimer = null;
+    let displayedReactionIds = new Set();
+
     let pendingVehicleTypeToVerify = null;
     let generatedLocalOtpCode = null;
-    let driverAccount = null; // { phone, vehicle_type, device_token, verification_status, is_blocked }
+    let driverAccount = null;
     let isDriverTransmitting = true;
     let lastDriverMovePos = null, lastDriverMoveTime = Date.now(), driverTimerInterval = null;
 
@@ -495,6 +673,23 @@
 
     let stopMarkers = {}, pendingStopMarkers = {}, driverMarkers = {};
     let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
+
+    // Helpers de etiquetas e íconos para Carro 🚗, Autobús 🚌 y Moto 🛵
+    function getVehicleEmoji(vType) {
+      if (vType === 'bus') return '🚌';
+      if (vType === 'moto') return '🛵';
+      return '🚗';
+    }
+    function getVehicleLabel(vType) {
+      if (vType === 'bus') return 'Autobús 🚌';
+      if (vType === 'moto') return 'Moto 🛵';
+      return 'Carro 🚗';
+    }
+    function getVehicleBorderColor(vType) {
+      if (vType === 'bus') return '#F59E0B';
+      if (vType === 'moto') return '#3B82F6';
+      return '#22D3EE';
+    }
 
     // =========================================================================
     // 2. INSTALACIÓN NATIVA DE LA PWA COMO APLICACIÓN EN EL CELULAR
@@ -607,7 +802,6 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    // Verifica si una coordenada choca (< 80m) con alguna parada aprobada existente
     function findConflictingStopWithin80m(lat, lng, excludeStopId = null) {
       for (const s of stopsData) {
         if (s.status !== 'approved') continue;
@@ -639,6 +833,12 @@
       return cleaned;
     }
 
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
     // =========================================================================
     // 5. VERIFICACIÓN AL INICIAR: LISTA DE ESPERA VS VERIFICADO
     // =========================================================================
@@ -665,7 +865,6 @@
         .eq('phone', savedDriver.phone)
         .maybeSingle();
 
-      // Si el Creador presionó "No verificado" o "Eliminar", se borra de la lista y solo puede entrar como Usuario
       if (error || !data) {
         localStorage.removeItem('ud4_accredited_driver');
         driverAccount = null;
@@ -687,20 +886,18 @@
       driverAccount = data;
       localStorage.setItem('ud4_accredited_driver', JSON.stringify(data));
 
-      // Si aún está en Lista de Espera ('pending'), mostrar aviso y permitirle entrar SOLO como Usuario
       if (data.verification_status === 'pending') {
         document.getElementById('driver-pending-banner').classList.remove('hidden');
         document.getElementById('pending-driver-phone-label').textContent = data.phone;
         return;
       }
 
-      // Si ya fue marcado como "Verificado" por el Creador, entra como Transportista fijo
       document.getElementById('driver-pending-banner').classList.add('hidden');
       enterAppAsAccreditedDriver(data.vehicle_type, data.phone);
     }
 
     // =========================================================================
-    // 6. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA
+    // 6. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA (CARRO / BUS / MOTO)
     // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
@@ -709,7 +906,7 @@
           return;
         }
         if (driverAccount.vehicle_type !== vehicleType) {
-          alert(`Tu número ${driverAccount.phone} está verificado como ${driverAccount.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}. No puedes cambiar de vehículo.`);
+          alert(`Tu número ${driverAccount.phone} está verificado como ${getVehicleLabel(driverAccount.vehicle_type)}. No puedes cambiar de vehículo.`);
           return;
         }
         enterAppAsAccreditedDriver(driverAccount.vehicle_type, driverAccount.phone);
@@ -717,8 +914,7 @@
       }
 
       pendingVehicleTypeToVerify = vehicleType;
-      const label = vehicleType === 'bus' ? '🚌 Solicitar Registro · Autobús' : '🚗 Solicitar Registro · Carro';
-      document.getElementById('driver-auth-title').textContent = label;
+      document.getElementById('driver-auth-title').textContent = `${getVehicleEmoji(vehicleType)} Solicitar Registro · ${getVehicleLabel(vehicleType)}`;
       document.getElementById('driver-step-phone').classList.remove('hidden');
       document.getElementById('driver-step-otp').classList.add('hidden');
       document.getElementById('modal-driver-auth').classList.remove('hidden');
@@ -754,7 +950,7 @@
             return;
           }
           if (existing.vehicle_type !== pendingVehicleTypeToVerify) {
-            alert(`⚠️ Este número ya tiene solicitud para ${existing.vehicle_type === 'bus' ? 'Autobús 🚌' : 'Carro 🚗'}.`);
+            alert(`⚠️ Este número ya tiene solicitud para ${getVehicleLabel(existing.vehicle_type)}.`);
             return;
           }
         }
@@ -829,7 +1025,6 @@
           }
           driverAccount = existing;
         } else {
-          // Todo nuevo transportista entra en estado 'pending' (Lista de espera por verificación)
           const { data: inserted, error: insertErr } = await supabaseClient
             .from('registered_drivers')
             .insert({
@@ -864,7 +1059,7 @@
     }
 
     // =========================================================================
-    // 7. MAPA Y VALIDACIÓN DE 80M AL CREAR O ARRASTRAR PARADAS
+    // 7. MAPA, PARADAS Y BURBUJAS QUE EXPLOTAN A LOS 5 SEGUNDOS
     // =========================================================================
     function initMap() {
       if (map) {
@@ -891,7 +1086,6 @@
       map.on('click', async (e) => {
         if (!isCreatorAuthenticated || !creatorMapEditMode) return;
 
-        // Validar que no esté a menos de 80 metros de otra parada activa
         const conflict = findConflictingStopWithin80m(e.latlng.lat, e.latlng.lng);
         if (conflict) {
           alert(`⚠️ No pueden existir 2 paradas a menos de 80 metros.\nEste punto está a ${conflict.distance}m de "${conflict.stop.name}".`);
@@ -917,6 +1111,172 @@
       window.addEventListener('resize', () => {
         if (map) map.invalidateSize();
       });
+    }
+
+    // Lanza la burbuja emergente (SMS o Emoji) desde el icono 📍 de la parada y la explota a los 5 segundos
+    function spawnStopReactionBubbleOnMap(reaction) {
+      if (!map || !reaction || !reaction.stop_id) return;
+      if (displayedReactionIds.has(reaction.id)) return;
+      displayedReactionIds.add(reaction.id);
+
+      const targetStop = stopsData.find(s => s.id === reaction.stop_id);
+      if (!targetStop) return;
+
+      const isEmoji = reaction.reaction_type === 'emoji';
+      const safeContent = escapeHtml(reaction.content);
+
+      const bubbleHtml = `
+        <div class="stop-reaction-wrapper">
+          <div class="stop-reaction-bubble ${isEmoji ? 'type-emoji' : 'type-sms'}">
+            ${safeContent}
+            <span class="burst-effect-ring"></span>
+          </div>
+        </div>
+      `;
+
+      const bubbleIcon = L.divIcon({
+        className: '',
+        html: bubbleHtml,
+        iconSize: [0, 0],
+        iconAnchor: [0, 26]
+      });
+
+      const bubbleMarker = L.marker([targetStop.lat, targetStop.lng], {
+        icon: bubbleIcon,
+        interactive: false,
+        zIndexOffset: 2000
+      }).addTo(map);
+
+      // A los 5 segundos exactos (cuando termina la animación de explosión), se remueve del mapa
+      setTimeout(() => {
+        if (map && bubbleMarker) {
+          map.removeLayer(bubbleMarker);
+        }
+      }, REACTION_BUBBLE_DURATION_MS);
+    }
+
+    // Controles de las ventanas de SMS (20 caracteres) y Emoji (👋🏼😎😃🙂👀🙄😓😒💩)
+    function toggleSmsPopover() {
+      if (!activeCheckinStopId) return;
+      if (reactionCooldownRemaining > 0) return;
+
+      document.getElementById('emoji-picker-popover').classList.add('hidden');
+      const smsBox = document.getElementById('sms-input-popover');
+      const isHidden = smsBox.classList.contains('hidden');
+      smsBox.classList.toggle('hidden', !isHidden);
+
+      if (isHidden) {
+        const input = document.getElementById('input-stop-sms');
+        input.value = '';
+        updateSmsCharCounter();
+        setTimeout(() => input.focus(), 80);
+      }
+    }
+
+    function toggleEmojiPopover() {
+      if (!activeCheckinStopId) return;
+      if (reactionCooldownRemaining > 0) return;
+
+      document.getElementById('sms-input-popover').classList.add('hidden');
+      const emojiBox = document.getElementById('emoji-picker-popover');
+      emojiBox.classList.toggle('hidden');
+    }
+
+    function closeReactionPopovers() {
+      document.getElementById('sms-input-popover').classList.add('hidden');
+      document.getElementById('emoji-picker-popover').classList.add('hidden');
+    }
+
+    function updateSmsCharCounter() {
+      const input = document.getElementById('input-stop-sms');
+      const counter = document.getElementById('sms-char-counter');
+      if (input && counter) {
+        counter.textContent = `${input.value.length}/20`;
+      }
+    }
+
+    async function submitStopSms() {
+      const input = document.getElementById('input-stop-sms');
+      // Se respetan los espacios internos pero se valida que tenga contenido y máximo 20 caracteres
+      const rawText = input.value;
+      if (!rawText || rawText.trim().length === 0) {
+        return;
+      }
+      const trimmed20 = rawText.slice(0, 20);
+      await sendStopReaction('sms', trimmed20);
+      input.value = '';
+      updateSmsCharCounter();
+    }
+
+    async function sendStopReaction(type, content) {
+      if (!supabaseClient || !activeCheckinStopId) return;
+      if (reactionCooldownRemaining > 0) return;
+
+      closeReactionPopovers();
+
+      const hash = await getDailyDeviceHash();
+      const localId = 'local_' + Date.now();
+
+      // Mostrar inmediatamente en el mapa del propio usuario desde el icono de su parada
+      spawnStopReactionBubbleOnMap({
+        id: localId,
+        stop_id: activeCheckinStopId,
+        reaction_type: type,
+        content: content
+      });
+
+      start30sReactionCooldown();
+
+      const { data, error } = await supabaseClient
+        .from('stop_reactions')
+        .insert({
+          stop_id: activeCheckinStopId,
+          device_daily_hash: hash,
+          reaction_type: type,
+          content: content
+        })
+        .select()
+        .single();
+
+      if (data && data.id) {
+        displayedReactionIds.add(data.id);
+      }
+    }
+
+    function start30sReactionCooldown() {
+      reactionCooldownRemaining = REACTION_COOLDOWN_SECONDS;
+      clearInterval(reactionCooldownTimer);
+      updateReactionButtonsCooldownUI();
+
+      reactionCooldownTimer = setInterval(() => {
+        reactionCooldownRemaining--;
+        if (reactionCooldownRemaining <= 0) {
+          reactionCooldownRemaining = 0;
+          clearInterval(reactionCooldownTimer);
+        }
+        updateReactionButtonsCooldownUI();
+      }, 1000);
+    }
+
+    function updateReactionButtonsCooldownUI() {
+      const btnSms = document.getElementById('btn-open-sms');
+      const btnEmoji = document.getElementById('btn-open-emoji');
+      const lblSms = document.getElementById('lbl-btn-sms');
+      const lblEmoji = document.getElementById('lbl-btn-emoji');
+
+      if (!btnSms || !btnEmoji) return;
+
+      if (reactionCooldownRemaining > 0) {
+        btnSms.disabled = true;
+        btnEmoji.disabled = true;
+        lblSms.textContent = `SMS (${reactionCooldownRemaining}s)`;
+        lblEmoji.textContent = `${reactionCooldownRemaining}s`;
+      } else {
+        btnSms.disabled = false;
+        btnEmoji.disabled = false;
+        lblSms.textContent = 'SMS';
+        lblEmoji.textContent = 'Emoji';
+      }
     }
 
     function updateUserLocationMarkerOnMap(lat, lng, accuracyMeters = 25) {
@@ -1109,9 +1469,9 @@
       driverMarkers = {};
 
       driversData.forEach(d => {
-        const isBus = d.vehicle_type === 'bus';
-        const emoji = isBus ? '🚌' : '🚗';
-        const borderColor = isBus ? '#F59E0B' : '#22D3EE';
+        const emoji = getVehicleEmoji(d.vehicle_type);
+        const borderColor = getVehicleBorderColor(d.vehicle_type);
+        const label = getVehicleLabel(d.vehicle_type);
 
         const html = `
           <div class="vehicle-marker" style="
@@ -1132,17 +1492,15 @@
 
         const icon = L.divIcon({ className: '', html, iconSize: [34, 34], iconAnchor: [17, 17] });
         driverMarkers[d.phone] = L.marker([d.lat, d.lng], { icon })
-          .bindPopup(`<b>${isBus ? '🚌 Autobús activo' : '🚗 Carro activo'}</b>`)
+          .bindPopup(`<b>${label} activo</b>`)
           .addTo(map);
       });
     }
 
     // =========================================================================
-    // 8. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
+    // 8. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO (CARRO / BUS / MOTO)
     // =========================================================================
     function enterAppAsPassenger() {
-      // Solo un transportista ya VERIFICADO tiene prohibido entrar como Usuario.
-      // Si está en Lista de Espera ('pending') o fue rechazado ('No verificado'), sí puede entrar como Usuario.
       if (driverAccount && driverAccount.verification_status === 'verified') {
         alert('Estás verificado como Transportista (' + driverAccount.phone + '). No puedes ingresar como Usuario.');
         return;
@@ -1174,27 +1532,30 @@
 
       setTimeout(() => { if (map) { map.invalidateSize(); map.setView(UD4_CENTER, 16); } }, 150);
 
-      const isBus = vehicleType === 'bus';
       const badge = document.getElementById('role-badge');
-      badge.textContent = isBus ? '🚌 Transportista · Bus' : '🚗 Transportista · Carro';
-      badge.className = isBus ? 'text-xs font-bold text-amber-400 truncate' : 'text-xs font-bold text-cyan-400 truncate';
+      badge.textContent = `${getVehicleEmoji(vehicleType)} Transportista · ${getVehicleLabel(vehicleType)}`;
+      badge.className = vehicleType === 'bus'
+        ? 'text-xs font-bold text-amber-400 truncate'
+        : (vehicleType === 'moto' ? 'text-xs font-bold text-blue-400 truncate' : 'text-xs font-bold text-cyan-400 truncate');
 
-      document.getElementById('driver-active-label').textContent = isBus ? '🚌 Transmitiendo Bus' : '🚗 Transmitiendo Carro';
+      document.getElementById('driver-active-label').textContent = `${getVehicleEmoji(vehicleType)} Transmitiendo ${getVehicleLabel(vehicleType)}`;
       document.getElementById('driver-phone-badge').textContent = phone;
 
       document.getElementById('btn-change-role').classList.add('hidden');
       document.getElementById('passenger-controls').classList.add('hidden');
+      document.getElementById('in-stop-reaction-buttons').classList.add('hidden');
+      closeReactionPopovers();
       document.getElementById('driver-controls').classList.remove('hidden');
       document.getElementById('btn-oled-mode').classList.remove('hidden');
 
       requestWakeLock();
       startGpsTracking();
       startBackgroundHeartbeatWorker();
-      startDriverInactivityWatch(isBus ? 360 : 180);
+      startDriverInactivityWatch(vehicleType === 'bus' ? 360 : 180);
     }
 
     // =========================================================================
-    // 9. RASTREO GPS Y BARRIDO SILENCIOSO CADA 30 SEGUNDOS (RADIO 50M)
+    // 9. RASTREO GPS, BOTÓN "EN LA PARADA" Y ACTIVACIÓN DE BOTONES SMS / EMOJI
     // =========================================================================
     function startGpsTracking() {
       if (!navigator.geolocation) {
@@ -1235,23 +1596,28 @@
       return { stop: closest, distance: minDist };
     }
 
+    // Muestra u oculta los botones SMS y Emoji dependiendo de si el usuario está "En la parada"
     function setCheckinButtonLockedState(locked, stopName = '') {
       const btn = document.getElementById('btn-checkin');
       const titleEl = document.getElementById('passenger-checkin-title');
       const subEl = document.getElementById('passenger-checkin-sub');
+      const reactionBtns = document.getElementById('in-stop-reaction-buttons');
 
       if (locked) {
         btn.disabled = true;
         btn.textContent = '✓ En la parada';
         btn.className = 'bg-zinc-800 text-emerald-400 border border-emerald-500/40 text-xs font-extrabold px-4 py-2.5 rounded-xl opacity-80 cursor-not-allowed';
         titleEl.textContent = `📍 En parada: ${stopName}`;
-        subEl.textContent = 'Registrado en espera';
+        subEl.textContent = 'Puedes enviar SMS o Emoji desde tu parada';
+        if (reactionBtns) reactionBtns.classList.remove('hidden');
       } else {
         btn.disabled = false;
         btn.textContent = 'En la parada';
         btn.className = 'bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition';
         titleEl.textContent = 'Reporte de Parada';
         subEl.textContent = 'Marca cuando estés esperando transporte';
+        if (reactionBtns) reactionBtns.classList.add('hidden');
+        closeReactionPopovers();
       }
     }
 
@@ -1412,7 +1778,7 @@
         lastDriverMoveTime = Date.now();
         btn.textContent = 'Pausar Ruta';
         btn.className = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl shrink-0';
-        label.textContent = driverAccount.vehicle_type === 'bus' ? '🚌 Transmitiendo Bus' : '🚗 Transmitiendo Carro';
+        label.textContent = `${getVehicleEmoji(driverAccount.vehicle_type)} Transmitiendo ${getVehicleLabel(driverAccount.vehicle_type)}`;
         if (hasValidGpsFix) await handleDriverMovementUpdate(currentPos.lat, currentPos.lng);
       }
       refreshLiveStateFromSupabase();
@@ -1428,7 +1794,6 @@
         return;
       }
 
-      // Formato limpio de cada línea: Nombre | Latitud, Longitud
       const lines = approved.map(s => `${s.name} | ${Number(s.lat).toFixed(5)}, ${Number(s.lng).toFixed(5)}`);
       const txtContent = lines.join('\n');
 
@@ -1448,12 +1813,11 @@
       if (!file) return;
 
       const text = await file.text();
-      event.target.value = ''; // Limpiar selector de archivo
+      event.target.value = '';
 
       const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#'));
       let candidates = [];
 
-      // Soportar tanto formato "Nombre | Lat, Lng" como formato en 2 líneas ("📍 Nombre" seguido de "Lat, Lng")
       for (let i = 0; i < rawLines.length; i++) {
         const line = rawLines[i];
         const coordMatch = line.match(/(-?\d+\.\d+)\s*[,;|\t]\s*(-?\d+\.\d+)/);
@@ -1477,7 +1841,6 @@
         return;
       }
 
-      // PASO 1: Si dentro del archivo .txt hay paradas con distancia < 80 metros entre sí, eliminar una de forma aleatoria
       let removedInsideFileCount = 0;
       let hasConflict = true;
 
@@ -1487,7 +1850,6 @@
           for (let j = i + 1; j < candidates.length; j++) {
             const dist = getDistanceMeters(candidates[i].lat, candidates[i].lng, candidates[j].lat, candidates[j].lng);
             if (dist < MIN_STOP_DISTANCE_METERS) {
-              // Eliminar aleatoriamente una de las dos paradas en conflicto (< 80m)
               const randomRemoveIndex = Math.random() < 0.5 ? i : j;
               candidates.splice(randomRemoveIndex, 1);
               removedInsideFileCount++;
@@ -1499,8 +1861,6 @@
         }
       }
 
-      // PASO 2: Comparar contra las paradas que ya están activas en el mapa.
-      // Si alguna parada existente y una nueva están a < 80m, se elige al azar cuál de las dos conservar para que nunca haya 2 paradas a < 80m.
       const { data: existingApproved } = await supabaseClient
         .from('stops')
         .select('*')
@@ -1508,7 +1868,7 @@
 
       let currentMapStops = [...(existingApproved || [])];
       let finalStopsToInsert = [];
-      letexistingStopsToDelete = [];
+      let existingStopsToDelete = [];
 
       for (const candidate of candidates) {
         let tooCloseToExisting = null;
@@ -1523,10 +1883,8 @@
         if (!tooCloseToExisting) {
           finalStopsToInsert.push({ name: candidate.name, lat: candidate.lat, lng: candidate.lng, status: 'approved' });
         } else {
-          // Si son exactamente la misma parada o están a < 80m, eliminar una al azar
           if (Math.random() < 0.5) {
-            // Conservar la del archivo .txt y reemplazar la del mapa
-            letexistingStopsToDelete.push(tooCloseToExisting.id);
+            existingStopsToDelete.push(tooCloseToExisting.id);
             currentMapStops = currentMapStops.filter(s => s.id !== tooCloseToExisting.id);
             finalStopsToInsert.push({ name: candidate.name, lat: candidate.lat, lng: candidate.lng, status: 'approved' });
           }
@@ -1534,8 +1892,8 @@
         }
       }
 
-      if (letexistingStopsToDelete.length > 0) {
-        await supabaseClient.from('stops').delete().in('id', letexistingStopsToDelete);
+      if (existingStopsToDelete.length > 0) {
+        await supabaseClient.from('stops').delete().in('id', existingStopsToDelete);
       }
 
       if (finalStopsToInsert.length > 0) {
@@ -1625,7 +1983,6 @@
         return;
       }
 
-      // Validar regla estricta de 80 metros
       const conflict = findConflictingStopWithin80m(lat, lng);
       if (conflict) {
         alert(`⚠️ No debe haber 2 paradas con una distancia entre sí menor a 80 metros.\nEsta coordenada está a ${conflict.distance}m de "${conflict.stop.name}".`);
@@ -1657,7 +2014,6 @@
         supabaseClient.from('registered_drivers').select('*').order('created_at', { ascending: false })
       ]);
 
-      // 1. Solicitudes de Paradas Pendientes
       const pendingContainer = document.getElementById('pending-stops-list');
       const pending = (allStops || []).filter(s => s.status === 'pending');
       pendingStopsData = pending;
@@ -1680,7 +2036,6 @@
         `).join('');
       }
 
-      // 2. Paradas Activas en el Mapa
       const approvedContainer = document.getElementById('approved-stops-admin-list');
       const approved = (allStops || []).filter(s => s.status === 'approved');
       approvedContainer.innerHTML = approved.map(s => `
@@ -1696,7 +2051,7 @@
         </div>
       `).join('');
 
-      // 3. LISTA DE ESPERA DE TRANSPORTISTAS (Botones a la derecha: "Verificado" y "No verificado")
+      // LISTA DE ESPERA DE TRANSPORTISTAS (Carro 🚗, Bus 🚌, Moto 🛵)
       const waitlistContainer = document.getElementById('waitlist-drivers-admin-list');
       const waitlistDrivers = (allDrivers || []).filter(d => d.verification_status === 'pending');
 
@@ -1704,7 +2059,7 @@
         waitlistContainer.innerHTML = '<p class="text-zinc-500">No hay transportistas en lista de espera.</p>';
       } else {
         waitlistContainer.innerHTML = waitlistDrivers.map(d => {
-          const icon = d.vehicle_type === 'bus' ? '🚌 Autobús' : '🚗 Carro';
+          const icon = getVehicleLabel(d.vehicle_type);
           return `
             <div class="bg-zinc-900 border border-amber-500/40 rounded-xl p-3 flex items-center justify-between gap-2">
               <div class="min-w-0">
@@ -1726,7 +2081,7 @@
         }).join('');
       }
 
-      // 4. LISTA DE TRANSPORTISTAS VERIFICADOS DE LA APP
+      // LISTA DE TRANSPORTISTAS VERIFICADOS DE LA APP
       const driversContainer = document.getElementById('registered-drivers-admin-list');
       const verifiedDrivers = (allDrivers || []).filter(d => d.verification_status === 'verified');
 
@@ -1734,7 +2089,7 @@
         driversContainer.innerHTML = '<p class="text-zinc-500">Aún no hay transportistas verificados.</p>';
       } else {
         driversContainer.innerHTML = verifiedDrivers.map(d => {
-          const icon = d.vehicle_type === 'bus' ? '🚌 Bus' : '🚗 Carro';
+          const icon = getVehicleLabel(d.vehicle_type);
           const statusBadge = d.is_blocked
             ? '<span class="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded">Bloqueado</span>'
             : '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">Verificado</span>';
@@ -1762,10 +2117,8 @@
       }
     }
 
-    // Acción del Creador en la Lista de Espera: "Verificado" o "No verificado"
     async function verifyWaitlistDriver(phone, isVerified) {
       if (isVerified) {
-        // Pasa a la lista de transportistas activos de la app
         const { error } = await supabaseClient
           .from('registered_drivers')
           .update({ verification_status: 'verified' })
@@ -1776,7 +2129,6 @@
           return;
         }
       } else {
-        // "No verificado": Se elimina del registro y solo puede ingresar como usuario
         await supabaseClient.from('active_drivers').delete().eq('phone', phone);
         const { error } = await supabaseClient
           .from('registered_drivers')
@@ -1858,7 +2210,7 @@
     }
 
     // =========================================================================
-    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
+    // 12. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE (INCLUYE BURBUJAS EN PARADAS)
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
@@ -1870,7 +2222,6 @@
             .eq('phone', driverAccount.phone)
             .maybeSingle();
 
-          // Si el Creador presionó "No verificado" o "Eliminar", liberar inmediatamente y pasar a modo Usuario
           if (!myDriverStatus) {
             localStorage.removeItem('ud4_accredited_driver');
             driverAccount = null;
@@ -1884,7 +2235,6 @@
             return;
           }
 
-          // Si estaba en Lista de Espera ('pending') y el Creador acaba de pulsar "Verificado", activarlo en tiempo real
           if (driverAccount.verification_status === 'pending' && myDriverStatus.verification_status === 'verified') {
             driverAccount = myDriverStatus;
             localStorage.setItem('ud4_accredited_driver', JSON.stringify(myDriverStatus));
@@ -1931,8 +2281,13 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v8')
+      supabaseClient.channel('ud4-live-channel-v9')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
+          if (payload && payload.new) {
+            spawnStopReactionBubbleOnMap(payload.new);
+          }
+        })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'active_drivers' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'registered_drivers' }, () => {
           refreshLiveStateFromSupabase();
