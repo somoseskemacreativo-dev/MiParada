@@ -110,6 +110,15 @@
       filter: hue-rotate(135deg) saturate(2.5) brightness(1.15) drop-shadow(0 3px 8px rgba(16,185,129,0.8));
     }
 
+    /* Pin naranja/ámbar para paradas espontáneas cerca de comercios en la simulación */
+    .sim-commerce-pin {
+      display: inline-block;
+      font-size: 28px;
+      line-height: 1;
+      -webkit-filter: hue-rotate(35deg) saturate(2.8) brightness(1.15) drop-shadow(0 3px 8px rgba(245,158,11,0.85));
+      filter: hue-rotate(35deg) saturate(2.8) brightness(1.15) drop-shadow(0 3px 8px rgba(245,158,11,0.85));
+    }
+
     @keyframes pulse-ring {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
       70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
@@ -122,13 +131,9 @@
     }
     .critical-stop { animation: pulse-ring 2s infinite; }
     .user-gps-dot { animation: user-gps-pulse 2s infinite; }
-    .vehicle-marker { transition: transform 1.2s linear; }
+    .vehicle-marker { transition: transform 0.35s linear; }
 
-    /* =====================================================================
-       BURBUJAS NÍTIDAS DE ALTA DEFINICIÓN (SIN BLUR NI SUBPÍXELES BORROSOS)
-       - Modo Noche: Fondo Blanco (#FFFFFF) con Texto Negro (#09090B) regular
-       - Modo Día: Fondo Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular
-       ===================================================================== */
+    /* BURBUJAS NÍTIDAS DE ALTA DEFINICIÓN */
     body.hide-zoom-reactions .stop-reaction-wrapper {
       display: none !important;
     }
@@ -176,7 +181,6 @@
       pointer-events: none;
     }
 
-    /* Renderizado 100% definido y nítido en pantallas móviles y desktop */
     .stop-reaction-bubble {
       position: absolute;
       left: 0;
@@ -191,7 +195,7 @@
       background-color: #FFFFFF;
       color: #09090B;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-weight: 400; /* Texto regular */
+      font-weight: 400;
       font-size: 12px;
       line-height: 16px;
       letter-spacing: 0;
@@ -208,7 +212,6 @@
       -webkit-filter: none !important;
     }
 
-    /* Puntero izquierdo en píxeles enteros para Modo Noche (Blanco) */
     .stop-reaction-bubble::before {
       content: '';
       position: absolute;
@@ -221,7 +224,6 @@
       border-right: 5px solid #FFFFFF;
     }
 
-    /* Cápsula definida para emojis */
     .stop-reaction-bubble.type-emoji {
       font-size: 16px;
       line-height: 18px;
@@ -229,7 +231,6 @@
       border-radius: 10px;
     }
 
-    /* Modo Día: Burbuja Azul (#5B84EE) con Texto Blanco (#FFFFFF) regular */
     body.day-mode .stop-reaction-bubble {
       background-color: #5B84EE !important;
       color: #FFFFFF !important;
@@ -252,6 +253,41 @@
 
     body.day-mode .burst-effect-ring {
       border-color: #5B84EE !important;
+    }
+
+    /* =====================================================================
+       CONTENEDOR PUBLICITARIO SOBRE "MI UBICACIÓN" Y "UD-4" (IMÁGENES A, B, C)
+       - 1:1 Cuadrado (Imagen A)
+       - 9:16 Vertical (Imagen B)
+       - 16:9 Horizontal (Imagen C)
+       ===================================================================== */
+    .ad-overlay-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      background: #09090B;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.25s ease;
+    }
+    .ad-overlay-card:active {
+      transform: scale(0.98);
+    }
+    /* Imagen A: Formato Cuadrado 1:1 sobre Mi Ubicación y UD-4 */
+    .ad-ratio-1-1 {
+      width: 195px;
+      height: 195px;
+    }
+    /* Imagen B: Formato Vertical 9:16 alineado a la derecha sobre los botones */
+    .ad-ratio-9-16 {
+      width: 138px;
+      height: 245px;
+    }
+    /* Imagen C: Formato Horizontal 16:9 sobre Mi Ubicación y UD-4 */
+    .ad-ratio-16-9 {
+      width: 240px;
+      height: 135px;
     }
   </style>
 </head>
@@ -501,7 +537,7 @@
     </div>
   </header>
 
-  <!-- MODAL: SELECCIONAR PARADA MANUALMENTE (AL PULSAR "UD-4" O "ESTOY AQUÍ" CON GPS DESACTIVADO) -->
+  <!-- MODAL: SELECCIONAR PARADA MANUALMENTE -->
   <div id="modal-ud4-stops-selector" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -525,11 +561,22 @@
     </div>
   </div>
 
-  <!-- PANEL INFERIOR UNIFICADO -->
-  <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2">
+  <!-- PANEL INFERIOR UNIFICADO + ZONA DE PUBLICIDAD SOBRE "MI UBICACIÓN" Y "UD-4" -->
+  <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2 pointer-events-none">
+
+    <!-- ZONA DE PUBLICIDAD PARA USUARIOS (EXCLUIDA 100% PARA TRANSPORTISTAS) -->
+    <!-- Se posiciona a la derecha, justo encima de los botones Mi Ubicación y UD-4 (Imágenes A, B y C) -->
+    <div id="user-ad-display-wrapper" class="hidden flex justify-end pr-0.5 pointer-events-auto">
+      <div id="user-ad-card" onclick="handleActiveAdClick()" class="ad-overlay-card ad-ratio-1-1 group">
+        <span class="absolute top-1.5 left-2 z-20 bg-black/75 text-[9px] font-bold uppercase tracking-wider text-amber-300 px-2 py-0.5 rounded-md border border-amber-400/30">
+          Publicidad
+        </span>
+        <div id="user-ad-media-slot" class="w-full h-full flex items-center justify-center bg-zinc-950"></div>
+      </div>
+    </div>
 
     <!-- VENTANA FLOTANTE RESPONSIVA 1: SELECTOR DE EMOJIS DE ESTADO DE ÁNIMO -->
-    <div id="emoji-picker-popover" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl space-y-2 transition-all">
+    <div id="emoji-picker-popover" class="hidden pointer-events-auto theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl space-y-2 transition-all">
       <div class="flex items-center justify-between">
         <span class="text-[11px] font-bold text-emerald-500">Selecciona tu estado de ánimo en la parada:</span>
         <button type="button" onclick="closeReactionPopovers()" class="theme-text-sub text-xs hover:opacity-75 px-1.5">✕</button>
@@ -548,7 +595,7 @@
     </div>
 
     <!-- VENTANA FLOTANTE RESPONSIVA 2: COMENTARIO SMS (MÁXIMO 20 CARACTERES CON ESPACIOS) -->
-    <div id="sms-input-popover" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl space-y-2.5 transition-all">
+    <div id="sms-input-popover" class="hidden pointer-events-auto theme-card bg-[#121216]/95 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3.5 shadow-2xl space-y-2.5 transition-all">
       <div class="flex items-center justify-between">
         <span class="text-xs font-bold text-emerald-500">💬 Comentario rápido en parada</span>
         <div class="flex items-center gap-2">
@@ -572,8 +619,8 @@
       </div>
     </div>
 
-    <!-- Fila de Botones de Mapa + Botones SMS y Emoji (SOLO VISIBLES AL ESTAR EN PARADA) -->
-    <div class="flex items-center justify-between gap-2">
+    <!-- Fila de Botones de Mapa + Botones SMS y Emoji -->
+    <div class="flex items-center justify-between gap-2 pointer-events-auto">
       <div id="in-stop-reaction-buttons" class="hidden flex items-center gap-1.5">
         <button id="btn-open-sms" type="button" onclick="toggleSmsPopover()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 shadow-lg px-3 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1 transition disabled:opacity-50 disabled:cursor-not-allowed">
           <span>💬</span> <span id="lbl-btn-sms">SMS</span>
@@ -598,7 +645,7 @@
     </div>
 
     <!-- Controles de Pasajero -->
-    <div id="passenger-controls" class="theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+    <div id="passenger-controls" class="pointer-events-auto theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="flex-1 min-w-0">
         <p id="passenger-checkin-title" class="theme-text-main text-xs font-bold text-white truncate">Reporte de Parada</p>
         <p id="passenger-checkin-sub" class="theme-text-sub text-[11px] text-zinc-400 truncate">Marca cuando estés esperando transporte</p>
@@ -611,7 +658,7 @@
     </div>
 
     <!-- Controles de Transportista Verificado -->
-    <div id="driver-controls" class="hidden theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
+    <div id="driver-controls" class="hidden pointer-events-auto theme-card bg-[#121216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-2">
       <div class="min-w-0">
         <p class="theme-text-main text-xs font-bold text-white flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
@@ -649,7 +696,7 @@
 
   <!-- MODAL COMPLETO: PANEL DEL CREADOR -->
   <div id="modal-admin" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-xl w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
         <h3 class="theme-text-main text-sm font-bold text-white">⚙️ Panel del Creador · Control Total UD-4</h3>
         <button type="button" onclick="closeAdminModal()" class="theme-text-sub text-xs text-zinc-400 hover:text-white">✕ Cerrar</button>
@@ -665,7 +712,101 @@
 
       <!-- Contenido Desbloqueado del Creador -->
       <div id="admin-panel-content" class="hidden space-y-5">
-        
+
+        <!-- ===============================================================
+             NUEVO SUB-PANEL 1: SIMULADOR EN TIEMPO REAL DE LA PWA (DEMO UD-4)
+             =============================================================== -->
+        <div class="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="text-xs font-extrabold text-indigo-400 flex items-center gap-1.5">
+                <span>🧪</span> Sub-panel: Simulación en Tiempo Real (Demo UD-4)
+              </p>
+              <p class="theme-text-sub text-[11px] text-zinc-400">
+                Activa o desactiva la demostración en vivo con pasajeros dinámicos, comentarios según tiempo de espera, paradas comerciales espontáneas y unidades en las Rutas 1, 2 y 3.
+              </p>
+            </div>
+            <button id="switch-sim-subpanel" type="button" onclick="toggleSimulationSubpanel()" class="w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0">
+              <span id="switch-sim-knob" class="block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform"></span>
+            </button>
+          </div>
+
+          <div id="sim-subpanel-body" class="hidden space-y-3 pt-2 border-t border-indigo-500/20">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button type="button" onclick="simAddRandomPassengers(10)" class="bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 rounded-xl p-2.5 text-xs font-bold flex flex-col items-center gap-1">
+                <span>👥 +10 Usuarios</span>
+                <span class="text-[9px] font-normal opacity-80">En paradas UD-4</span>
+              </button>
+              <button type="button" onclick="simAddRandomPassengers(25)" class="bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 rounded-xl p-2.5 text-xs font-bold flex flex-col items-center gap-1">
+                <span>👥 +25 Usuarios</span>
+                <span class="text-[9px] font-normal opacity-80">Hora pico UD-4</span>
+              </button>
+              <button type="button" onclick="simSpawnSpontaneousCommerceStop()" class="bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/40 rounded-xl p-2.5 text-xs font-bold flex flex-col items-center gap-1 col-span-2 sm:col-span-1">
+                <span>🏪 Parada Comercial</span>
+                <span class="text-[9px] font-normal opacity-80">Solicitud en ruta</span>
+              </button>
+            </div>
+
+            <p class="text-[11px] font-bold text-indigo-300 pt-1">Agregar Unidades en Tránsito por Rutas Oficiales:</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button type="button" onclick="simSpawnVehicle('car', 1)" class="bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-500/40 rounded-xl p-2 text-[11px] font-bold">
+                🚗 +Carro (Ruta 1)
+              </button>
+              <button type="button" onclick="simSpawnVehicle('bus', 1)" class="bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/40 rounded-xl p-2 text-[11px] font-bold">
+                🚌 +Bus (Ruta 1)
+              </button>
+              <button type="button" onclick="simSpawnVehicle('car', 2)" class="bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-500/40 rounded-xl p-2 text-[11px] font-bold">
+                🚗 +Carro (Ruta 2)
+              </button>
+              <button type="button" onclick="simSpawnVehicle('bus', 2)" class="bg-amber-500/20 hover:bg-amber-500/35 text-amber-300 border border-amber-500/40 rounded-xl p-2 text-[11px] font-bold">
+                🚌 +Bus (Ruta 2)
+              </button>
+              <button type="button" onclick="simSpawnVehicle('moto', 3)" class="bg-blue-500/20 hover:bg-blue-500/35 text-blue-300 border border-blue-500/40 rounded-xl p-2 text-[11px] font-bold col-span-2 sm:col-span-1">
+                🛵 +Moto (Ruta 3 Directa)
+              </button>
+            </div>
+
+            <div class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-2.5 flex items-center justify-between text-[11px]">
+              <div class="space-y-0.5">
+                <p class="text-zinc-300">Unidades simuladas: <strong id="sim-active-vehicles-count" class="text-indigo-400">0</strong> · Pasajeros sim: <strong id="sim-active-passengers-count" class="text-emerald-400">0</strong></p>
+                <p id="sim-wait-mood-status" class="text-[10px] text-zinc-500">Estado de espera: Fluido (Comentarios positivos)</p>
+              </div>
+              <button type="button" onclick="simClearAll()" class="bg-red-500/20 hover:bg-red-500/35 text-red-300 border border-red-500/30 px-2.5 py-1.5 rounded-lg text-[10px] font-bold">
+                Limpiar Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===============================================================
+             NUEVO SUB-PANEL 2: PUBLICIDAD EN LA PLATAFORMA
+             =============================================================== -->
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="text-xs font-extrabold text-emerald-400 flex items-center gap-1.5">
+                <span>📢</span> Sub-panel: Publicidad en la Plataforma
+              </p>
+              <p class="theme-text-sub text-[11px] text-zinc-400">
+                Gestiona patrocinantes (1:1, 9:16 y 16:9), intervalos secuenciales y reportes <code>.html</code>. Los transportistas están 100% excluidos de ver publicidad.
+              </p>
+            </div>
+            <button id="switch-ads-subpanel" type="button" onclick="toggleAdsSubpanel()" class="w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0">
+              <span id="switch-ads-knob" class="block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform"></span>
+            </button>
+          </div>
+
+          <div id="ads-subpanel-body" class="hidden space-y-3 pt-2 border-t border-emerald-500/20">
+            <button type="button" onclick="openAdFormModal()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg">
+              <span>➕</span> Agregar Publicidad
+            </button>
+
+            <!-- Lista de Publicidades Guardadas (Miniatura + Info + Switch + Intervalo + Reporte HTML) -->
+            <div id="saved-ads-list" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Herramienta de Edición Visual en el Mapa -->
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -678,14 +819,12 @@
           </div>
         </div>
 
+        <!-- Exportar / Importar .txt -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <p class="text-xs font-bold text-emerald-400">📄 Respaldo y Carga Masiva (.txt)</p>
             <span class="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded">Filtro Auto ≥ 80m</span>
           </div>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
-            Exporta las paradas activas a un archivo <code>.txt</code> o carga ese mismo archivo para agregar varias paradas en simultáneo. Si en el archivo hay paradas con distancia menor a <b>80 metros</b> entre sí, se elimina una al azar automáticamente.
-          </p>
           <div class="grid grid-cols-2 gap-2 pt-1">
             <button type="button" onclick="exportActiveStopsToTxt()" class="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl border border-zinc-700 flex items-center justify-center gap-1.5">
               <span>⬇️</span> Exportar .txt
@@ -697,12 +836,13 @@
           </div>
         </div>
 
+        <!-- Crear Parada Manualmente -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
           <p class="text-xs font-bold text-white">➕ Agregar Nueva Parada Directa (Mín. 80m de distancia)</p>
           <input id="creator-new-stop-name" type="text" placeholder="Nombre de la nueva parada" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white" />
           <div class="grid grid-cols-2 gap-2">
-            <input id="creator-new-stop-lat" type="number" step="any" placeholder="Lat (Ej: 10.42955)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
-            <input id="creator-new-stop-lng" type="number" step="any" placeholder="Lng (Ej: -66.97637)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+            <input id="creator-new-stop-lat" type="number" step="any" placeholder="Lat (Ej: 10.429826)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+            <input id="creator-new-stop-lng" type="number" step="any" placeholder="Lng (Ej: -66.977847)" class="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white font-mono" />
           </div>
           <div class="flex gap-2">
             <button type="button" onclick="fillCreatorCoordsWithCurrentCenter()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[11px] px-3 py-2 rounded-lg">
@@ -726,9 +866,6 @@
 
         <div class="space-y-2 border-t border-zinc-800 pt-4">
           <p class="text-xs font-bold text-amber-400">⏳ Lista de Espera de Transportistas (Carro / Bus / Moto):</p>
-          <p class="theme-text-sub text-[11px] text-zinc-400">
-            Presiona <b>Verificado</b> para acreditarlo en la lista de transportistas de la app, o <b>No verificado</b> para eliminarlo del registro (solo podrá ingresar como usuario).
-          </p>
           <div id="waitlist-drivers-admin-list" class="space-y-2 text-xs max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
@@ -741,9 +878,110 @@
     </div>
   </div>
 
+  <!-- MODAL: AGREGAR O EDITAR PUBLICIDAD -->
+  <div id="modal-ad-form" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
+        <h3 id="ad-form-modal-title" class="theme-text-main text-sm font-extrabold text-white">📢 Configurar Publicidad</h3>
+        <button type="button" onclick="closeAdFormModal()" class="text-xs text-zinc-400 hover:text-white">✕</button>
+      </div>
+
+      <input type="hidden" id="ad-form-id" value="" />
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="text-[10px] uppercase font-bold text-zinc-400">Marca o Emprendimiento</label>
+          <input id="ad-brand-name" type="text" placeholder="Ej: Panadería Caricuao Express" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Persona de Contacto</label>
+            <input id="ad-contact-person" type="text" placeholder="Ej: María Pérez" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white" />
+          </div>
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Teléfono de Contacto</label>
+            <input id="ad-contact-phone" type="tel" placeholder="+58 414-0000000" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Tipo de Post</label>
+            <select id="ad-media-type" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+              <option value="image">Imagen (.png / .jpg) · 30s</option>
+              <option value="video">Video (.mp4) · Máx 60s</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Formato Visual</label>
+            <select id="ad-aspect-ratio" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+              <option value="1:1">Cuadrado 1:1 (Ref. A)</option>
+              <option value="9:16">Vertical 9:16 (Ref. B)</option>
+              <option value="16:9">Horizontal 16:9 (Ref. C)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[10px] uppercase font-bold text-zinc-400">Subir Archivo (.png, .jpg, .mp4) o pegar URL directa</label>
+          <input id="ad-media-file" type="file" accept=".png,.jpg,.jpeg,.mp4,image/png,image/jpeg,video/mp4" onchange="handleAdMediaFileUpload(event)" class="w-full text-[11px] text-zinc-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-emerald-400" />
+          <input id="ad-media-url" type="text" placeholder="O pega aquí el enlace directo de la imagen/video..." class="theme-input w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono text-[11px]" />
+        </div>
+
+        <div>
+          <label class="text-[10px] uppercase font-bold text-zinc-400">Enlace de Redirección al Hacer Clic (URL Destino)</label>
+          <input id="ad-target-url" type="url" placeholder="https://wa.me/584140000000 o Instagram..." class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono text-[11px]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Tiempo Pagado Total</label>
+            <input id="ad-paid-value" type="number" min="1" value="5" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono" />
+          </div>
+          <div>
+            <label class="text-[10px] uppercase font-bold text-zinc-400">Unidad de Tiempo</label>
+            <select id="ad-paid-unit" class="theme-input mt-1 w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+              <option value="60">Minutos</option>
+              <option value="1">Segundos</option>
+              <option value="3600">Horas</option>
+            </select>
+          </div>
+        </div>
+        <p class="text-[10px] text-zinc-400">
+          💡 Nota: Editar los datos de contacto o enlace no reinicia el tiempo consumido, a menos que cambies el archivo de imagen o video.
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+        <button type="button" onclick="closeAdFormModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
+        <button type="button" onclick="saveAdCampaignForm()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl">
+          Guardar Publicidad
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE PUBLICIDAD ("Eliminar" y "Conservar") -->
+  <div id="modal-confirm-delete-ad" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="theme-card bg-[#121216] border border-red-500/40 rounded-2xl max-w-xs w-full p-5 space-y-4 text-center shadow-2xl">
+      <div class="text-3xl">⚠️</div>
+      <h4 class="theme-text-main text-sm font-extrabold text-white">¿Estás seguro que deseas eliminar esta publicidad?</h4>
+      <p class="theme-text-sub text-xs text-zinc-400">Esta acción borrará la campaña de la lista del panel.</p>
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button type="button" onclick="closeDeleteAdConfirmModal()" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs py-2.5 rounded-xl border border-zinc-700">
+          Conservar
+        </button>
+        <button type="button" onclick="confirmDeleteAdCampaign()" class="bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs py-2.5 rounded-xl">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES DE UD-4 CON UUID VÁLIDOS
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES (INCLUYE NUEVA PARADA YAGUAL)
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -768,6 +1006,7 @@
     const MANUAL_WAIT_DURATION_SEC = 300;
     const MANUAL_CONFIRM_WINDOW_SEC = 20;
 
+    // 13 Paradas Oficiales de la UD-4 (Incluyendo Yagual: 10.429826, -66.977847)
     const DEFAULT_UD4_STOPS = [
       { id: '00000000-0000-4000-8000-000000000001', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
       { id: '00000000-0000-4000-8000-000000000002', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
@@ -780,7 +1019,8 @@
       { id: '00000000-0000-4000-8000-000000000009', name: 'Curpa / Gimnasio Vertical', lat: 10.42850, lng: -66.97599, status: 'approved', count: 0 },
       { id: '00000000-0000-4000-8000-000000000010', name: 'Bravos de Apure', lat: 10.42731, lng: -66.97739, status: 'approved', count: 0 },
       { id: '00000000-0000-4000-8000-000000000011', name: 'Arauca', lat: 10.42736, lng: -66.97870, status: 'approved', count: 0 },
-      { id: '00000000-0000-4000-8000-000000000012', name: 'Payara', lat: 10.42843, lng: -66.97884, status: 'approved', count: 0 }
+      { id: '00000000-0000-4000-8000-000000000012', name: 'Payara', lat: 10.42843, lng: -66.97884, status: 'approved', count: 0 },
+      { id: '00000000-0000-4000-8000-000000000013', name: 'Yagual', lat: 10.429826, lng: -66.977847, status: 'approved', count: 0 }
     ];
 
     let map = null, userRole = 'passenger', watchId = null, wakeLock = null;
@@ -803,7 +1043,6 @@
     let reactionCooldownRemaining = 0;
     let reactionCooldownTimer = null;
     let displayedReactionIds = new Set();
-
     let stopBubbleQueues = {};
 
     let pendingVehicleTypeToVerify = null;
@@ -819,7 +1058,1101 @@
     let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
 
     // =========================================================================
-    // 2. FUNCIÓN UNIVERSAL DE REGISTRO EN PARADA A PRUEBA DE FALLOS RLS / UUID
+    // 2. MOTOR DE SIMULACIÓN EN TIEMPO REAL (SUB-PANEL DEL CREADOR)
+    //    - Rutas 1, 2 y 3 siguiendo los tramos viales reales del mapa UD-4
+    //    - Velocidades: Bus 40 km/h, Carro 50 km/h, Moto 55 km/h en subida
+    //      y 10 km/h más lento en bajada para todos
+    //    - Capacidad: Bus 30 usuarios, Carro 4-5 usuarios, Moto 1 usuario
+    //    - Comentarios y emojis en función del tiempo de espera en cada parada
+    // =========================================================================
+    let isSimulationSubpanelActive = false;
+    let simVehicles = [];
+    let simStopPassengers = {}; // { stopId: { count: 0, waitSeconds: 0 } }
+    let simSpontaneousStops = []; // Paradas comerciales espontáneas en la ruta
+    let simSpontaneousMarkers = {};
+    let simPhysicsInterval = null;
+    let simReactionsInterval = null;
+
+    const ENTRY_POINT_1 = { name: 'Punto de Entrada 1 UD-4', lat: 10.432672, lng: -66.973059, isEntry: true };
+    const ENTRY_POINT_2 = { name: 'Punto de Entrada 2 UD-4', lat: 10.433362, lng: -66.975278, isEntry: true };
+
+    // Puntos intermedios de curvatura de las calles de UD-4 para que los vehículos sigan el trazado vial real
+    const ROAD_SHAPING_LINKS = {
+      'Punto de Entrada 1 UD-4->Queseras 1ra': [[10.43175, -66.97292]],
+      'Queseras 1ra->Punto de Entrada 1 UD-4': [[10.43175, -66.97292]],
+      'Queseras 2da->CC Los Angeles': [[10.43142, -66.97438]],
+      'CC Los Angeles->San Agustin': [[10.43085, -66.97565], [10.43015, -66.97615]],
+      'San Agustin->CC Los Angeles': [[10.43015, -66.97615], [10.43085, -66.97565]],
+      'San Agustin->Carabobo': [[10.42952, -66.97515]],
+      'Carabobo->San Agustin': [[10.42952, -66.97515]],
+      'Carabobo->Vuelvancaras': [[10.42880, -66.97410]],
+      'Vuelvancaras->Carabobo': [[10.42880, -66.97410]],
+      'Punto de Entrada 2 UD-4->Canagua': [[10.43305, -66.97590]],
+      'Canagua->Mucuritas': [[10.43210, -66.97725]],
+      'Mucuritas->San Agustin': [[10.43045, -66.97710]],
+      'San Agustin->Yagual': [[10.42970, -66.97715]],
+      'Yagual->Payara': [[10.42915, -66.97845]],
+      'Payara->Arauca': [[10.42790, -66.97878]],
+      'Arauca->Bravos de Apure': [[10.42733, -66.97805]],
+      'Bravos de Apure->Curpa / Gimnasio Vertical': [[10.42790, -66.97665]],
+      'Curpa / Gimnasio Vertical->San Agustin': [[10.42905, -66.97618]]
+    };
+
+    // Zonas comerciales no registradas en la vía principal de UD-4 donde los usuarios piden parada espontáneamente
+    const UD4_COMMERCE_SPOTS = [
+      { name: 'Panadería / Abasto Queseras', lat: 10.43105, lng: -66.97335 },
+      { name: 'Bodegón Entrada CC Los Ángeles', lat: 10.43138, lng: -66.97545 },
+      { name: 'Farmacia / Kiosco San Agustín', lat: 10.42962, lng: -66.97560 },
+      { name: 'Comercios Redoma Curpa / Módulo', lat: 10.42885, lng: -66.97612 },
+      { name: 'Frutería / Abasto Vía Yagual', lat: 10.42945, lng: -66.97820 },
+      { name: 'Mini Mercado Vuelvancaras', lat: 10.42865, lng: -66.97412 }
+    ];
+
+    const COMMENTS_FLUID_POSITIVE = [
+      'Va rápido hoy', 'Todo fluido', 'Viene bajando uno', 'Buen servicio hoy',
+      'Avanza rápido', 'Ya viene cerca', 'Poca cola hoy', 'Excelente ritmo'
+    ];
+    const COMMENTS_MEDIUM_WAIT = [
+      '¿Viene por dónde?', 'Esperando unidad', 'Se llena rápido', '¿Cuánto falta?',
+      'Hay cola aquí', 'Pendientes en UD4', 'Esperando bus'
+    ];
+    const COMMENTS_HIGH_DISCONTENT = [
+      'Mucho retraso hoy', 'Nada que pasa', 'Media hora aquí', 'Demasiada cola',
+      'No bajan carros', 'Pésimo hoy', 'Urgente transporte', 'Full esperando'
+    ];
+    const EMOJIS_POSITIVE = ['👋🏼', '😎', '😃', '🙂'];
+    const EMOJIS_NEUTRAL = ['👀', '🙂', '👋🏼'];
+    const EMOJIS_DISCONTENT = ['🙄', '😓', '😒', '💩'];
+
+    function findStopNodeByName(stopName) {
+      if (stopName === ENTRY_POINT_1.name) return ENTRY_POINT_1;
+      if (stopName === ENTRY_POINT_2.name) return ENTRY_POINT_2;
+      const found = stopsData.find(s => s.name.toLowerCase().includes(stopName.toLowerCase()));
+      return found || ENTRY_POINT_1;
+    }
+
+    function buildDetailedRouteWaypoints(stopSequenceNames) {
+      const waypoints = [];
+      for (let i = 0; i < stopSequenceNames.length; i++) {
+        const currentNode = findStopNodeByName(stopSequenceNames[i]);
+        waypoints.push({
+          lat: currentNode.lat,
+          lng: currentNode.lng,
+          stopId: currentNode.id || null,
+          name: currentNode.name,
+          isStop: !currentNode.isEntry
+        });
+
+        if (i < stopSequenceNames.length - 1) {
+          const nextNode = findStopNodeByName(stopSequenceNames[i + 1]);
+          const linkKey = `${currentNode.name}->${nextNode.name}`;
+          const shapingPts = ROAD_SHAPING_LINKS[linkKey] || [];
+          shapingPts.forEach(pt => {
+            waypoints.push({ lat: pt[0], lng: pt[1], stopId: null, name: 'Vía UD-4', isStop: false });
+          });
+        }
+      }
+      return waypoints;
+    }
+
+    function getOfficialRouteWaypoints(routeNumber) {
+      if (routeNumber === 1) {
+        // Ruta 1 (carros y buses): Entrada 1 -> Queseras 1ra -> Queseras 2da -> CC Los Angeles -> San Agustin -> Carabobo -> Vuelvancaras -> Carabobo -> San Agustin -> CC Los Angeles -> Queseras 2da -> Queseras 1ra -> Entrada 1
+        return buildDetailedRouteWaypoints([
+          'Punto de Entrada 1 UD-4', 'Queseras 1ra', 'Queseras 2da', 'CC Los Angeles',
+          'San Agustin', 'Carabobo', 'Vuelvancaras', 'Carabobo', 'San Agustin',
+          'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'
+        ]);
+      } else if (routeNumber === 2) {
+        // Ruta 2 (carros y buses): Entrada 2 -> Canagua -> Mucuritas -> San Agustin -> Yagual -> Payara -> Arauca -> Bravos de Apure -> Curpa -> San Agustin -> CC Los Angeles -> Queseras 2da -> Queseras 1ra -> Entrada 1
+        return buildDetailedRouteWaypoints([
+          'Punto de Entrada 2 UD-4', 'Canagua', 'Mucuritas', 'San Agustin',
+          'Yagual', 'Payara', 'Arauca', 'Bravos de Apure', 'Curpa / Gimnasio Vertical',
+          'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'
+        ]);
+      } else {
+        // Ruta 3 (motos): Trayecto directo a cualquier parada solicitada (Payara, Arauca, Bravos de Apure, Vuelvancaras)
+        const directTargets = ['Payara', 'Arauca', 'Bravos de Apure', 'Vuelvancaras'];
+        const chosenTarget = directTargets[Math.floor(Math.random() * directTargets.length)];
+        const entry = Math.random() < 0.5 ? 'Punto de Entrada 1 UD-4' : 'Punto de Entrada 2 UD-4';
+        return buildDetailedRouteWaypoints([
+          entry, 'San Agustin', chosenTarget, 'San Agustin', entry
+        ]);
+      }
+    }
+
+    function toggleSimulationSubpanel() {
+      isSimulationSubpanelActive = !isSimulationSubpanelActive;
+      const btn = document.getElementById('switch-sim-subpanel');
+      const knob = document.getElementById('switch-sim-knob');
+      const body = document.getElementById('sim-subpanel-body');
+
+      if (isSimulationSubpanelActive) {
+        btn.className = 'w-12 h-6 rounded-full bg-indigo-500 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
+        body.classList.remove('hidden');
+        startSimulationEngineLoops();
+      } else {
+        btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
+        body.classList.add('hidden');
+        simClearAll();
+      }
+    }
+
+    function simAddRandomPassengers(totalToAdd) {
+      if (!isSimulationSubpanelActive) return;
+      const approved = stopsData.filter(s => s.status === 'approved');
+      if (approved.length === 0) return;
+
+      for (let i = 0; i < totalToAdd; i++) {
+        const randomStop = approved[Math.floor(Math.random() * approved.length)];
+        if (!simStopPassengers[randomStop.id]) {
+          simStopPassengers[randomStop.id] = { count: 0, waitSeconds: 0 };
+        }
+        simStopPassengers[randomStop.id].count++;
+      }
+      playAppSound('checkin');
+      updateSimCountersUI();
+      renderStops();
+    }
+
+    function simSpawnSpontaneousCommerceStop() {
+      if (!isSimulationSubpanelActive || !map) return;
+      const spot = UD4_COMMERCE_SPOTS[Math.floor(Math.random() * UD4_COMMERCE_SPOTS.length)];
+      const id = 'sim-comm-' + Date.now() + '-' + Math.floor(Math.random() * 100);
+      const paxCount = Math.floor(Math.random() * 3) + 1;
+
+      const commStop = {
+        id,
+        name: `${spot.name} (Parada solicitada en ruta)`,
+        lat: spot.lat,
+        lng: spot.lng,
+        count: paxCount,
+        waitSeconds: 15
+      };
+      simSpontaneousStops.push(commStop);
+
+      const html = `
+        <div style="position:relative; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+          <span class="sim-commerce-pin">📍</span>
+          <span style="position:absolute; top:-4px; right:-6px; background:#F59E0B; color:#000; font-weight:800; font-size:10px; padding:1px 5px; border-radius:9999px; border:1.5px solid #09090B;">
+            +${paxCount}
+          </span>
+        </div>`;
+      const icon = L.divIcon({ className: '', html, iconSize: [40, 40], iconAnchor: [20, 34] });
+      const marker = L.marker([commStop.lat, commStop.lng], { icon })
+        .bindPopup(`<b>🏪 ${commStop.name}</b><br/>Pasajeros esperando en comercio: <b>${paxCount}</b>`)
+        .addTo(map);
+
+      simSpontaneousMarkers[id] = marker;
+      playAppSound('bubble');
+
+      spawnStopReactionBubbleOnMap({
+        id: 'comm_msg_' + id,
+        stop_id: stopsData[0] ? stopsData[0].id : id,
+        customLatLng: [commStop.lat, commStop.lng],
+        reaction_type: 'sms',
+        content: '¡Parada en comercio!'
+      });
+
+      updateSimCountersUI();
+      renderStops();
+    }
+
+    function simSpawnVehicle(vehicleType, routeNumber) {
+      if (!isSimulationSubpanelActive) return;
+      const waypoints = getOfficialRouteWaypoints(routeNumber);
+      if (waypoints.length < 2) return;
+
+      // Capacidad según tipo de unidad: Bus = 30, Carro = 4 a 5, Moto = 1
+      const maxCapacity = vehicleType === 'bus' ? 30 : (vehicleType === 'moto' ? 1 : (Math.random() < 0.5 ? 4 : 5));
+      // Velocidades máximas en subida: Bus = 40 km/h, Carro = 50 km/h, Moto = 55 km/h (En bajada es 10 km/h más lento para todos)
+      const uphillMaxKmh = vehicleType === 'bus' ? 40 : (vehicleType === 'moto' ? 55 : 50);
+
+      const id = 'sim_veh_' + Date.now() + '_' + Math.floor(Math.random() * 999);
+      simVehicles.push({
+        phone: id,
+        vehicle_type: vehicleType,
+        routeNumber,
+        waypoints,
+        wpIndex: 0,
+        lat: waypoints[0].lat,
+        lng: waypoints[0].lng,
+        uphillMaxKmh,
+        maxCapacity,
+        currentLoad: 0,
+        dwellRemainingSec: 0,
+        isSimulated: true
+      });
+
+      playAppSound('checkin');
+      updateSimCountersUI();
+      renderDrivers();
+    }
+
+    function startSimulationEngineLoops() {
+      if (simPhysicsInterval) clearInterval(simPhysicsInterval);
+      if (simReactionsInterval) clearInterval(simReactionsInterval);
+
+      // Bucle físico cada 1 segundo para mover unidades, calcular velocidades subida/bajada y recoger pasajeros
+      simPhysicsInterval = setInterval(() => {
+        if (!isSimulationSubpanelActive) return;
+
+        // 1. Incrementar el tiempo de espera de cada parada con pasajeros simulados
+        let maxWaitSec = 0;
+        Object.keys(simStopPassengers).forEach(stopId => {
+          if (simStopPassengers[stopId].count > 0) {
+            simStopPassengers[stopId].waitSeconds += 1;
+            if (simStopPassengers[stopId].waitSeconds > maxWaitSec) {
+              maxWaitSec = simStopPassengers[stopId].waitSeconds;
+            }
+          } else {
+            simStopPassengers[stopId].waitSeconds = 0;
+          }
+        });
+
+        // 2. Actualizar movimiento de cada vehículo simulado
+        simVehicles.forEach(v => {
+          if (v.dwellRemainingSec > 0) {
+            v.dwellRemainingSec -= 1;
+            return;
+          }
+
+          const nextWp = v.waypoints[v.wpIndex + 1];
+          if (!nextWp) {
+            // Reiniciar ciclo en la ruta y vaciar cupo al volver al punto de entrada
+            v.wpIndex = 0;
+            v.currentLoad = 0;
+            v.lat = v.waypoints[0].lat;
+            v.lng = v.waypoints[0].lng;
+            return;
+          }
+
+          // Determinar si va en subida (hacia el sur/suroeste interno de UD-4, menor latitud) o en bajada (hacia la salida norte, mayor latitud)
+          const isGoingDownhill = (nextWp.lat - v.lat) > 0.00005;
+          const speedKmh = isGoingDownhill ? (v.uphillMaxKmh - 10) : v.uphillMaxKmh;
+          const speedMetersPerSec = (speedKmh * 1000) / 3600;
+
+          const distToNext = getDistanceMeters(v.lat, v.lng, nextWp.lat, nextWp.lng);
+
+          if (distToNext <= speedMetersPerSec) {
+            // Llegó al waypoint o parada
+            v.lat = nextWp.lat;
+            v.lng = nextWp.lng;
+            v.wpIndex++;
+
+            // Si es una parada oficial y la unidad tiene cupo disponible, recoge pasajeros y se demora según cuántos aborden
+            if (nextWp.isStop && nextWp.stopId && simStopPassengers[nextWp.stopId] && simStopPassengers[nextWp.stopId].count > 0) {
+              const availableSeats = Math.max(0, v.maxCapacity - v.currentLoad);
+              if (availableSeats > 0) {
+                const waiting = simStopPassengers[nextWp.stopId].count;
+                const boarded = Math.min(waiting, availableSeats);
+                simStopPassengers[nextWp.stopId].count -= boarded;
+                v.currentLoad += boarded;
+
+                // Si recogió a todos o alivió la cola, el tiempo de espera baja mejorando el humor de la parada
+                if (simStopPassengers[nextWp.stopId].count === 0) {
+                  simStopPassengers[nextWp.stopId].waitSeconds = 0;
+                } else {
+                  simStopPassengers[nextWp.stopId].waitSeconds = Math.max(5, simStopPassengers[nextWp.stopId].waitSeconds - 35);
+                }
+
+                // Tiempo de demora en parada proporcional a las personas que aborda (mín 2s, máx 14s)
+                const secPerPassenger = v.vehicle_type === 'bus' ? 0.6 : 1.5;
+                v.dwellRemainingSec = Math.min(14, Math.max(2, Math.round(boarded * secPerPassenger)));
+              }
+            }
+
+            // Verificar si pasa cerca (< 65m) de alguna parada comercial espontánea solicitada por usuarios
+            for (let i = simSpontaneousStops.length - 1; i >= 0; i--) {
+              const cStop = simSpontaneousStops[i];
+              const dComm = getDistanceMeters(v.lat, v.lng, cStop.lat, cStop.lng);
+              if (dComm <= 65 && v.currentLoad < v.maxCapacity) {
+                const take = Math.min(cStop.count, v.maxCapacity - v.currentLoad);
+                v.currentLoad += take;
+                v.dwellRemainingSec += Math.max(2, take * 2);
+                if (map && simSpontaneousMarkers[cStop.id]) {
+                  map.removeLayer(simSpontaneousMarkers[cStop.id]);
+                }
+                delete simSpontaneousMarkers[cStop.id];
+                simSpontaneousStops.splice(i, 1);
+              }
+            }
+          } else {
+            // Interpolación lineal suave por la vía hacia el siguiente punto
+            const ratio = speedMetersPerSec / distToNext;
+            v.lat = v.lat + (nextWp.lat - v.lat) * ratio;
+            v.lng = v.lng + (nextWp.lng - v.lng) * ratio;
+          }
+        });
+
+        updateSimCountersUI(maxWaitSec);
+        renderStops();
+        renderDrivers();
+      }, 1000);
+
+      // Bucle de comentarios variados y emojis aleatorios en función del tiempo de espera + solicitudes comerciales espontáneas
+      simReactionsInterval = setInterval(() => {
+        if (!isSimulationSubpanelActive) return;
+
+        const activeSimStops = Object.keys(simStopPassengers).filter(id => simStopPassengers[id] && simStopPassengers[id].count > 0);
+        if (activeSimStops.length > 0) {
+          const randomStopId = activeSimStops[Math.floor(Math.random() * activeSimStops.length)];
+          const stopState = simStopPassengers[randomStopId];
+          const waitSec = stopState.waitSeconds;
+
+          const isEmoji = Math.random() < 0.45;
+          let content = '';
+
+          if (waitSec < 30 || simVehicles.length >= 4) {
+            // Transporte fluido: comentarios positivos o emojis de aprobación
+            content = isEmoji
+              ? EMOJIS_POSITIVE[Math.floor(Math.random() * EMOJIS_POSITIVE.length)]
+              : COMMENTS_FLUID_POSITIVE[Math.floor(Math.random() * COMMENTS_FLUID_POSITIVE.length)];
+          } else if (waitSec < 75) {
+            // Espera moderada
+            content = isEmoji
+              ? EMOJIS_NEUTRAL[Math.floor(Math.random() * EMOJIS_NEUTRAL.length)]
+              : COMMENTS_MEDIUM_WAIT[Math.floor(Math.random() * COMMENTS_MEDIUM_WAIT.length)];
+          } else {
+            // Demora prolongada: mayor descontento en comentarios y emojis
+            content = isEmoji
+              ? EMOJIS_DISCONTENT[Math.floor(Math.random() * EMOJIS_DISCONTENT.length)]
+              : COMMENTS_HIGH_DISCONTENT[Math.floor(Math.random() * COMMENTS_HIGH_DISCONTENT.length)];
+          }
+
+          spawnStopReactionBubbleOnMap({
+            id: 'sim_react_' + Date.now() + '_' + Math.random(),
+            stop_id: randomStopId,
+            reaction_type: isEmoji ? 'emoji' : 'sms',
+            content
+          });
+        }
+
+        // Probabilidad aleatoria de que un usuario pida una parada comercial espontánea en la ruta
+        if (Math.random() < 0.18 && simSpontaneousStops.length < 3) {
+          simSpawnSpontaneousCommerceStop();
+        }
+      }, 3200);
+    }
+
+    function updateSimCountersUI(maxWaitSec = 0) {
+      const vehEl = document.getElementById('sim-active-vehicles-count');
+      const paxEl = document.getElementById('sim-active-passengers-count');
+      const moodEl = document.getElementById('sim-wait-mood-status');
+
+      const totalSimPax = Object.values(simStopPassengers).reduce((acc, s) => acc + (s.count || 0), 0)
+        + simSpontaneousStops.reduce((acc, c) => acc + (c.count || 0), 0);
+
+      if (vehEl) vehEl.textContent = simVehicles.length;
+      if (paxEl) paxEl.textContent = totalSimPax;
+      if (moodEl) {
+        if (maxWaitSec >= 75) {
+          moodEl.textContent = `Espera máxima: ${maxWaitSec}s · Humor: Descontento (Faltan unidades)`;
+          moodEl.className = 'text-[10px] text-red-400 font-semibold';
+        } else if (maxWaitSec >= 30) {
+          moodEl.textContent = `Espera máxima: ${maxWaitSec}s · Humor: Moderado`;
+          moodEl.className = 'text-[10px] text-amber-400 font-semibold';
+        } else {
+          moodEl.textContent = `Transporte Fluido · Humor: Positivo / Aprobación`;
+          moodEl.className = 'text-[10px] text-emerald-400 font-semibold';
+        }
+      }
+    }
+
+    function simClearAll() {
+      simVehicles = [];
+      simStopPassengers = {};
+      Object.values(simSpontaneousMarkers).forEach(m => { if (map) map.removeLayer(m); });
+      simSpontaneousMarkers = {};
+      simSpontaneousStops = [];
+      if (simPhysicsInterval) { clearInterval(simPhysicsInterval); simPhysicsInterval = null; }
+      if (simReactionsInterval) { clearInterval(simReactionsInterval); simReactionsInterval = null; }
+      updateSimCountersUI(0);
+      renderStops();
+      renderDrivers();
+    }
+
+    // =========================================================================
+    // 3. MOTOR DE PUBLICIDAD PROGRAMÁTICA Y REPORTE .HTML (SUB-PANEL CREADOR)
+    //    - Exclusión 100% para Transportistas
+    //    - Formatos 1:1 (Ref. A), 9:16 (Ref. B) y 16:9 (Ref. C) sobre Mi Ubicación y UD-4
+    //    - Imagen = 30s fijos por exposición | Video = máx 60s (o duración del video)
+    //    - Secuencia automática respetando el tiempo intermedio programado
+    //    - Descarga de reporte .html al cumplir el tiempo pagado
+    // =========================================================================
+    let isAdsSubpanelActive = false;
+    let adCampaignsList = [];
+    let adLogsByCampaign = {}; // { adId: [ { shown_at, duration_seconds, users_in_stops, clicks_count } ] }
+    let pendingDeleteAdId = null;
+
+    // Estado del reproductor secuencial de anuncios en la interfaz de Usuario
+    let adSchedulerTimeout = null;
+    let adActiveSecondTicker = null;
+    let currentSequentialAdIndex = 0;
+    let currentlyShowingAd = null;
+    let currentImpressionLogId = null;
+    let currentExposureElapsedSec = 0;
+
+    const INTERVAL_OPTIONS = [
+      { label: '0 seg (Inmediato)', value: 0 },
+      { label: '3 seg', value: 3 },
+      { label: '5 seg', value: 5 },
+      { label: '20 seg', value: 20 },
+      { label: '40 seg', value: 40 },
+      { label: '60 seg', value: 60 },
+      { label: '2 min', value: 120 },
+      { label: '5 min', value: 300 },
+      { label: '10 min', value: 600 },
+      { label: '30 min', value: 1800 },
+      { label: '60 min', value: 3600 }
+    ];
+
+    function toggleAdsSubpanel() {
+      isAdsSubpanelActive = !isAdsSubpanelActive;
+      localStorage.setItem('ud4_ads_subpanel_enabled', isAdsSubpanelActive ? '1' : '0');
+      updateAdsSubpanelSwitchUI();
+      if (isAdsSubpanelActive) {
+        loadAdCampaignsFromStorageAndDb();
+        restartSequentialAdScheduler();
+      } else {
+        hideUserAdOverlayImmediately();
+      }
+    }
+
+    function updateAdsSubpanelSwitchUI() {
+      const btn = document.getElementById('switch-ads-subpanel');
+      const knob = document.getElementById('switch-ads-knob');
+      const body = document.getElementById('ads-subpanel-body');
+      if (!btn || !knob || !body) return;
+
+      if (isAdsSubpanelActive) {
+        btn.className = 'w-12 h-6 rounded-full bg-emerald-500 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-6 transition-transform';
+        body.classList.remove('hidden');
+      } else {
+        btn.className = 'w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0';
+        knob.className = 'block w-5 h-5 rounded-full bg-white shadow transform translate-x-0 transition-transform';
+        body.classList.add('hidden');
+      }
+    }
+
+    async function loadAdCampaignsFromStorageAndDb() {
+      try {
+        const localRaw = localStorage.getItem('ud4_ad_campaigns_v14');
+        const localLogs = localStorage.getItem('ud4_ad_logs_v14');
+        if (localRaw) adCampaignsList = JSON.parse(localRaw);
+        if (localLogs) adLogsByCampaign = JSON.parse(localLogs);
+      } catch (e) {}
+
+      if (supabaseClient) {
+        try {
+          const { data: dbAds } = await supabaseClient.from('ad_campaigns').select('*').order('created_at', { ascending: true });
+          const { data: dbLogs } = await supabaseClient.from('ad_impression_logs').select('*').order('shown_at', { ascending: true });
+          if (dbAds && dbAds.length > 0) {
+            adCampaignsList = dbAds;
+            localStorage.setItem('ud4_ad_campaigns_v14', JSON.stringify(adCampaignsList));
+          }
+          if (dbLogs) {
+            const grouped = {};
+            dbLogs.forEach(l => {
+              if (!grouped[l.ad_id]) grouped[l.ad_id] = [];
+              grouped[l.ad_id].push(l);
+            });
+            adLogsByCampaign = grouped;
+            localStorage.setItem('ud4_ad_logs_v14', JSON.stringify(adLogsByCampaign));
+          }
+        } catch (e) {}
+      }
+
+      renderCreatorAdsList();
+    }
+
+    function persistAdsStateLocally() {
+      try {
+        localStorage.setItem('ud4_ad_campaigns_v14', JSON.stringify(adCampaignsList));
+        localStorage.setItem('ud4_ad_logs_v14', JSON.stringify(adLogsByCampaign));
+      } catch (e) {}
+    }
+
+    function openAdFormModal(editAdId = null) {
+      document.getElementById('ad-media-file').value = '';
+      if (editAdId) {
+        const ad = adCampaignsList.find(a => a.id === editAdId);
+        if (!ad) return;
+        document.getElementById('ad-form-modal-title').textContent = '✏️ Editar Publicidad';
+        document.getElementById('ad-form-id').value = ad.id;
+        document.getElementById('ad-brand-name').value = ad.brand_name;
+        document.getElementById('ad-contact-person').value = ad.contact_person;
+        document.getElementById('ad-contact-phone').value = ad.contact_phone;
+        document.getElementById('ad-media-type').value = ad.media_type;
+        document.getElementById('ad-aspect-ratio').value = ad.aspect_ratio;
+        document.getElementById('ad-media-url').value = ad.media_url;
+        document.getElementById('ad-target-url').value = ad.target_url;
+        document.getElementById('ad-paid-value').value = ad.paid_seconds;
+        document.getElementById('ad-paid-unit').value = '1';
+      } else {
+        document.getElementById('ad-form-modal-title').textContent = '➕ Agregar Publicidad';
+        document.getElementById('ad-form-id').value = '';
+        document.getElementById('ad-brand-name').value = '';
+        document.getElementById('ad-contact-person').value = '';
+        document.getElementById('ad-contact-phone').value = '';
+        document.getElementById('ad-media-type').value = 'image';
+        document.getElementById('ad-aspect-ratio').value = '1:1';
+        document.getElementById('ad-media-url').value = '';
+        document.getElementById('ad-target-url').value = '';
+        document.getElementById('ad-paid-value').value = '5';
+        document.getElementById('ad-paid-unit').value = '60';
+      }
+      document.getElementById('modal-ad-form').classList.remove('hidden');
+    }
+
+    function closeAdFormModal() {
+      document.getElementById('modal-ad-form').classList.add('hidden');
+    }
+
+    function handleAdMediaFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const isVideo = file.type.includes('video') || file.name.toLowerCase().endsWith('.mp4');
+      document.getElementById('ad-media-type').value = isVideo ? 'video' : 'image';
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('ad-media-url').value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveAdCampaignForm() {
+      const editId = document.getElementById('ad-form-id').value.trim();
+      const brand_name = document.getElementById('ad-brand-name').value.trim();
+      const contact_person = document.getElementById('ad-contact-person').value.trim();
+      const contact_phone = document.getElementById('ad-contact-phone').value.trim();
+      const media_type = document.getElementById('ad-media-type').value;
+      const aspect_ratio = document.getElementById('ad-aspect-ratio').value;
+      const media_url = document.getElementById('ad-media-url').value.trim();
+      const target_url = document.getElementById('ad-target-url').value.trim();
+      const paidVal = parseInt(document.getElementById('ad-paid-value').value, 10) || 1;
+      const paidUnit = parseInt(document.getElementById('ad-paid-unit').value, 10) || 60;
+      const paid_seconds = Math.max(10, paidVal * paidUnit);
+
+      if (!brand_name || !contact_person || !contact_phone || !media_url || !target_url) {
+        alert('Completa todos los campos de la marca, contacto, imagen/video y enlace URL.');
+        return;
+      }
+
+      if (editId) {
+        const idx = adCampaignsList.findIndex(a => a.id === editId);
+        if (idx !== -1) {
+          const prev = adCampaignsList[idx];
+          // REGLA ESTRICTA: La edición NO altera el conteo de tiempo de visibilidad, A MENOS que se cambie la imagen o video
+          const mediaChanged = prev.media_url !== media_url;
+          const updatedConsumed = mediaChanged ? 0 : prev.consumed_seconds;
+          const updatedCompleted = updatedConsumed >= paid_seconds;
+
+          if (mediaChanged) {
+            adLogsByCampaign[editId] = [];
+            if (supabaseClient) {
+              await supabaseClient.from('ad_impression_logs').delete().eq('ad_id', editId);
+            }
+          }
+
+          const updatedAd = {
+            ...prev,
+            brand_name,
+            contact_person,
+            contact_phone,
+            media_type,
+            aspect_ratio,
+            media_url,
+            target_url,
+            paid_seconds,
+            consumed_seconds: updatedConsumed,
+            is_completed: updatedCompleted
+          };
+          adCampaignsList[idx] = updatedAd;
+
+          if (supabaseClient) {
+            await supabaseClient.from('ad_campaigns').upsert(updatedAd);
+          }
+        }
+      } else {
+        const newId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'ad_' + Date.now();
+        const newAd = {
+          id: newId,
+          brand_name,
+          contact_person,
+          contact_phone,
+          media_type,
+          aspect_ratio,
+          media_url,
+          target_url,
+          paid_seconds,
+          consumed_seconds: 0,
+          interval_after_seconds: 20,
+          is_active: false,
+          is_completed: false,
+          created_at: new Date().toISOString()
+        };
+        adCampaignsList.push(newAd);
+        adLogsByCampaign[newId] = [];
+
+        if (supabaseClient) {
+          await supabaseClient.from('ad_campaigns').insert(newAd);
+        }
+      }
+
+      persistAdsStateLocally();
+      closeAdFormModal();
+      renderCreatorAdsList();
+      restartSequentialAdScheduler();
+    }
+
+    function formatSecondsReadable(sec) {
+      const s = Math.max(0, Math.round(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      if (m === 0) return `${r}s`;
+      return `${m}m ${String(r).padStart(2, '0')}s`;
+    }
+
+    function renderCreatorAdsList() {
+      const container = document.getElementById('saved-ads-list');
+      if (!container) return;
+
+      if (adCampaignsList.length === 0) {
+        container.innerHTML = '<p class="text-xs text-zinc-500 text-center py-2">No hay publicidades registradas todavía.</p>';
+        return;
+      }
+
+      container.innerHTML = adCampaignsList.map(ad => {
+        const isCompleted = ad.consumed_seconds >= ad.paid_seconds || ad.is_completed;
+        const thumbHtml = ad.media_type === 'video'
+          ? `<video src="${escapeHtml(ad.media_url)}" class="w-16 h-16 rounded-xl object-cover border border-zinc-700 bg-black shrink-0" muted playsinline></video>`
+          : `<img src="${escapeHtml(ad.media_url)}" class="w-16 h-16 rounded-xl object-cover border border-zinc-700 bg-black shrink-0" />`;
+
+        const switchBg = ad.is_active && !isCompleted ? 'bg-emerald-500' : 'bg-zinc-700';
+        const switchKnob = ad.is_active && !isCompleted ? 'translate-x-5' : 'translate-x-0';
+
+        const intervalOptionsHtml = INTERVAL_OPTIONS.map(opt =>
+          `<option value="${opt.value}" ${Number(ad.interval_after_seconds) === opt.value ? 'selected' : ''}>${opt.label}</option>`
+        ).join('');
+
+        // Botón de Descargar Reporte .html cuando cumple el tiempo de visibilidad pagado
+        const reportBtnHtml = isCompleted
+          ? `<button type="button" onclick="downloadAdCampaignHtmlReport('${ad.id}')" class="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow">
+               <span>📊</span> Descargar Reporte .HTML (Tiempo Cumplido)
+             </button>`
+          : '';
+
+        return `
+          <div class="bg-zinc-900/95 border ${isCompleted ? 'border-amber-500/60' : 'border-zinc-800'} rounded-2xl p-3 space-y-2.5">
+            <!-- Pestaña superior: Miniatura a la izquierda + Información del emprendimiento a la derecha -->
+            <div class="flex items-center gap-3">
+              ${thumbHtml}
+              <div class="flex-1 min-w-0 space-y-0.5">
+                <div class="flex items-center justify-between gap-1">
+                  <p class="font-extrabold text-white text-xs truncate">${escapeHtml(ad.brand_name)}</p>
+                  <span class="text-[10px] bg-zinc-800 text-emerald-400 px-1.5 py-0.5 rounded font-mono shrink-0">${escapeHtml(ad.aspect_ratio)} · ${ad.media_type === 'video' ? 'Video' : 'Img'}</span>
+                </div>
+                <p class="text-[11px] text-zinc-300 truncate">👤 ${escapeHtml(ad.contact_person)} · 📞 <span class="font-mono">${escapeHtml(ad.contact_phone)}</span></p>
+                <p class="text-[10px] text-zinc-400 truncate">🔗 ${escapeHtml(ad.target_url)}</p>
+                <p class="text-[10px] font-mono ${isCompleted ? 'text-amber-400 font-bold' : 'text-emerald-400'}">
+                  ⏱️ Visibilidad: ${formatSecondsReadable(ad.consumed_seconds)} / ${formatSecondsReadable(ad.paid_seconds)} ${isCompleted ? '(CUMPLIDO)' : ''}
+                </p>
+              </div>
+            </div>
+
+            <!-- Controles debajo de la pestaña: Switch Activar/Desactivar, Botón Editar y Botón Eliminar -->
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="toggleSingleAdActive('${ad.id}')" class="w-11 h-6 rounded-full ${switchBg} relative transition-colors p-0.5 shrink-0" ${isCompleted ? 'disabled title="Tiempo pagado cumplido"' : ''}>
+                  <span class="block w-5 h-5 rounded-full bg-white shadow transform ${switchKnob} transition-transform"></span>
+                </button>
+                <span class="text-[11px] font-bold ${ad.is_active && !isCompleted ? 'text-emerald-400' : 'text-zinc-400'}">
+                  ${isCompleted ? 'Finalizada' : (ad.is_active ? 'Activa' : 'Inactiva')}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openAdFormModal('${ad.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-zinc-700">
+                  ✏️ Editar
+                </button>
+                <button type="button" onclick="askDeleteAdCampaign('${ad.id}')" class="bg-red-600/25 hover:bg-red-600/40 text-red-300 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-red-500/30">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+
+            <!-- Pestaña inferior para programar el tiempo intermedio entre publicidad y publicidad -->
+            <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+              <span class="text-[10px] text-zinc-400 font-semibold">⏳ Tiempo intermedio tras esta publicidad:</span>
+              <select onchange="updateAdIntervalAfter('${ad.id}', this.value)" class="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-[11px] text-emerald-400 font-bold">
+                ${intervalOptionsHtml}
+              </select>
+            </div>
+
+            ${reportBtnHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleSingleAdActive(adId) {
+      const ad = adCampaignsList.find(a => a.id === adId);
+      if (!ad) return;
+      if (ad.consumed_seconds >= ad.paid_seconds) {
+        ad.is_completed = true;
+        ad.is_active = false;
+        renderCreatorAdsList();
+        return;
+      }
+      ad.is_active = !ad.is_active;
+      if (ad.is_active && !isAdsSubpanelActive) {
+        isAdsSubpanelActive = true;
+        updateAdsSubpanelSwitchUI();
+      }
+      persistAdsStateLocally();
+      if (supabaseClient) {
+        await supabaseClient.from('ad_campaigns').update({ is_active: ad.is_active }).eq('id', ad.id);
+      }
+      renderCreatorAdsList();
+      restartSequentialAdScheduler();
+    }
+
+    async function updateAdIntervalAfter(adId, newSec) {
+      const ad = adCampaignsList.find(a => a.id === adId);
+      if (!ad) return;
+      ad.interval_after_seconds = parseInt(newSec, 10) || 0;
+      persistAdsStateLocally();
+      if (supabaseClient) {
+        await supabaseClient.from('ad_campaigns').update({ interval_after_seconds: ad.interval_after_seconds }).eq('id', ad.id);
+      }
+    }
+
+    function askDeleteAdCampaign(adId) {
+      pendingDeleteAdId = adId;
+      document.getElementById('modal-confirm-delete-ad').classList.remove('hidden');
+    }
+
+    function closeDeleteAdConfirmModal() {
+      pendingDeleteAdId = null;
+      document.getElementById('modal-confirm-delete-ad').classList.add('hidden');
+    }
+
+    async function confirmDeleteAdCampaign() {
+      if (!pendingDeleteAdId) return;
+      const idToRemove = pendingDeleteAdId;
+      closeDeleteAdConfirmModal();
+
+      if (currentlyShowingAd && currentlyShowingAd.id === idToRemove) {
+        hideUserAdOverlayImmediately();
+      }
+
+      adCampaignsList = adCampaignsList.filter(a => a.id !== idToRemove);
+      delete adLogsByCampaign[idToRemove];
+      persistAdsStateLocally();
+
+      if (supabaseClient) {
+        await supabaseClient.from('ad_campaigns').delete().eq('id', idToRemove);
+      }
+
+      renderCreatorAdsList();
+      restartSequentialAdScheduler();
+    }
+
+    // Secuenciador automático de publicidades para Usuarios (Transportistas 100% excluidos)
+    function restartSequentialAdScheduler() {
+      clearTimeout(adSchedulerTimeout);
+      clearInterval(adActiveSecondTicker);
+
+      // REGLA ESTRICTA: Los transportistas están 100% excluidos de la publicidad
+      if (userRole !== 'passenger' || (driverAccount && driverAccount.verification_status === 'verified')) {
+        hideUserAdOverlayImmediately();
+        return;
+      }
+
+      const eligibleAds = adCampaignsList.filter(a => a.is_active && !a.is_completed && a.consumed_seconds < a.paid_seconds);
+      if (eligibleAds.length === 0) {
+        hideUserAdOverlayImmediately();
+        return;
+      }
+
+      if (currentSequentialAdIndex >= eligibleAds.length) {
+        currentSequentialAdIndex = 0;
+      }
+
+      const nextAd = eligibleAds[currentSequentialAdIndex];
+      displayAdExposureToUser(nextAd);
+    }
+
+    function hideUserAdOverlayImmediately() {
+      clearTimeout(adSchedulerTimeout);
+      clearInterval(adActiveSecondTicker);
+      currentlyShowingAd = null;
+      currentImpressionLogId = null;
+      const wrapper = document.getElementById('user-ad-display-wrapper');
+      const slot = document.getElementById('user-ad-media-slot');
+      if (wrapper) wrapper.classList.add('hidden');
+      if (slot) slot.innerHTML = '';
+    }
+
+    function getCurrentTotalUsersInAllStops() {
+      const totalEl = document.getElementById('global-total-passengers');
+      return totalEl ? (parseInt(totalEl.textContent, 10) || 0) : 0;
+    }
+
+    async function displayAdExposureToUser(ad) {
+      if (userRole !== 'passenger') {
+        hideUserAdOverlayImmediately();
+        return;
+      }
+
+      currentlyShowingAd = ad;
+      currentExposureElapsedSec = 0;
+
+      const wrapper = document.getElementById('user-ad-display-wrapper');
+      const card = document.getElementById('user-ad-card');
+      const slot = document.getElementById('user-ad-media-slot');
+
+      // Aplicar proporción exacta sobre los botones Mi Ubicación y UD-4 (Imágenes A, B y C)
+      card.className = 'ad-overlay-card group ' + (
+        ad.aspect_ratio === '9:16' ? 'ad-ratio-9-16' : (ad.aspect_ratio === '16:9' ? 'ad-ratio-16-9' : 'ad-ratio-1-1')
+      );
+
+      const remainingPaidSec = Math.max(1, ad.paid_seconds - ad.consumed_seconds);
+      // Imágenes: 30s fijos por exposición | Videos: máx 60s (o lo que dure el video si es menor)
+      let maxExposureSec = ad.media_type === 'video' ? Math.min(60, remainingPaidSec) : Math.min(30, remainingPaidSec);
+
+      if (ad.media_type === 'video') {
+        slot.innerHTML = `
+          <video id="active-ad-video-el" src="${escapeHtml(ad.media_url)}" class="w-full h-full object-cover" autoplay muted playsinline></video>
+        `;
+        const vidEl = document.getElementById('active-ad-video-el');
+        if (vidEl) {
+          vidEl.onloadedmetadata = () => {
+            if (vidEl.duration && !isNaN(vidEl.duration) && vidEl.duration < maxExposureSec) {
+              maxExposureSec = Math.max(1, Math.ceil(vidEl.duration));
+            }
+          };
+        }
+      } else {
+        slot.innerHTML = `
+          <img src="${escapeHtml(ad.media_url)}" alt="${escapeHtml(ad.brand_name)}" class="w-full h-full object-cover" />
+        `;
+      }
+
+      wrapper.classList.remove('hidden');
+
+      // Registrar nueva impresión en el historial para el reporte .html
+      const usersInStopsNow = getCurrentTotalUsersInAllStops();
+      const logEntry = {
+        id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'log_' + Date.now(),
+        ad_id: ad.id,
+        shown_at: new Date().toISOString(),
+        duration_seconds: 0,
+        users_in_stops: usersInStopsNow,
+        clicks_count: 0
+      };
+      currentImpressionLogId = logEntry.id;
+
+      if (!adLogsByCampaign[ad.id]) adLogsByCampaign[ad.id] = [];
+      adLogsByCampaign[ad.id].push(logEntry);
+      persistAdsStateLocally();
+
+      if (supabaseClient) {
+        supabaseClient.from('ad_impression_logs').insert(logEntry).then(() => {}).catch(() => {});
+      }
+
+      clearInterval(adActiveSecondTicker);
+      adActiveSecondTicker = setInterval(async () => {
+        if (!currentlyShowingAd || currentlyShowingAd.id !== ad.id) {
+          clearInterval(adActiveSecondTicker);
+          return;
+        }
+
+        currentExposureElapsedSec++;
+        ad.consumed_seconds++;
+        logEntry.duration_seconds = currentExposureElapsedSec;
+
+        if (ad.consumed_seconds >= ad.paid_seconds) {
+          ad.consumed_seconds = ad.paid_seconds;
+          ad.is_completed = true;
+          ad.is_active = false;
+        }
+
+        persistAdsStateLocally();
+        if (isCreatorAuthenticated) renderCreatorAdsList();
+
+        if (currentExposureElapsedSec >= maxExposureSec || ad.is_completed) {
+          clearInterval(adActiveSecondTicker);
+          await finishCurrentAdExposureAndWaitInterval(ad, logEntry);
+        }
+      }, 1000);
+    }
+
+    async function finishCurrentAdExposureAndWaitInterval(ad, logEntry) {
+      if (supabaseClient) {
+        supabaseClient.from('ad_campaigns').update({
+          consumed_seconds: ad.consumed_seconds,
+          is_completed: ad.is_completed,
+          is_active: ad.is_active
+        }).eq('id', ad.id).then(() => {}).catch(() => {});
+
+        supabaseClient.from('ad_impression_logs').update({
+          duration_seconds: logEntry.duration_seconds,
+          clicks_count: logEntry.clicks_count
+        }).eq('id', logEntry.id).then(() => {}).catch(() => {});
+      }
+
+      const wrapper = document.getElementById('user-ad-display-wrapper');
+      const slot = document.getElementById('user-ad-media-slot');
+      if (wrapper) wrapper.classList.add('hidden');
+      if (slot) slot.innerHTML = '';
+      currentlyShowingAd = null;
+
+      const waitIntervalMs = Math.max(0, Number(ad.interval_after_seconds) || 0) * 1000;
+      currentSequentialAdIndex++;
+
+      adSchedulerTimeout = setTimeout(() => {
+        restartSequentialAdScheduler();
+      }, waitIntervalMs);
+    }
+
+    function handleActiveAdClick() {
+      if (!currentlyShowingAd) return;
+      const ad = currentlyShowingAd;
+      const logs = adLogsByCampaign[ad.id] || [];
+      const currentLog = logs.find(l => l.id === currentImpressionLogId);
+      if (currentLog) {
+        currentLog.clicks_count = (currentLog.clicks_count || 0) + 1;
+        persistAdsStateLocally();
+        if (supabaseClient) {
+          supabaseClient.from('ad_impression_logs').update({ clicks_count: currentLog.clicks_count }).eq('id', currentLog.id).then(() => {}).catch(() => {});
+        }
+      }
+      window.open(ad.target_url, '_blank', 'noopener,noreferrer');
+    }
+
+    // Generador del Reporte Descargable .HTML con todas las métricas y sumatorias resaltadas
+    function downloadAdCampaignHtmlReport(adId) {
+      const ad = adCampaignsList.find(a => a.id === adId);
+      if (!ad) return;
+      const logs = adLogsByCampaign[adId] || [];
+
+      const totalTimesShown = logs.length;
+      const totalSecondsViewed = logs.reduce((acc, l) => acc + (Number(l.duration_seconds) || 0), 0);
+      const totalUsersReached = logs.reduce((acc, l) => acc + (Number(l.users_in_stops) || 0), 0);
+      const totalClicks = logs.reduce((acc, l) => acc + (Number(l.clicks_count) || 0), 0);
+
+      const rowsHtml = logs.map((l, idx) => `
+        <tr>
+          <td>#${idx + 1}</td>
+          <td>${new Date(l.shown_at).toLocaleString('es-VE')}</td>
+          <td><b>${l.duration_seconds} seg</b></td>
+          <td>${l.users_in_stops} usuarios</td>
+          <td><b>${l.clicks_count} clics</b></td>
+        </tr>
+      `).join('');
+
+      const reportHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte Publicitario · ${escapeHtml(ad.brand_name)} · Mi Parada Caricuao</title>
+  <style>
+    body { font-family: 'Segoe UI', Inter, sans-serif; background: #09090B; color: #FAFAFA; padding: 32px; max-width: 900px; margin: 0 auto; }
+    .header { border-bottom: 2px solid #10B981; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 22px; color: #10B981; }
+    .meta { background: #121216; border: 1px solid #27272A; border-radius: 14px; padding: 16px; margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .summary-box { background: rgba(16, 185, 129, 0.12); border: 2px solid #10B981; border-radius: 14px; padding: 16px; text-align: center; }
+    .summary-box span { display: block; font-size: 12px; color: #A1A1AA; text-transform: uppercase; }
+    .summary-box strong { display: block; font-size: 24px; color: #34D399; margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; background: #121216; border-radius: 12px; overflow: hidden; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #27272A; font-size: 13px; }
+    th { background: #18181B; color: #10B981; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+    tfoot td { background: rgba(16, 185, 129, 0.18); font-weight: 800; color: #FFFFFF; font-size: 14px; border-top: 2px solid #10B981; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>📊 Reporte Oficial de Publicidad · Mi Parada UD-4</h1>
+      <p style="margin:4px 0 0; color:#A1A1AA; font-size:13px;">Caricuao · Movilidad Comunitaria en Tiempo Real</p>
+    </div>
+    <div style="text-align:right; font-size:12px; color:#A1A1AA;">
+      Fecha de emisión:<br/><b>${new Date().toLocaleString('es-VE')}</b>
+    </div>
+  </div>
+
+  <div class="meta">
+    <b>Marca / Emprendimiento:</b> ${escapeHtml(ad.brand_name)}<br/>
+    <b>Persona de Contacto:</b> ${escapeHtml(ad.contact_person)} (${escapeHtml(ad.contact_phone)})<br/>
+    <b>Formato y Tipo:</b> ${escapeHtml(ad.aspect_ratio)} (${ad.media_type === 'video' ? 'Video MP4' : 'Imagen'})<br/>
+    <b>Enlace de Destino:</b> <a href="${escapeHtml(ad.target_url)}" style="color:#34D399;">${escapeHtml(ad.target_url)}</a><br/>
+    <b>Tiempo de Visibilidad Contratado:</b> ${ad.paid_seconds} segundos (${formatSecondsReadable(ad.paid_seconds)})
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-box">
+      <span>Veces Visualizada</span>
+      <strong>${totalTimesShown}</strong>
+    </div>
+    <div class="summary-box">
+      <span>Total Segundos Visible</span>
+      <strong>${totalSecondsViewed} seg</strong>
+    </div>
+    <div class="summary-box">
+      <span>Usuarios Totales en Paradas</span>
+      <strong>${totalUsersReached}</strong>
+    </div>
+    <div class="summary-box">
+      <span>Total Clics en Publicidad</span>
+      <strong>${totalClicks}</strong>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th># Visualización</th>
+        <th>Fecha y Hora</th>
+        <th>Segundos Visualizados</th>
+        <th>Usuarios en Paradas al Mostrar</th>
+        <th>Clics Recibidos</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml || '<tr><td colspan="5">Sin desglose de sesiones individuales</td></tr>'}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">SUMATORIA TOTAL RESALTADA</td>
+        <td>${totalSecondsViewed} segundos (${totalTimesShown} apariciones)</td>
+        <td>${totalUsersReached} usuarios alcanzados</td>
+        <td>${totalClicks} clics totales</td>
+      </tr>
+    </tfoot>
+  </table>
+</body>
+</html>`;
+
+      const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_publicidad_${ad.brand_name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // =========================================================================
+    // 4. FUNCIÓN UNIVERSAL DE REGISTRO EN PARADA A PRUEBA DE FALLOS RLS / UUID
     // =========================================================================
     async function registerCheckinInSupabase(targetStop, expiresAtIso) {
       if (!supabaseClient || !targetStop) return { ok: false, message: 'Cliente no disponible' };
@@ -896,7 +2229,7 @@
     }
 
     // =========================================================================
-    // 3. MOTOR DE SONIDO SINTETIZADO (WEB AUDIO API)
+    // 5. MOTOR DE SONIDO SINTETIZADO (WEB AUDIO API)
     // =========================================================================
     let audioCtx = null;
 
@@ -969,7 +2302,7 @@
     window.addEventListener('pointerdown', () => initAudioEngine(), { once: true });
 
     // =========================================================================
-    // 4. MENÚ DESPLEGABLE DE AJUSTES
+    // 6. MENÚ DESPLEGABLE DE AJUSTES
     // =========================================================================
     function toggleSettingsDropdown(forceState) {
       const menu = document.getElementById('settings-dropdown-menu');
@@ -1085,7 +2418,7 @@
     }
 
     // =========================================================================
-    // 5. MODO MANUAL SIN GPS ("ESTOY AQUÍ" -> BOTÓN "UD-4" -> "SIGO ESPERANDO")
+    // 7. MODO MANUAL SIN GPS ("ESTOY AQUÍ" -> BOTÓN "UD-4" -> "SIGO ESPERANDO")
     // =========================================================================
     function handleUd4ButtonClick() {
       if (!isDeviceGpsEnabled && userRole === 'passenger') {
@@ -1143,7 +2476,7 @@
       const result = await registerCheckinInSupabase(targetStop, expiresAt);
 
       if (!result.ok) {
-        alert('Error registrando parada en base de datos: ' + result.message + '\n\nAsegúrate de haber ejecutado el último bloque SQL en Supabase.');
+        alert('Error registrando parada en base de datos: ' + result.message);
         return;
       }
 
@@ -1292,7 +2625,7 @@
     }
 
     // =========================================================================
-    // 6. HELPERS DE VEHÍCULOS E INSTALACIÓN PWA
+    // 8. HELPERS DE VEHÍCULOS E INSTALACIÓN PWA
     // =========================================================================
     function getVehicleEmoji(vType) {
       if (vType === 'bus') return '🚌';
@@ -1336,7 +2669,7 @@
     }
 
     // =========================================================================
-    // 7. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
+    // 9. MOTOR EN SEGUNDO PLANO Y DESCONEXIÓN AL CERRAR PÁGINA
     // =========================================================================
     function startBackgroundHeartbeatWorker() {
       if (backgroundWorker) return;
@@ -1385,7 +2718,7 @@
     window.addEventListener('beforeunload', removeUserOnPageClose);
 
     // =========================================================================
-    // 8. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
+    // 10. UTILIDADES MATEMÁTICAS Y VALIDACIÓN DE 80 METROS ENTRE PARADAS
     // =========================================================================
     function getDeviceToken() {
       let token = localStorage.getItem('ud4_device_token');
@@ -1456,13 +2789,19 @@
     }
 
     // =========================================================================
-    // 9. VERIFICACIÓN AL INICIAR
+    // 11. VERIFICACIÓN AL INICIAR
     // =========================================================================
     window.addEventListener('DOMContentLoaded', async () => {
       if (localStorage.getItem('ud4_day_mode') === '1') {
         isDayMode = true;
         applyDayNightThemeUI();
       }
+      if (localStorage.getItem('ud4_ads_subpanel_enabled') === '1') {
+        isAdsSubpanelActive = true;
+        updateAdsSubpanelSwitchUI();
+      }
+
+      await loadAdCampaignsFromStorageAndDb();
 
       const hash = await getDailyDeviceHash();
       if (supabaseClient) {
@@ -1518,7 +2857,7 @@
     }
 
     // =========================================================================
-    // 10. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA
+    // 12. REGISTRO DE TRANSPORTISTA EN LISTA DE ESPERA
     // =========================================================================
     function openDriverVerificationModal(vehicleType) {
       if (driverAccount) {
@@ -1680,7 +3019,7 @@
     }
 
     // =========================================================================
-    // 11. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y SISTEMA DE COLA DE 3 BURBUJAS
+    // 13. MAPA, VISIBILIDAD POR ZOOM (>= 17) Y SISTEMA DE COLA DE 3 BURBUJAS
     // =========================================================================
     function initMap() {
       if (map) {
@@ -1774,15 +3113,12 @@
 
       const nextReaction = state.queue.shift();
       const targetStop = stopsData.find(s => s.id === stopId);
-      if (!targetStop) {
+      const coords = nextReaction.customLatLng || (targetStop ? [targetStop.lat, targetStop.lng] : null);
+      if (!coords) {
         processStopBubbleQueue(stopId);
         return;
       }
 
-      // Posiciones verticales enteras exactas (sin decimales ni subpíxeles) para las 3 ranuras:
-      // Slot 0 (centro): -30px
-      // Slot 1 (arriba): -58px
-      // Slot 2 (abajo):   -2px
       const slotVerticalOffsets = [-30, -58, -2];
       const topOffsetPx = slotVerticalOffsets[freeSlotIndex];
 
@@ -1798,7 +3134,6 @@
         </div>
       `;
 
-      // iconSize fijo en píxeles pares evita que WebKit/Blink difumine el texto dentro del marcador
       const bubbleIcon = L.divIcon({
         className: '',
         html: bubbleHtml,
@@ -1806,7 +3141,7 @@
         iconAnchor: [0, 0]
       });
 
-      const bubbleMarker = L.marker([targetStop.lat, targetStop.lng], {
+      const bubbleMarker = L.marker(coords, {
         icon: bubbleIcon,
         interactive: false,
         zIndexOffset: 2000 + freeSlotIndex
@@ -2032,7 +3367,9 @@
       stopsData.forEach(stop => {
         if (stop.status !== 'approved') return;
 
-        const count = stop.count || 0;
+        const realCount = stop.count || 0;
+        const simCount = (isSimulationSubpanelActive && simStopPassengers[stop.id]) ? simStopPassengers[stop.id].count : 0;
+        const count = realCount + simCount;
         globalTotalPassengers += count;
 
         const hasVisibleCount = count >= 3;
@@ -2107,6 +3444,10 @@
         stopMarkers[stop.id] = marker;
       });
 
+      if (isSimulationSubpanelActive && simSpontaneousStops.length > 0) {
+        simSpontaneousStops.forEach(c => { globalTotalPassengers += (c.count || 0); });
+      }
+
       if (isCreatorAuthenticated && pendingStopsData.length > 0) {
         pendingStopsData.forEach(pStop => {
           const greenPinHtml = `
@@ -2153,10 +3494,17 @@
       Object.values(driverMarkers).forEach(m => map.removeLayer(m));
       driverMarkers = {};
 
-      driversData.forEach(d => {
+      const combinedDrivers = isSimulationSubpanelActive
+        ? [...driversData, ...simVehicles]
+        : [...driversData];
+
+      combinedDrivers.forEach(d => {
         const emoji = getVehicleEmoji(d.vehicle_type);
         const borderColor = getVehicleBorderColor(d.vehicle_type);
         const label = getVehicleLabel(d.vehicle_type);
+        const simInfo = d.isSimulated
+          ? `<br/><span style="font-size:11px;">Ruta ${d.routeNumber} · Ocupación: <b>${d.currentLoad}/${d.maxCapacity}</b></span>`
+          : '';
 
         const html = `
           <div class="vehicle-marker" style="
@@ -2177,13 +3525,13 @@
 
         const icon = L.divIcon({ className: '', html, iconSize: [34, 34], iconAnchor: [17, 17] });
         driverMarkers[d.phone] = L.marker([d.lat, d.lng], { icon })
-          .bindPopup(`<b>${label} activo</b>`)
+          .bindPopup(`<b>${label} activo</b>${simInfo}`)
           .addTo(map);
       });
     }
 
     // =========================================================================
-    // 12. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
+    // 14. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
     // =========================================================================
     function enterAppAsPassenger() {
       if (driverAccount && driverAccount.verification_status === 'verified') {
@@ -2209,10 +3557,14 @@
       requestWakeLock();
       if (isDeviceGpsEnabled) startGpsTracking();
       startBackgroundHeartbeatWorker();
+      restartSequentialAdScheduler();
     }
 
     function enterAppAsAccreditedDriver(vehicleType, phone) {
       userRole = vehicleType;
+      // REGLA ESTRICTA: Ocultar cualquier publicidad a los transportistas
+      hideUserAdOverlayImmediately();
+
       document.getElementById('onboarding-screen').classList.add('hidden');
       initMap();
 
@@ -2241,7 +3593,7 @@
     }
 
     // =========================================================================
-    // 13. RASTREO GPS EN TIEMPO REAL Y DETECCIÓN DE RADIO DE 50 METROS
+    // 15. RASTREO GPS EN TIEMPO REAL Y DETECCIÓN DE RADIO DE 50 METROS
     // =========================================================================
     function startGpsTracking() {
       if (!isDeviceGpsEnabled && userRole === 'passenger') return;
@@ -2372,7 +3724,7 @@
       const result = await registerCheckinInSupabase(closest, expiresAt);
 
       if (!result.ok) {
-        alert('Error registrando en parada: ' + result.message + '\n\nEjecuta el script SQL actualizado en Supabase.');
+        alert('Error registrando en parada: ' + result.message);
         return;
       }
 
@@ -2493,7 +3845,7 @@
     }
 
     // =========================================================================
-    // 14. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
+    // 16. EXPORTAR E IMPORTAR ARCHIVO .TXT DE PARADAS (FILTRO ALEATORIO < 80M)
     // =========================================================================
     function exportActiveStopsToTxt() {
       const approved = stopsData.filter(s => s.status === 'approved');
@@ -2502,7 +3854,7 @@
         return;
       }
 
-      const lines = approved.map(s => `${s.name} | ${Number(s.lat).toFixed(5)}, ${Number(s.lng).toFixed(5)}`);
+      const lines = approved.map(s => `${s.name} | ${Number(s.lat).toFixed(6)}, ${Number(s.lng).toFixed(6)}`);
       const txtContent = lines.join('\n');
 
       const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
@@ -2545,7 +3897,7 @@
       }
 
       if (candidates.length === 0) {
-        alert('No se encontraron paradas válidas en el archivo .txt.\nFormato esperado por línea:\nNombre | 10.42955, -66.97637');
+        alert('No se encontraron paradas válidas en el archivo .txt.\nFormato esperado por línea:\nNombre | 10.429826, -66.977847');
         return;
       }
 
@@ -2618,7 +3970,7 @@
     }
 
     // =========================================================================
-    // 15. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
+    // 17. PANEL DEL CREADOR: PARADAS Y VERIFICACIÓN DE TRANSPORTISTAS
     // =========================================================================
     function openSuggestStopModal() { document.getElementById('modal-suggest').classList.remove('hidden'); }
     function closeSuggestStopModal() { document.getElementById('modal-suggest').classList.add('hidden'); }
@@ -2651,6 +4003,7 @@
       document.getElementById('modal-admin').classList.remove('hidden');
       if (isCreatorAuthenticated) {
         loadCreatorDashboardData();
+        renderCreatorAdsList();
       }
     }
     function closeAdminModal() { document.getElementById('modal-admin').classList.add('hidden'); }
@@ -2669,6 +4022,7 @@
       document.getElementById('admin-login-box').classList.add('hidden');
       document.getElementById('admin-panel-content').classList.remove('hidden');
       await loadCreatorDashboardData();
+      await loadAdCampaignsFromStorageAndDb();
       await refreshLiveStateFromSupabase();
     }
 
@@ -2683,8 +4037,8 @@
 
     function fillCreatorCoordsWithCurrentCenter() {
       const center = map ? map.getCenter() : { lat: UD4_CENTER[0], lng: UD4_CENTER[1] };
-      document.getElementById('creator-new-stop-lat').value = center.lat.toFixed(5);
-      document.getElementById('creator-new-stop-lng').value = center.lng.toFixed(5);
+      document.getElementById('creator-new-stop-lat').value = center.lat.toFixed(6);
+      document.getElementById('creator-new-stop-lng').value = center.lng.toFixed(6);
     }
 
     async function creatorCreateApprovedStop() {
@@ -2739,7 +4093,7 @@
           <div class="bg-zinc-900 border border-emerald-500/40 rounded-xl p-3 flex items-center justify-between gap-2">
             <div class="min-w-0">
               <p class="font-bold text-emerald-400 truncate">🟢 ${s.name}</p>
-              <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>
+              <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(6)}, ${s.lng.toFixed(6)}</p>
             </div>
             <div class="flex gap-1.5 shrink-0">
               <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2 py-1 rounded-lg">Ver</button>
@@ -2756,7 +4110,7 @@
         <div class="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-2.5 flex items-center justify-between gap-2">
           <div class="truncate">
             <p class="font-semibold text-zinc-200 truncate">📍 ${s.name}</p>
-            <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>
+            <p class="text-[10px] text-zinc-500 font-mono">${s.lat.toFixed(6)}, ${s.lng.toFixed(6)}</p>
           </div>
           <div class="flex gap-1.5 shrink-0">
             <button type="button" onclick="focusStopOnMap(${s.lat}, ${s.lng})" class="bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-lg">Ubicar</button>
@@ -2922,7 +4276,7 @@
     }
 
     // =========================================================================
-    // 16. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
+    // 18. SINCRONIZACIÓN EN TIEMPO REAL SUPABASE
     // =========================================================================
     async function refreshLiveStateFromSupabase() {
       if (!supabaseClient) return;
@@ -2971,6 +4325,10 @@
         if (stopsRes.data && stopsRes.data.length > 0) {
           const countMap = countsRes.data ? Object.fromEntries(countsRes.data.map(c => [c.stop_id, c.people_count])) : {};
           stopsData = stopsRes.data.map(s => ({ ...s, count: countMap[s.id] || 0 }));
+          // Garantizar que la parada Yagual esté siempre presente incluso si aún no se ha corrido el SQL
+          if (!stopsData.some(s => s.name.toLowerCase().includes('yagual'))) {
+            stopsData.push({ id: '00000000-0000-4000-8000-000000000013', name: 'Yagual', lat: 10.429826, lng: -66.977847, status: 'approved', count: 0 });
+          }
         }
         renderStops();
 
@@ -2986,7 +4344,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v13')
+      supabaseClient.channel('ud4-live-channel-v14')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
@@ -3001,6 +4359,9 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stops' }, () => {
           refreshLiveStateFromSupabase();
           if (isCreatorAuthenticated) loadCreatorDashboardData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_campaigns' }, () => {
+          loadAdCampaignsFromStorageAndDb();
         })
         .subscribe();
     }
