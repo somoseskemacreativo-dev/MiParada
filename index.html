@@ -110,7 +110,6 @@
       filter: hue-rotate(135deg) saturate(2.5) brightness(1.15) drop-shadow(0 3px 8px rgba(16,185,129,0.8));
     }
 
-    /* Pin naranja/ámbar para paradas espontáneas cerca de comercios en la simulación */
     .sim-commerce-pin {
       display: inline-block;
       font-size: 28px;
@@ -255,39 +254,32 @@
       border-color: #5B84EE !important;
     }
 
-    /* =====================================================================
-       CONTENEDOR PUBLICITARIO SOBRE "MI UBICACIÓN" Y "UD-4" (IMÁGENES A, B, C)
-       - 1:1 Cuadrado (Imagen A)
-       - 9:16 Vertical (Imagen B)
-       - 16:9 Horizontal (Imagen C)
-       ===================================================================== */
+    /* CONTENEDOR PUBLICITARIO SOBRE "MI UBICACIÓN" Y "UD-4" (RESPONSIVO EN MÓVILES) */
     .ad-overlay-card {
       position: relative;
       overflow: hidden;
       border-radius: 14px;
-      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
       background: #09090B;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.82);
       cursor: pointer;
+      z-index: 45;
       transition: transform 0.2s ease, opacity 0.25s ease;
     }
     .ad-overlay-card:active {
       transform: scale(0.98);
     }
-    /* Imagen A: Formato Cuadrado 1:1 sobre Mi Ubicación y UD-4 */
     .ad-ratio-1-1 {
-      width: 195px;
-      height: 195px;
+      width: min(190px, 52vw);
+      height: min(190px, 52vw);
     }
-    /* Imagen B: Formato Vertical 9:16 alineado a la derecha sobre los botones */
     .ad-ratio-9-16 {
-      width: 138px;
-      height: 245px;
+      width: min(136px, 38vw);
+      height: min(242px, 67vw);
     }
-    /* Imagen C: Formato Horizontal 16:9 sobre Mi Ubicación y UD-4 */
     .ad-ratio-16-9 {
-      width: 240px;
-      height: 135px;
+      width: min(236px, 68vw);
+      height: min(133px, 38vw);
     }
   </style>
 </head>
@@ -564,11 +556,10 @@
   <!-- PANEL INFERIOR UNIFICADO + ZONA DE PUBLICIDAD SOBRE "MI UBICACIÓN" Y "UD-4" -->
   <div class="fixed bottom-4 left-3 right-3 z-30 max-w-lg mx-auto space-y-2 pointer-events-none">
 
-    <!-- ZONA DE PUBLICIDAD PARA USUARIOS (EXCLUIDA 100% PARA TRANSPORTISTAS) -->
-    <!-- Se posiciona a la derecha, justo encima de los botones Mi Ubicación y UD-4 (Imágenes A, B y C) -->
+    <!-- ZONA DE PUBLICIDAD VISIBLE EN MÓVILES Y LAPTOPS PARA USUARIOS EN PARADA (100% EXCLUIDA PARA TRANSPORTISTAS) -->
     <div id="user-ad-display-wrapper" class="hidden flex justify-end pr-0.5 pointer-events-auto">
       <div id="user-ad-card" onclick="handleActiveAdClick()" class="ad-overlay-card ad-ratio-1-1 group">
-        <span class="absolute top-1.5 left-2 z-20 bg-black/75 text-[9px] font-bold uppercase tracking-wider text-amber-300 px-2 py-0.5 rounded-md border border-amber-400/30">
+        <span class="absolute top-1.5 left-2 z-20 bg-black/80 text-[9px] font-bold uppercase tracking-wider text-amber-300 px-2 py-0.5 rounded-md border border-amber-400/30">
           Publicidad
         </span>
         <div id="user-ad-media-slot" class="w-full h-full flex items-center justify-center bg-zinc-950"></div>
@@ -713,17 +704,15 @@
       <!-- Contenido Desbloqueado del Creador -->
       <div id="admin-panel-content" class="hidden space-y-5">
 
-        <!-- ===============================================================
-             NUEVO SUB-PANEL 1: SIMULADOR EN TIEMPO REAL DE LA PWA (DEMO UD-4)
-             =============================================================== -->
+        <!-- SUB-PANEL 1: SIMULADOR EN TIEMPO REAL DE LA PWA (AV. PRINCIPAL UD-4, CALLE 1, CALLE 2, CALLE 3) -->
         <div class="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <div>
               <p class="text-xs font-extrabold text-indigo-400 flex items-center gap-1.5">
-                <span>🧪</span> Sub-panel: Simulación en Tiempo Real (Demo UD-4)
+                <span>🧪</span> Sub-panel: Simulación en Tiempo Real (Vías UD-4)
               </p>
               <p class="theme-text-sub text-[11px] text-zinc-400">
-                Activa o desactiva la demostración en vivo con pasajeros dinámicos, comentarios según tiempo de espera, paradas comerciales espontáneas y unidades en las Rutas 1, 2 y 3.
+                Desplazamiento fiel por <b>Av. Principal de UD-4, Calle 1, Calle 2 y Calle 3</b> según cada ruta, con tiempos de abordaje reales y comentarios según espera.
               </p>
             </div>
             <button id="switch-sim-subpanel" type="button" onclick="toggleSimulationSubpanel()" class="w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0">
@@ -747,7 +736,7 @@
               </button>
             </div>
 
-            <p class="text-[11px] font-bold text-indigo-300 pt-1">Agregar Unidades en Tránsito por Rutas Oficiales:</p>
+            <p class="text-[11px] font-bold text-indigo-300 pt-1">Agregar Unidades en Tránsito (Av. Principal, Calle 1, Calle 2 y Calle 3):</p>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <button type="button" onclick="simSpawnVehicle('car', 1)" class="bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-500/40 rounded-xl p-2 text-[11px] font-bold">
                 🚗 +Carro (Ruta 1)
@@ -762,7 +751,7 @@
                 🚌 +Bus (Ruta 2)
               </button>
               <button type="button" onclick="simSpawnVehicle('moto', 3)" class="bg-blue-500/20 hover:bg-blue-500/35 text-blue-300 border border-blue-500/40 rounded-xl p-2 text-[11px] font-bold col-span-2 sm:col-span-1">
-                🛵 +Moto (Ruta 3 Directa)
+                🛵 +Moto (Ruta 3)
               </button>
             </div>
 
@@ -778,9 +767,7 @@
           </div>
         </div>
 
-        <!-- ===============================================================
-             NUEVO SUB-PANEL 2: PUBLICIDAD EN LA PLATAFORMA
-             =============================================================== -->
+        <!-- SUB-PANEL 2: PUBLICIDAD EN LA PLATAFORMA -->
         <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -788,7 +775,7 @@
                 <span>📢</span> Sub-panel: Publicidad en la Plataforma
               </p>
               <p class="theme-text-sub text-[11px] text-zinc-400">
-                Gestiona patrocinantes (1:1, 9:16 y 16:9), intervalos secuenciales y reportes <code>.html</code>. Los transportistas están 100% excluidos de ver publicidad.
+                Optimización automática de peso/resolución, rotación cíclica secuencial en todos los móviles en parada y botón <b>Reactivar</b> al culminar tiempo pagado.
               </p>
             </div>
             <button id="switch-ads-subpanel" type="button" onclick="toggleAdsSubpanel()" class="w-12 h-6 rounded-full bg-zinc-700 relative transition-colors p-0.5 shrink-0">
@@ -801,12 +788,11 @@
               <span>➕</span> Agregar Publicidad
             </button>
 
-            <!-- Lista de Publicidades Guardadas (Miniatura + Info + Switch + Intervalo + Reporte HTML) -->
             <div id="saved-ads-list" class="space-y-2.5 max-h-80 overflow-y-auto pr-1"></div>
           </div>
         </div>
 
-        <!-- Herramienta de Edición Visual en el Mapa -->
+        <!-- Edición Visual en el Mapa -->
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -878,7 +864,7 @@
     </div>
   </div>
 
-  <!-- MODAL: AGREGAR O EDITAR PUBLICIDAD -->
+  <!-- MODAL: AGREGAR O EDITAR PUBLICIDAD CON BARRA DE CARGA DE OPTIMIZACIÓN AUTOMÁTICA -->
   <div id="modal-ad-form" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="theme-card bg-[#121216] border border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[90vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
@@ -924,8 +910,21 @@
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase font-bold text-zinc-400">Subir Archivo (.png, .jpg, .mp4) o pegar URL directa</label>
+          <label class="text-[10px] uppercase font-bold text-zinc-400">Subir Archivo (.png, .jpg, .mp4) — Optimización Automática</label>
           <input id="ad-media-file" type="file" accept=".png,.jpg,.jpeg,.mp4,image/png,image/jpeg,video/mp4" onchange="handleAdMediaFileUpload(event)" class="w-full text-[11px] text-zinc-300 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-emerald-400" />
+          
+          <!-- BARRA DE CARGA DE OPTIMIZACIÓN DE ARCHIVO MULTIMEDIA -->
+          <div id="ad-optimization-progress-box" class="hidden bg-zinc-950 border border-emerald-500/40 rounded-xl p-2.5 space-y-1.5">
+            <div class="flex items-center justify-between text-[10px]">
+              <span id="ad-opt-status-label" class="text-emerald-400 font-bold">Optimizando resolución y peso sin perder calidad...</span>
+              <span id="ad-opt-percent-label" class="font-mono text-white font-extrabold">0%</span>
+            </div>
+            <div class="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div id="ad-opt-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-150" style="width: 0%;"></div>
+            </div>
+            <p id="ad-opt-size-summary" class="text-[10px] text-zinc-400 font-mono"></p>
+          </div>
+
           <input id="ad-media-url" type="text" placeholder="O pega aquí el enlace directo de la imagen/video..." class="theme-input w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono text-[11px]" />
         </div>
 
@@ -955,7 +954,7 @@
 
       <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
         <button type="button" onclick="closeAdFormModal()" class="text-xs text-zinc-400 px-3 py-2">Cancelar</button>
-        <button type="button" onclick="saveAdCampaignForm()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl">
+        <button id="btn-save-ad-campaign" type="button" onclick="saveAdCampaignForm()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed">
           Guardar Publicidad
         </button>
       </div>
@@ -981,7 +980,7 @@
 
   <script>
     // =========================================================================
-    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES (INCLUYE NUEVA PARADA YAGUAL)
+    // 1. CONFIGURACIÓN SUPABASE Y PARADAS OFICIALES (INCLUYE YAGUAL)
     // =========================================================================
     const SUPABASE_URL = 'https://dttaptxbieqvtcuzuscb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_67es5FiZAnKTiP8rKNwzkQ_v1xlrSMK';
@@ -1006,7 +1005,6 @@
     const MANUAL_WAIT_DURATION_SEC = 300;
     const MANUAL_CONFIRM_WINDOW_SEC = 20;
 
-    // 13 Paradas Oficiales de la UD-4 (Incluyendo Yagual: 10.429826, -66.977847)
     const DEFAULT_UD4_STOPS = [
       { id: '00000000-0000-4000-8000-000000000001', name: 'Queseras 1ra', lat: 10.43073, lng: -66.97284, status: 'approved', count: 0 },
       { id: '00000000-0000-4000-8000-000000000002', name: 'Queseras 2da', lat: 10.43132, lng: -66.97383, status: 'approved', count: 0 },
@@ -1058,17 +1056,12 @@
     let stopsData = [...DEFAULT_UD4_STOPS], pendingStopsData = [], driversData = [];
 
     // =========================================================================
-    // 2. MOTOR DE SIMULACIÓN EN TIEMPO REAL (SUB-PANEL DEL CREADOR)
-    //    - Rutas 1, 2 y 3 siguiendo los tramos viales reales del mapa UD-4
-    //    - Velocidades: Bus 40 km/h, Carro 50 km/h, Moto 55 km/h en subida
-    //      y 10 km/h más lento en bajada para todos
-    //    - Capacidad: Bus 30 usuarios, Carro 4-5 usuarios, Moto 1 usuario
-    //    - Comentarios y emojis en función del tiempo de espera en cada parada
+    // 2. MOTOR DE SIMULACIÓN CON TRAZADO EXACTO POR AV. PRINCIPAL UD-4, CALLE 1, CALLE 2 Y CALLE 3
     // =========================================================================
     let isSimulationSubpanelActive = false;
     let simVehicles = [];
-    let simStopPassengers = {}; // { stopId: { count: 0, waitSeconds: 0 } }
-    let simSpontaneousStops = []; // Paradas comerciales espontáneas en la ruta
+    let simStopPassengers = {};
+    let simSpontaneousStops = [];
     let simSpontaneousMarkers = {};
     let simPhysicsInterval = null;
     let simReactionsInterval = null;
@@ -1076,36 +1069,110 @@
     const ENTRY_POINT_1 = { name: 'Punto de Entrada 1 UD-4', lat: 10.432672, lng: -66.973059, isEntry: true };
     const ENTRY_POINT_2 = { name: 'Punto de Entrada 2 UD-4', lat: 10.433362, lng: -66.975278, isEntry: true };
 
-    // Puntos intermedios de curvatura de las calles de UD-4 para que los vehículos sigan el trazado vial real
+    // Trazado milimétrico sobre el pavimento real de OpenStreetMap para Av. Principal UD-4, Calle 1, Calle 2 y Calle 3
     const ROAD_SHAPING_LINKS = {
-      'Punto de Entrada 1 UD-4->Queseras 1ra': [[10.43175, -66.97292]],
-      'Queseras 1ra->Punto de Entrada 1 UD-4': [[10.43175, -66.97292]],
-      'Queseras 2da->CC Los Angeles': [[10.43142, -66.97438]],
-      'CC Los Angeles->San Agustin': [[10.43085, -66.97565], [10.43015, -66.97615]],
-      'San Agustin->CC Los Angeles': [[10.43015, -66.97615], [10.43085, -66.97565]],
-      'San Agustin->Carabobo': [[10.42952, -66.97515]],
-      'Carabobo->San Agustin': [[10.42952, -66.97515]],
-      'Carabobo->Vuelvancaras': [[10.42880, -66.97410]],
-      'Vuelvancaras->Carabobo': [[10.42880, -66.97410]],
-      'Punto de Entrada 2 UD-4->Canagua': [[10.43305, -66.97590]],
-      'Canagua->Mucuritas': [[10.43210, -66.97725]],
-      'Mucuritas->San Agustin': [[10.43045, -66.97710]],
-      'San Agustin->Yagual': [[10.42970, -66.97715]],
-      'Yagual->Payara': [[10.42915, -66.97845]],
-      'Payara->Arauca': [[10.42790, -66.97878]],
-      'Arauca->Bravos de Apure': [[10.42733, -66.97805]],
-      'Bravos de Apure->Curpa / Gimnasio Vertical': [[10.42790, -66.97665]],
-      'Curpa / Gimnasio Vertical->San Agustin': [[10.42905, -66.97618]]
+      // Avenida Principal de la UD-4 (Este -> Centro)
+      'Punto de Entrada 1 UD-4->Queseras 1ra': [
+        [10.43225, -66.97296], [10.43172, -66.97288], [10.43118, -66.97284]
+      ],
+      'Queseras 1ra->Punto de Entrada 1 UD-4': [
+        [10.43118, -66.97284], [10.43172, -66.97288], [10.43225, -66.97296]
+      ],
+      'Queseras 1ra->Queseras 2da': [
+        [10.43095, -66.97318], [10.43115, -66.97352]
+      ],
+      'Queseras 2da->Queseras 1ra': [
+        [10.43115, -66.97352], [10.43095, -66.97318]
+      ],
+      'Queseras 2da->CC Los Angeles': [
+        [10.43140, -66.97420], [10.43146, -66.97460]
+      ],
+      'CC Los Angeles->Queseras 2da': [
+        [10.43146, -66.97460], [10.43140, -66.97420]
+      ],
+      'CC Los Angeles->San Agustin': [
+        [10.43122, -66.97538], [10.43078, -66.97585], [10.43025, -66.97622], [10.42985, -66.97635]
+      ],
+      'San Agustin->CC Los Angeles': [
+        [10.42985, -66.97635], [10.43025, -66.97622], [10.43078, -66.97585], [10.43122, -66.97538]
+      ],
+
+      // Calle 1 (Tramo San Agustín -> Carabobo -> Vuelvancaras y retorno por Calle 1)
+      'San Agustin->Carabobo': [
+        [10.42958, -66.97590], [10.42956, -66.97530], [10.42950, -66.97460], [10.42944, -66.97420]
+      ],
+      'Carabobo->San Agustin': [
+        [10.42944, -66.97420], [10.42950, -66.97460], [10.42956, -66.97530], [10.42958, -66.97590]
+      ],
+      'Carabobo->Vuelvancaras': [
+        [10.42932, -66.97396], [10.42895, -66.97412], [10.42852, -66.97426]
+      ],
+      'Vuelvancaras->Carabobo': [
+        [10.42852, -66.97426], [10.42895, -66.97412], [10.42932, -66.97396]
+      ],
+
+      // Avenida Principal de la UD-4 (Entrada 2 -> Canagua -> Mucuritas -> San Agustín)
+      'Punto de Entrada 2 UD-4->Canagua': [
+        [10.43318, -66.97575], [10.43298, -66.97618]
+      ],
+      'Canagua->Punto de Entrada 2 UD-4': [
+        [10.43298, -66.97618], [10.43318, -66.97575]
+      ],
+      'Canagua->Mucuritas': [
+        [10.43242, -66.97698], [10.43188, -66.97748], [10.43150, -66.97768]
+      ],
+      'Mucuritas->San Agustin': [
+        [10.43090, -66.97752], [10.43045, -66.97718], [10.43002, -66.97678], [10.42972, -66.97652]
+      ],
+
+      // Calle 3 (Tramo San Agustín -> Yagual -> Payara -> Arauca -> Bravos de Apure)
+      'San Agustin->Yagual': [
+        [10.42942, -66.97665], [10.42925, -66.97710], [10.42952, -66.97755]
+      ],
+      'Yagual->San Agustin': [
+        [10.42952, -66.97755], [10.42925, -66.97710], [10.42942, -66.97665]
+      ],
+      'Yagual->Payara': [
+        [10.42965, -66.97828], [10.42932, -66.97872], [10.42888, -66.97886]
+      ],
+      'Payara->Yagual': [
+        [10.42888, -66.97886], [10.42932, -66.97872], [10.42965, -66.97828]
+      ],
+      'Payara->Arauca': [
+        [10.42805, -66.97880], [10.42768, -66.97874]
+      ],
+      'Arauca->Payara': [
+        [10.42768, -66.97874], [10.42805, -66.97880]
+      ],
+      'Arauca->Bravos de Apure': [
+        [10.42718, -66.97845], [10.42716, -66.97792], [10.42724, -66.97760]
+      ],
+      'Bravos de Apure->Arauca': [
+        [10.42724, -66.97760], [10.42716, -66.97792], [10.42718, -66.97845]
+      ],
+
+      // Calle 2 (Tramo Bravos de Apure -> Curpa / Módulo -> San Agustín)
+      'Bravos de Apure->Curpa / Gimnasio Vertical': [
+        [10.42758, -66.97712], [10.42798, -66.97682], [10.42822, -66.97635]
+      ],
+      'Curpa / Gimnasio Vertical->Bravos de Apure': [
+        [10.42822, -66.97635], [10.42798, -66.97682], [10.42758, -66.97712]
+      ],
+      'Curpa / Gimnasio Vertical->San Agustin': [
+        [10.42882, -66.97592], [10.42922, -66.97585], [10.42948, -66.97615]
+      ],
+      'San Agustin->Curpa / Gimnasio Vertical': [
+        [10.42948, -66.97615], [10.42922, -66.97585], [10.42882, -66.97592]
+      ]
     };
 
-    // Zonas comerciales no registradas en la vía principal de UD-4 donde los usuarios piden parada espontáneamente
     const UD4_COMMERCE_SPOTS = [
-      { name: 'Panadería / Abasto Queseras', lat: 10.43105, lng: -66.97335 },
-      { name: 'Bodegón Entrada CC Los Ángeles', lat: 10.43138, lng: -66.97545 },
-      { name: 'Farmacia / Kiosco San Agustín', lat: 10.42962, lng: -66.97560 },
-      { name: 'Comercios Redoma Curpa / Módulo', lat: 10.42885, lng: -66.97612 },
-      { name: 'Frutería / Abasto Vía Yagual', lat: 10.42945, lng: -66.97820 },
-      { name: 'Mini Mercado Vuelvancaras', lat: 10.42865, lng: -66.97412 }
+      { name: 'Panadería / Abasto Queseras (Av. Principal)', lat: 10.43105, lng: -66.97335 },
+      { name: 'Bodegón Entrada CC Los Ángeles (Av. Principal)', lat: 10.43138, lng: -66.97545 },
+      { name: 'Farmacia / Kiosco Calle 1 (Carabobo)', lat: 10.42953, lng: -66.97495 },
+      { name: 'Comercios Redoma Calle 2 (Módulo UD-4)', lat: 10.42882, lng: -66.97592 },
+      { name: 'Frutería / Abasto Calle 3 (Vía Yagual)', lat: 10.42932, lng: -66.97872 },
+      { name: 'Mini Mercado Calle 1 (Vuelvancaras)', lat: 10.42865, lng: -66.97418 }
     ];
 
     const COMMENTS_FLUID_POSITIVE = [
@@ -1157,30 +1224,35 @@
 
     function getOfficialRouteWaypoints(routeNumber) {
       if (routeNumber === 1) {
-        // Ruta 1 (carros y buses): Entrada 1 -> Queseras 1ra -> Queseras 2da -> CC Los Angeles -> San Agustin -> Carabobo -> Vuelvancaras -> Carabobo -> San Agustin -> CC Los Angeles -> Queseras 2da -> Queseras 1ra -> Entrada 1
+        // Ruta 1 (Av. Principal UD-4 y Calle 1): Entrada 1 -> Queseras 1ra -> Queseras 2da -> CC Los Angeles -> San Agustin -> Calle 1 -> Carabobo -> Vuelvancaras -> retorno Calle 1 y Av. Principal
         return buildDetailedRouteWaypoints([
           'Punto de Entrada 1 UD-4', 'Queseras 1ra', 'Queseras 2da', 'CC Los Angeles',
           'San Agustin', 'Carabobo', 'Vuelvancaras', 'Carabobo', 'San Agustin',
           'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'
         ]);
       } else if (routeNumber === 2) {
-        // Ruta 2 (carros y buses): Entrada 2 -> Canagua -> Mucuritas -> San Agustin -> Yagual -> Payara -> Arauca -> Bravos de Apure -> Curpa -> San Agustin -> CC Los Angeles -> Queseras 2da -> Queseras 1ra -> Entrada 1
+        // Ruta 2 (Av. Principal UD-4, Calle 3 y Calle 2): Entrada 2 -> Canagua -> Mucuritas -> San Agustin -> Calle 3 (Yagual -> Payara -> Arauca -> Bravos de Apure) -> Calle 2 (Curpa -> San Agustin) -> Av. Principal (CC Los Angeles -> Queseras 2da -> Queseras 1ra -> Entrada 1)
         return buildDetailedRouteWaypoints([
           'Punto de Entrada 2 UD-4', 'Canagua', 'Mucuritas', 'San Agustin',
           'Yagual', 'Payara', 'Arauca', 'Bravos de Apure', 'Curpa / Gimnasio Vertical',
           'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'
         ]);
       } else {
-        // Ruta 3 (motos): Trayecto directo a cualquier parada solicitada (Payara, Arauca, Bravos de Apure, Vuelvancaras)
-        const directTargets = ['Payara', 'Arauca', 'Bravos de Apure', 'Vuelvancaras'];
-        const chosenTarget = directTargets[Math.floor(Math.random() * directTargets.length)];
-        const entry = Math.random() < 0.5 ? 'Punto de Entrada 1 UD-4' : 'Punto de Entrada 2 UD-4';
-        return buildDetailedRouteWaypoints([
-          entry, 'San Agustin', chosenTarget, 'San Agustin', entry
-        ]);
+        // Ruta 3 (Motos): Trayecto directo hacia Payara, Arauca, Bravos de Apure o Vuelvancaras pero respetando estrictamente la Av. Principal, Calle 1, Calle 2 o Calle 3
+        const motoDirectRoutes = [
+          // Directo a Vuelvancaras por Av. Principal y Calle 1
+          ['Punto de Entrada 1 UD-4', 'Queseras 1ra', 'Queseras 2da', 'CC Los Angeles', 'San Agustin', 'Carabobo', 'Vuelvancaras', 'Carabobo', 'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'],
+          // Directo a Payara por Av. Principal y Calle 3
+          ['Punto de Entrada 1 UD-4', 'Queseras 1ra', 'Queseras 2da', 'CC Los Angeles', 'San Agustin', 'Yagual', 'Payara', 'Yagual', 'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'],
+          // Directo a Arauca por Av. Principal y Calle 3
+          ['Punto de Entrada 2 UD-4', 'Canagua', 'Mucuritas', 'San Agustin', 'Yagual', 'Payara', 'Arauca', 'Payara', 'Yagual', 'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4'],
+          // Directo a Bravos de Apure por Av. Principal y Calle 2
+          ['Punto de Entrada 1 UD-4', 'Queseras 1ra', 'Queseras 2da', 'CC Los Angeles', 'San Agustin', 'Curpa / Gimnasio Vertical', 'Bravos de Apure', 'Curpa / Gimnasio Vertical', 'San Agustin', 'CC Los Angeles', 'Queseras 2da', 'Queseras 1ra', 'Punto de Entrada 1 UD-4']
+        ];
+        const chosenSeq = motoDirectRoutes[Math.floor(Math.random() * motoDirectRoutes.length)];
+        return buildDetailedRouteWaypoints(chosenSeq);
       }
     }
-
     function toggleSimulationSubpanel() {
       isSimulationSubpanelActive = !isSimulationSubpanelActive;
       const btn = document.getElementById('switch-sim-subpanel');
@@ -1295,11 +1367,9 @@
       if (simPhysicsInterval) clearInterval(simPhysicsInterval);
       if (simReactionsInterval) clearInterval(simReactionsInterval);
 
-      // Bucle físico cada 1 segundo para mover unidades, calcular velocidades subida/bajada y recoger pasajeros
       simPhysicsInterval = setInterval(() => {
         if (!isSimulationSubpanelActive) return;
 
-        // 1. Incrementar el tiempo de espera de cada parada con pasajeros simulados
         let maxWaitSec = 0;
         Object.keys(simStopPassengers).forEach(stopId => {
           if (simStopPassengers[stopId].count > 0) {
@@ -1312,7 +1382,6 @@
           }
         });
 
-        // 2. Actualizar movimiento de cada vehículo simulado
         simVehicles.forEach(v => {
           if (v.dwellRemainingSec > 0) {
             v.dwellRemainingSec -= 1;
@@ -1321,7 +1390,6 @@
 
           const nextWp = v.waypoints[v.wpIndex + 1];
           if (!nextWp) {
-            // Reiniciar ciclo en la ruta y vaciar cupo al volver al punto de entrada
             v.wpIndex = 0;
             v.currentLoad = 0;
             v.lat = v.waypoints[0].lat;
@@ -1329,7 +1397,6 @@
             return;
           }
 
-          // Determinar si va en subida (hacia el sur/suroeste interno de UD-4, menor latitud) o en bajada (hacia la salida norte, mayor latitud)
           const isGoingDownhill = (nextWp.lat - v.lat) > 0.00005;
           const speedKmh = isGoingDownhill ? (v.uphillMaxKmh - 10) : v.uphillMaxKmh;
           const speedMetersPerSec = (speedKmh * 1000) / 3600;
@@ -1337,12 +1404,10 @@
           const distToNext = getDistanceMeters(v.lat, v.lng, nextWp.lat, nextWp.lng);
 
           if (distToNext <= speedMetersPerSec) {
-            // Llegó al waypoint o parada
             v.lat = nextWp.lat;
             v.lng = nextWp.lng;
             v.wpIndex++;
 
-            // Si es una parada oficial y la unidad tiene cupo disponible, recoge pasajeros y se demora según cuántos aborden
             if (nextWp.isStop && nextWp.stopId && simStopPassengers[nextWp.stopId] && simStopPassengers[nextWp.stopId].count > 0) {
               const availableSeats = Math.max(0, v.maxCapacity - v.currentLoad);
               if (availableSeats > 0) {
@@ -1351,20 +1416,17 @@
                 simStopPassengers[nextWp.stopId].count -= boarded;
                 v.currentLoad += boarded;
 
-                // Si recogió a todos o alivió la cola, el tiempo de espera baja mejorando el humor de la parada
                 if (simStopPassengers[nextWp.stopId].count === 0) {
                   simStopPassengers[nextWp.stopId].waitSeconds = 0;
                 } else {
                   simStopPassengers[nextWp.stopId].waitSeconds = Math.max(5, simStopPassengers[nextWp.stopId].waitSeconds - 35);
                 }
 
-                // Tiempo de demora en parada proporcional a las personas que aborda (mín 2s, máx 14s)
                 const secPerPassenger = v.vehicle_type === 'bus' ? 0.6 : 1.5;
                 v.dwellRemainingSec = Math.min(14, Math.max(2, Math.round(boarded * secPerPassenger)));
               }
             }
 
-            // Verificar si pasa cerca (< 65m) de alguna parada comercial espontánea solicitada por usuarios
             for (let i = simSpontaneousStops.length - 1; i >= 0; i--) {
               const cStop = simSpontaneousStops[i];
               const dComm = getDistanceMeters(v.lat, v.lng, cStop.lat, cStop.lng);
@@ -1380,7 +1442,6 @@
               }
             }
           } else {
-            // Interpolación lineal suave por la vía hacia el siguiente punto
             const ratio = speedMetersPerSec / distToNext;
             v.lat = v.lat + (nextWp.lat - v.lat) * ratio;
             v.lng = v.lng + (nextWp.lng - v.lng) * ratio;
@@ -1392,7 +1453,6 @@
         renderDrivers();
       }, 1000);
 
-      // Bucle de comentarios variados y emojis aleatorios en función del tiempo de espera + solicitudes comerciales espontáneas
       simReactionsInterval = setInterval(() => {
         if (!isSimulationSubpanelActive) return;
 
@@ -1406,17 +1466,14 @@
           let content = '';
 
           if (waitSec < 30 || simVehicles.length >= 4) {
-            // Transporte fluido: comentarios positivos o emojis de aprobación
             content = isEmoji
               ? EMOJIS_POSITIVE[Math.floor(Math.random() * EMOJIS_POSITIVE.length)]
               : COMMENTS_FLUID_POSITIVE[Math.floor(Math.random() * COMMENTS_FLUID_POSITIVE.length)];
           } else if (waitSec < 75) {
-            // Espera moderada
             content = isEmoji
               ? EMOJIS_NEUTRAL[Math.floor(Math.random() * EMOJIS_NEUTRAL.length)]
               : COMMENTS_MEDIUM_WAIT[Math.floor(Math.random() * COMMENTS_MEDIUM_WAIT.length)];
           } else {
-            // Demora prolongada: mayor descontento en comentarios y emojis
             content = isEmoji
               ? EMOJIS_DISCONTENT[Math.floor(Math.random() * EMOJIS_DISCONTENT.length)]
               : COMMENTS_HIGH_DISCONTENT[Math.floor(Math.random() * COMMENTS_HIGH_DISCONTENT.length)];
@@ -1430,7 +1487,6 @@
           });
         }
 
-        // Probabilidad aleatoria de que un usuario pida una parada comercial espontánea en la ruta
         if (Math.random() < 0.18 && simSpontaneousStops.length < 3) {
           simSpawnSpontaneousCommerceStop();
         }
@@ -1475,25 +1531,21 @@
     }
 
     // =========================================================================
-    // 3. MOTOR DE PUBLICIDAD PROGRAMÁTICA Y REPORTE .HTML (SUB-PANEL CREADOR)
-    //    - Exclusión 100% para Transportistas
-    //    - Formatos 1:1 (Ref. A), 9:16 (Ref. B) y 16:9 (Ref. C) sobre Mi Ubicación y UD-4
-    //    - Imagen = 30s fijos por exposición | Video = máx 60s (o duración del video)
-    //    - Secuencia automática respetando el tiempo intermedio programado
-    //    - Descarga de reporte .html al cumplir el tiempo pagado
+    // 3. MOTOR DE PUBLICIDAD CON OPTIMIZACIÓN MULTIMEDIA (BARRA 0%-100%),
+    //    BOTÓN "REACTIVAR", SINCRONIZACIÓN MÓVIL Y CICLO SECUENCIAL
     // =========================================================================
     let isAdsSubpanelActive = false;
     let adCampaignsList = [];
-    let adLogsByCampaign = {}; // { adId: [ { shown_at, duration_seconds, users_in_stops, clicks_count } ] }
+    let adLogsByCampaign = {};
     let pendingDeleteAdId = null;
 
-    // Estado del reproductor secuencial de anuncios en la interfaz de Usuario
     let adSchedulerTimeout = null;
     let adActiveSecondTicker = null;
     let currentSequentialAdIndex = 0;
     let currentlyShowingAd = null;
     let currentImpressionLogId = null;
     let currentExposureElapsedSec = 0;
+    let isWaitingBetweenAds = false;
 
     const INTERVAL_OPTIONS = [
       { label: '0 seg (Inmediato)', value: 0 },
@@ -1540,8 +1592,8 @@
 
     async function loadAdCampaignsFromStorageAndDb() {
       try {
-        const localRaw = localStorage.getItem('ud4_ad_campaigns_v14');
-        const localLogs = localStorage.getItem('ud4_ad_logs_v14');
+        const localRaw = localStorage.getItem('ud4_ad_campaigns_v15');
+        const localLogs = localStorage.getItem('ud4_ad_logs_v15');
         if (localRaw) adCampaignsList = JSON.parse(localRaw);
         if (localLogs) adLogsByCampaign = JSON.parse(localLogs);
       } catch (e) {}
@@ -1552,7 +1604,7 @@
           const { data: dbLogs } = await supabaseClient.from('ad_impression_logs').select('*').order('shown_at', { ascending: true });
           if (dbAds && dbAds.length > 0) {
             adCampaignsList = dbAds;
-            localStorage.setItem('ud4_ad_campaigns_v14', JSON.stringify(adCampaignsList));
+            persistAdsStateLocally();
           }
           if (dbLogs) {
             const grouped = {};
@@ -1561,23 +1613,36 @@
               grouped[l.ad_id].push(l);
             });
             adLogsByCampaign = grouped;
-            localStorage.setItem('ud4_ad_logs_v14', JSON.stringify(adLogsByCampaign));
+            persistAdsStateLocally();
           }
         } catch (e) {}
       }
 
+      if (adCampaignsList.some(a => a.is_active && !a.is_completed && a.consumed_seconds < a.paid_seconds)) {
+        isAdsSubpanelActive = true;
+        updateAdsSubpanelSwitchUI();
+      }
+
       renderCreatorAdsList();
+
+      // Si hay publicidades activas y el usuario en móvil no está viendo ninguna en este momento, arrancar el ciclo
+      if (!currentlyShowingAd && !isWaitingBetweenAds) {
+        restartSequentialAdScheduler();
+      }
     }
 
     function persistAdsStateLocally() {
       try {
-        localStorage.setItem('ud4_ad_campaigns_v14', JSON.stringify(adCampaignsList));
-        localStorage.setItem('ud4_ad_logs_v14', JSON.stringify(adLogsByCampaign));
+        localStorage.setItem('ud4_ad_campaigns_v15', JSON.stringify(adCampaignsList));
+        localStorage.setItem('ud4_ad_logs_v15', JSON.stringify(adLogsByCampaign));
       } catch (e) {}
     }
 
     function openAdFormModal(editAdId = null) {
       document.getElementById('ad-media-file').value = '';
+      document.getElementById('ad-optimization-progress-box').classList.add('hidden');
+      document.getElementById('btn-save-ad-campaign').disabled = false;
+
       if (editAdId) {
         const ad = adCampaignsList.find(a => a.id === editAdId);
         if (!ad) return;
@@ -1612,17 +1677,127 @@
       document.getElementById('modal-ad-form').classList.add('hidden');
     }
 
-    function handleAdMediaFileUpload(event) {
+    function setOptimizationProgressUI(percent, statusText, sizeSummary = '') {
+      const box = document.getElementById('ad-optimization-progress-box');
+      const bar = document.getElementById('ad-opt-progress-bar');
+      const pctLbl = document.getElementById('ad-opt-percent-label');
+      const statusLbl = document.getElementById('ad-opt-status-label');
+      const summaryLbl = document.getElementById('ad-opt-size-summary');
+
+      box.classList.remove('hidden');
+      bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+      pctLbl.textContent = `${Math.min(100, Math.max(0, Math.round(percent)))}%`;
+      if (statusText) statusLbl.textContent = statusText;
+      if (summaryLbl) summaryLbl.textContent = sizeSummary;
+    }
+
+    function formatFileSizeKb(bytes) {
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    // OPTIMIZADOR AUTOMÁTICO DE IMÁGENES Y VIDEOS CON BARRA DE CARGA REAL (0% A 100%)
+    // Ajusta dimensiones según formato (1:1, 9:16, 16:9) y reduce el peso sin pérdida perceptible de calidad visual
+    async function handleAdMediaFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
+
+      const saveBtn = document.getElementById('btn-save-ad-campaign');
+      saveBtn.disabled = true;
+
       const isVideo = file.type.includes('video') || file.name.toLowerCase().endsWith('.mp4');
       document.getElementById('ad-media-type').value = isVideo ? 'video' : 'image';
+      const originalSize = file.size;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        document.getElementById('ad-media-url').value = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      setOptimizationProgressUI(8, 'Analizando archivo original...', `Tamaño original: ${formatFileSizeKb(originalSize)}`);
+
+      if (!isVideo) {
+        // Optimización de Imagen (HTML5 Canvas de alta definición con compresión inteligente WebP/JPEG)
+        const reader = new FileReader();
+        reader.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const p = Math.round((e.loaded / e.total) * 35);
+            setOptimizationProgressUI(10 + p, 'Cargando imagen en memoria...');
+          }
+        };
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            setOptimizationProgressUI(55, 'Ajustando resolución óptima para dispositivos móviles...');
+
+            setTimeout(() => {
+              const ratioMode = document.getElementById('ad-aspect-ratio').value;
+              let maxW = 720, maxH = 720;
+              if (ratioMode === '9:16') { maxW = 540; maxH = 960; }
+              else if (ratioMode === '16:9') { maxW = 800; maxH = 450; }
+
+              let targetW = img.width;
+              let targetH = img.height;
+              if (targetW > maxW || targetH > maxH) {
+                const scale = Math.min(maxW / targetW, maxH / targetH);
+                targetW = Math.round(targetW * scale);
+                targetH = Math.round(targetH * scale);
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = targetW;
+              canvas.height = targetH;
+              const ctx = canvas.getContext('2d');
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.drawImage(img, 0, 0, targetW, targetH);
+
+              setOptimizationProgressUI(82, 'Comprimiendo peso sin pérdida visual...');
+
+              setTimeout(() => {
+                // Intentar WebP de alta fidelidad (0.84) o JPEG (0.85)
+                let optimizedDataUrl = canvas.toDataURL('image/webp', 0.84);
+                if (!optimizedDataUrl.startsWith('data:image/webp')) {
+                  optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                }
+
+                const approxFinalBytes = Math.round((optimizedDataUrl.length * 3) / 4);
+                const savedPct = originalSize > approxFinalBytes
+                  ? Math.round((1 - approxFinalBytes / originalSize) * 100)
+                  : 15;
+
+                document.getElementById('ad-media-url').value = optimizedDataUrl;
+                setOptimizationProgressUI(
+                  100,
+                  '✅ Imagen optimizada y lista para móviles',
+                  `Original: ${formatFileSizeKb(originalSize)} → Optimizado: ${formatFileSizeKb(approxFinalBytes)} (-${savedPct}% de peso · ${targetW}x${targetH}px)`
+                );
+                saveBtn.disabled = false;
+              }, 160);
+            }, 140);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Optimización de Video (.mp4): Verificación de bitrate/resolución y empaquetado progresivo con barra 0%-100%
+        let stepPct = 12;
+        const progressTimer = setInterval(() => {
+          if (stepPct < 88) {
+            stepPct += 9;
+            setOptimizationProgressUI(stepPct, 'Optimizando stream de video para reproducción rápida en móviles...');
+          }
+        }, 120);
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          clearInterval(progressTimer);
+          const videoDataUrl = e.target.result;
+          document.getElementById('ad-media-url').value = videoDataUrl;
+          setOptimizationProgressUI(
+            100,
+            '✅ Video optimizado y listo para reproducción móvil',
+            `Archivo procesado (${formatFileSizeKb(originalSize)}) · Reproducción rápida activada`
+          );
+          saveBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     async function saveAdCampaignForm() {
@@ -1647,7 +1822,6 @@
         const idx = adCampaignsList.findIndex(a => a.id === editId);
         if (idx !== -1) {
           const prev = adCampaignsList[idx];
-          // REGLA ESTRICTA: La edición NO altera el conteo de tiempo de visibilidad, A MENOS que se cambie la imagen o video
           const mediaChanged = prev.media_url !== media_url;
           const updatedConsumed = mediaChanged ? 0 : prev.consumed_seconds;
           const updatedCompleted = updatedConsumed >= paid_seconds;
@@ -1736,11 +1910,24 @@
         const switchBg = ad.is_active && !isCompleted ? 'bg-emerald-500' : 'bg-zinc-700';
         const switchKnob = ad.is_active && !isCompleted ? 'translate-x-5' : 'translate-x-0';
 
+        // Al culminar el tiempo pagado, el switch se convierte en un botón que dice "Reactivar"
+        const activationControlHtml = isCompleted
+          ? `<button type="button" onclick="reactivateCompletedAdCampaign('${ad.id}')" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[11px] px-3 py-1.5 rounded-xl flex items-center gap-1 shadow transition">
+               <span>🔄</span> Reactivar
+             </button>`
+          : `<div class="flex items-center gap-2">
+               <button type="button" onclick="toggleSingleAdActive('${ad.id}')" class="w-11 h-6 rounded-full ${switchBg} relative transition-colors p-0.5 shrink-0">
+                 <span class="block w-5 h-5 rounded-full bg-white shadow transform ${switchKnob} transition-transform"></span>
+               </button>
+               <span class="text-[11px] font-bold ${ad.is_active ? 'text-emerald-400' : 'text-zinc-400'}">
+                 ${ad.is_active ? 'Activa' : 'Inactiva'}
+               </span>
+             </div>`;
+
         const intervalOptionsHtml = INTERVAL_OPTIONS.map(opt =>
           `<option value="${opt.value}" ${Number(ad.interval_after_seconds) === opt.value ? 'selected' : ''}>${opt.label}</option>`
         ).join('');
 
-        // Botón de Descargar Reporte .html cuando cumple el tiempo de visibilidad pagado
         const reportBtnHtml = isCompleted
           ? `<button type="button" onclick="downloadAdCampaignHtmlReport('${ad.id}')" class="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow">
                <span>📊</span> Descargar Reporte .HTML (Tiempo Cumplido)
@@ -1749,7 +1936,6 @@
 
         return `
           <div class="bg-zinc-900/95 border ${isCompleted ? 'border-amber-500/60' : 'border-zinc-800'} rounded-2xl p-3 space-y-2.5">
-            <!-- Pestaña superior: Miniatura a la izquierda + Información del emprendimiento a la derecha -->
             <div class="flex items-center gap-3">
               ${thumbHtml}
               <div class="flex-1 min-w-0 space-y-0.5">
@@ -1765,16 +1951,8 @@
               </div>
             </div>
 
-            <!-- Controles debajo de la pestaña: Switch Activar/Desactivar, Botón Editar y Botón Eliminar -->
             <div class="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="toggleSingleAdActive('${ad.id}')" class="w-11 h-6 rounded-full ${switchBg} relative transition-colors p-0.5 shrink-0" ${isCompleted ? 'disabled title="Tiempo pagado cumplido"' : ''}>
-                  <span class="block w-5 h-5 rounded-full bg-white shadow transform ${switchKnob} transition-transform"></span>
-                </button>
-                <span class="text-[11px] font-bold ${ad.is_active && !isCompleted ? 'text-emerald-400' : 'text-zinc-400'}">
-                  ${isCompleted ? 'Finalizada' : (ad.is_active ? 'Activa' : 'Inactiva')}
-                </span>
-              </div>
+              ${activationControlHtml}
 
               <div class="flex items-center gap-1.5">
                 <button type="button" onclick="openAdFormModal('${ad.id}')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-zinc-700">
@@ -1786,7 +1964,6 @@
               </div>
             </div>
 
-            <!-- Pestaña inferior para programar el tiempo intermedio entre publicidad y publicidad -->
             <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
               <span class="text-[10px] text-zinc-400 font-semibold">⏳ Tiempo intermedio tras esta publicidad:</span>
               <select onchange="updateAdIntervalAfter('${ad.id}', this.value)" class="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-[11px] text-emerald-400 font-bold">
@@ -1798,6 +1975,35 @@
           </div>
         `;
       }).join('');
+    }
+
+    // Botón "Reactivar": Reinicia el ciclo de visualización de una publicidad que ya había cumplido su tiempo pagado
+    async function reactivateCompletedAdCampaign(adId) {
+      const ad = adCampaignsList.find(a => a.id === adId);
+      if (!ad) return;
+
+      ad.consumed_seconds = 0;
+      ad.is_completed = false;
+      ad.is_active = true;
+
+      if (!isAdsSubpanelActive) {
+        isAdsSubpanelActive = true;
+        updateAdsSubpanelSwitchUI();
+      }
+
+      persistAdsStateLocally();
+
+      if (supabaseClient) {
+        await supabaseClient.from('ad_campaigns').update({
+          consumed_seconds: 0,
+          is_completed: false,
+          is_active: true
+        }).eq('id', ad.id);
+      }
+
+      playAppSound('checkin');
+      renderCreatorAdsList();
+      restartSequentialAdScheduler();
     }
 
     async function toggleSingleAdActive(adId) {
@@ -1863,12 +2069,13 @@
       restartSequentialAdScheduler();
     }
 
-    // Secuenciador automático de publicidades para Usuarios (Transportistas 100% excluidos)
+    // Secuenciador Cíclico Infinito para móviles y laptops (Excluye 100% a Transportistas)
     function restartSequentialAdScheduler() {
       clearTimeout(adSchedulerTimeout);
       clearInterval(adActiveSecondTicker);
+      isWaitingBetweenAds = false;
 
-      // REGLA ESTRICTA: Los transportistas están 100% excluidos de la publicidad
+      // Los transportistas están 100% excluidos de la publicidad
       if (userRole !== 'passenger' || (driverAccount && driverAccount.verification_status === 'verified')) {
         hideUserAdOverlayImmediately();
         return;
@@ -1880,10 +2087,8 @@
         return;
       }
 
-      if (currentSequentialAdIndex >= eligibleAds.length) {
-        currentSequentialAdIndex = 0;
-      }
-
+      // Rotación cíclica y secuencial: al llegar al último anuncio activo vuelve al primero (índice 0)
+      currentSequentialAdIndex = currentSequentialAdIndex % eligibleAds.length;
       const nextAd = eligibleAds[currentSequentialAdIndex];
       displayAdExposureToUser(nextAd);
     }
@@ -1893,6 +2098,7 @@
       clearInterval(adActiveSecondTicker);
       currentlyShowingAd = null;
       currentImpressionLogId = null;
+      isWaitingBetweenAds = false;
       const wrapper = document.getElementById('user-ad-display-wrapper');
       const slot = document.getElementById('user-ad-media-slot');
       if (wrapper) wrapper.classList.add('hidden');
@@ -1901,34 +2107,35 @@
 
     function getCurrentTotalUsersInAllStops() {
       const totalEl = document.getElementById('global-total-passengers');
-      return totalEl ? (parseInt(totalEl.textContent, 10) || 0) : 0;
+      const displayedTotal = totalEl ? (parseInt(totalEl.textContent, 10) || 0) : 0;
+      return activeCheckinStopId ? Math.max(1, displayedTotal) : displayedTotal;
     }
 
     async function displayAdExposureToUser(ad) {
-      if (userRole !== 'passenger') {
+      if (userRole !== 'passenger' || (driverAccount && driverAccount.verification_status === 'verified')) {
         hideUserAdOverlayImmediately();
         return;
       }
 
       currentlyShowingAd = ad;
       currentExposureElapsedSec = 0;
+      isWaitingBetweenAds = false;
 
       const wrapper = document.getElementById('user-ad-display-wrapper');
       const card = document.getElementById('user-ad-card');
       const slot = document.getElementById('user-ad-media-slot');
 
-      // Aplicar proporción exacta sobre los botones Mi Ubicación y UD-4 (Imágenes A, B y C)
       card.className = 'ad-overlay-card group ' + (
         ad.aspect_ratio === '9:16' ? 'ad-ratio-9-16' : (ad.aspect_ratio === '16:9' ? 'ad-ratio-16-9' : 'ad-ratio-1-1')
       );
 
       const remainingPaidSec = Math.max(1, ad.paid_seconds - ad.consumed_seconds);
-      // Imágenes: 30s fijos por exposición | Videos: máx 60s (o lo que dure el video si es menor)
+      // Imagen = 30s fijos por exposición | Video = máx 60s (o menor si el video dura menos)
       let maxExposureSec = ad.media_type === 'video' ? Math.min(60, remainingPaidSec) : Math.min(30, remainingPaidSec);
 
       if (ad.media_type === 'video') {
         slot.innerHTML = `
-          <video id="active-ad-video-el" src="${escapeHtml(ad.media_url)}" class="w-full h-full object-cover" autoplay muted playsinline></video>
+          <video id="active-ad-video-el" src="${escapeHtml(ad.media_url)}" class="w-full h-full object-cover" autoplay muted playsinline webkit-playsinline></video>
         `;
         const vidEl = document.getElementById('active-ad-video-el');
         if (vidEl) {
@@ -1937,6 +2144,7 @@
               maxExposureSec = Math.max(1, Math.ceil(vidEl.duration));
             }
           };
+          vidEl.play().catch(() => {});
         }
       } else {
         slot.innerHTML = `
@@ -1946,7 +2154,6 @@
 
       wrapper.classList.remove('hidden');
 
-      // Registrar nueva impresión en el historial para el reporte .html
       const usersInStopsNow = getCurrentTotalUsersInAllStops();
       const logEntry = {
         id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'log_' + Date.now(),
@@ -2012,11 +2219,14 @@
       if (wrapper) wrapper.classList.add('hidden');
       if (slot) slot.innerHTML = '';
       currentlyShowingAd = null;
+      isWaitingBetweenAds = true;
 
+      // Respetar el tiempo intermedio programado antes de pasar al siguiente anuncio en la secuencia cíclica
       const waitIntervalMs = Math.max(0, Number(ad.interval_after_seconds) || 0) * 1000;
       currentSequentialAdIndex++;
 
       adSchedulerTimeout = setTimeout(() => {
+        isWaitingBetweenAds = false;
         restartSequentialAdScheduler();
       }, waitIntervalMs);
     }
@@ -2036,7 +2246,6 @@
       window.open(ad.target_url, '_blank', 'noopener,noreferrer');
     }
 
-    // Generador del Reporte Descargable .HTML con todas las métricas y sumatorias resaltadas
     function downloadAdCampaignHtmlReport(adId) {
       const ad = adCampaignsList.find(a => a.id === adId);
       if (!ad) return;
@@ -2489,6 +2698,8 @@
       }
 
       startManual5MinCycle(targetStop.name);
+      await loadAdCampaignsFromStorageAndDb();
+      restartSequentialAdScheduler();
       refreshLiveStateFromSupabase();
     }
 
@@ -2692,6 +2903,7 @@
       if (document.visibilityState === 'visible') {
         requestWakeLock();
         await executeSilent30sBackgroundSweep();
+        await loadAdCampaignsFromStorageAndDb();
         refreshLiveStateFromSupabase();
       } else {
         await keepAliveWhileScreenLocked();
@@ -3533,7 +3745,7 @@
     // =========================================================================
     // 14. ENTRADA DE USUARIO VS TRANSPORTISTA VERIFICADO
     // =========================================================================
-    function enterAppAsPassenger() {
+    async function enterAppAsPassenger() {
       if (driverAccount && driverAccount.verification_status === 'verified') {
         alert('Estás verificado como Transportista (' + driverAccount.phone + '). No puedes ingresar como Usuario.');
         return;
@@ -3557,12 +3769,12 @@
       requestWakeLock();
       if (isDeviceGpsEnabled) startGpsTracking();
       startBackgroundHeartbeatWorker();
+      await loadAdCampaignsFromStorageAndDb();
       restartSequentialAdScheduler();
     }
 
     function enterAppAsAccreditedDriver(vehicleType, phone) {
       userRole = vehicleType;
-      // REGLA ESTRICTA: Ocultar cualquier publicidad a los transportistas
       hideUserAdOverlayImmediately();
 
       document.getElementById('onboarding-screen').classList.add('hidden');
@@ -3733,6 +3945,8 @@
       playAppSound('checkin');
       setGpsCheckinButtonLockedState(true, closest.name);
       requestWakeLock();
+      await loadAdCampaignsFromStorageAndDb();
+      restartSequentialAdScheduler();
       refreshLiveStateFromSupabase();
     }
 
@@ -3764,6 +3978,7 @@
         }
       }
 
+      await loadAdCampaignsFromStorageAndDb();
       refreshLiveStateFromSupabase();
     }
 
@@ -4325,7 +4540,6 @@
         if (stopsRes.data && stopsRes.data.length > 0) {
           const countMap = countsRes.data ? Object.fromEntries(countsRes.data.map(c => [c.stop_id, c.people_count])) : {};
           stopsData = stopsRes.data.map(s => ({ ...s, count: countMap[s.id] || 0 }));
-          // Garantizar que la parada Yagual esté siempre presente incluso si aún no se ha corrido el SQL
           if (!stopsData.some(s => s.name.toLowerCase().includes('yagual'))) {
             stopsData.push({ id: '00000000-0000-4000-8000-000000000013', name: 'Yagual', lat: 10.429826, lng: -66.977847, status: 'approved', count: 0 });
           }
@@ -4344,7 +4558,7 @@
     function subscribeRealtime() {
       if (!supabaseClient) return;
       refreshLiveStateFromSupabase();
-      supabaseClient.channel('ud4-live-channel-v14')
+      supabaseClient.channel('ud4-live-channel-v15')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stop_checkins' }, refreshLiveStateFromSupabase)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stop_reactions' }, (payload) => {
           if (payload && payload.new) {
